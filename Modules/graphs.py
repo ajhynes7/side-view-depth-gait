@@ -1,4 +1,3 @@
-
 import numpy as np
 
 def adj_list_to_matrix(G):
@@ -42,9 +41,15 @@ def dag_shortest_paths(G, V, source):
 	return prev, dist
 
 
-def trace_path(prev, source, target):
-	u, path = target, [target]
-	while u != source:
-		u = prev[u]
-		path.append(u)
-	return path[::-1]  # Reverse the path
+def trace_path(prev, last_node):
+	#u, path = target, [target]
+    u, path = last_node, [last_node]
+    
+    while ~np.isnan(u):
+        
+        u = prev[u]
+        path.append(u)
+        
+    path = [x for x in path if ~np.isnan(x)]
+    return path[::-1]  # Reverse the path
+    

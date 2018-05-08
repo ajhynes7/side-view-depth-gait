@@ -1,10 +1,9 @@
-
-import sys
-sys.path.insert(0, '../Modules/')
-
 import pandas as pd
 import numpy as np
 from scipy.spatial.distance import cdist
+
+import sys
+sys.path.insert(0, '../Modules/')
 
 import graphs as gr
 import pose_estimation as pe
@@ -12,7 +11,13 @@ import general as gen
 
 
 def read_positions(frame_df, part, max_num_coords):
+    """
+    Inputs
+    ------
 
+    Outputs
+    -------
+    """
     row = frame_df[frame_df['Part'] == part]
     row_coordinates = row.loc[:, range(max_num_coords)].as_matrix()
 
@@ -63,21 +68,31 @@ edges = np.matrix('0 1;  \
                    3 5;  \
                    4 5')
 
+is_simple = np.array([1, 1, 0, 1, 1, 0, 1]).astype(bool)
+
+edges_simple = edges[is_simple, :]
 
 population_dict = {part: read_positions(frame_df, part, max_num_coords) for part in parts}
 population, labels = pe.get_population(population_dict, part_types)
 
-expected_lengths = pe.lengths_lookup(edges, lengths)
+
+expected_lengths        = pe.lengths_lookup(edges, lengths)
+expected_lengths_simple = pe.lengths_lookup(edges_simple, lengths)
+
 dist_matrix = cdist(population, population)
 
 
-
+# %%
 
 ratio_matrix = pe.distances_to_adj_matrix(dist_matrix, labels, expected_lengths, gen.norm_ratio)
 score_matrix = score_func(ratio_matrix)
 
-M = pe.distances_to_adj_matrix(dist_matrix, labels, expected_lengths, cost_func)
+M = pe.distances_to_adj_matrix(dist_matrix, labels, expected_lengths_simple, cost_func)
 G = gr.adj_matrix_to_list(M)
 
 n_nodes = len(G)
-prev, dist = gr.dag_shortest_paths(G, range(n_nodes), 0)
+prev, dist = gr.dag_shortest_paths(G, G.keys(), 0)
+
+
+path_matrix = pe.paths_to_foot(prev, labels)
+

@@ -1,10 +1,9 @@
-
 import numpy as np
-
+import graphs as gr
 
 def get_population(population_dict, part_types):
 
-    population_list, labels = [], []
+    population_list, label_list = [], []
 
     for i, part_type in enumerate(part_types):
         for full_part_name in population_dict:
@@ -14,10 +13,11 @@ def get_population(population_dict, part_types):
                 n_points, _ = points.shape
 
                 population_list.append(points)
-                labels.extend([i for _ in range(n_points)])
+                label_list.extend([i for _ in range(n_points)])
 
     # Convert list to numpy matrix
     population = np.concatenate(population_list)
+    labels = np.array(label_list)
 
     assert(population.shape[0] == len(labels))
 
@@ -63,12 +63,16 @@ def distances_to_adj_matrix(dist_matrix, labels, expected_lengths, cost_func):
 
 def paths_to_foot(prev, labels):
 
-    n_nodes = len(prev);
     max_label = max(labels)
+    
+    foot_index = np.where(labels == max_label)[0]
+    n_feet = len(foot_index)
+    
+    path_matrix = np.full((n_feet, max_label+1), np.nan)
 
-    foot_index = np.where(labels == max_label)
 
     for i, foot in enumerate(foot_index):
-        path_matrix[i, :] = trace_path(prev, foot)
+        
+        path_matrix[i, :] = gr.trace_path(prev, foot)
 
     return path_matrix
