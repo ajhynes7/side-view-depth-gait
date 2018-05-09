@@ -54,11 +54,13 @@ def dist_to_adj_matrix(dist_matrix, labels, expected_lengths, cost_func):
 
     for i in range(n_nodes):
         label_A = labels[i]
+        is_child = labels == label_A + 1
 
         for j in range(n_nodes):
-            label_B = labels[j]
 
-            if label_B in expected_lengths[label_A]:
+            if is_child[j]:
+                label_B = labels[j]
+
                 expected_length = expected_lengths[label_A][label_B]
                 measured_length = dist_matrix[i, j]
 
@@ -71,7 +73,7 @@ def paths_to_foot(prev, dist, labels):
     """
     Params
     ------
-    
+
     Outputs
     -------
     """

@@ -35,7 +35,7 @@ n_frames = int(max(df.Frame)) + 1
 
 part_types = ['HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG', 'FOOT']
 lengths = [63.9626,   19.3718,   12.8402,   22.0421,   20.5768]
-radii = [i for i in range(30)]
+radii = [i for i in range(0, 30, 5)]
 
 edges = np.matrix('0 1;  \
                    1 2;  \
@@ -50,28 +50,33 @@ edges = np.matrix('0 1;  \
 
 chosen_pos_dict = {k: {} for k in ['HEAD', 'L_FOOT', 'R_FOOT']}
 
-for f in range(624, 625):
+total = 0
+for f in range(500, 700):
 
     # Dataframe for current image frame
     df_current = df[df.Frame == f]
 
+    
     pop_dict = {part: rd.read_positions(df_current, part, max_num_coords)\
                 for part in parts}
 
+    t = time()
     pop_A, pop_B = pe.process_frame(df_current, pop_dict, part_types, edges,\
                                     lengths, radii)
 
+    total += time() - t
+    
     chosen_pos_dict['HEAD'][f]    = pop_A[0, :]
     chosen_pos_dict['L_FOOT'][f]  = pop_A[-1, :]
     chosen_pos_dict['R_FOOT'][f]  = pop_B[-1, :]
 
 
 
-# %% 
-    
-chosen_pos_df = pd.DataFrame(chosen_pos_dict) 
+# %%
 
-# Specify order of columns 
+chosen_pos_df = pd.DataFrame(chosen_pos_dict)
+
+# Specify order of columns
 chosen_pos_df = chosen_pos_df[['HEAD', 'L_FOOT', 'R_FOOT']]
 
 foot_dist_func = lambda row: np.linalg.norm(row[1] - row[2])
