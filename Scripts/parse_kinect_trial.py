@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 from scipy.spatial.distance import cdist
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 
 
 import sys
@@ -11,6 +10,7 @@ sys.path.insert(0, '../Modules/')
 import graphs as gr
 import pose_estimation as pe
 import general as gen
+import plotting as pl
 
 
 def read_positions(frame_df, part, max_num_coords):
@@ -34,19 +34,21 @@ def read_positions(frame_df, part, max_num_coords):
 
     return points
 
+file_path = '../../../MEGA/Data/Kinect trials/2014-12-22_P007_Pre_004.txt'
+column_names = [i for i in range(-2, 60)]
 
-df = pd.read_csv('../../../MEGA/Data/Kinect trials/2014-12-22_P007_Pre_004.txt', skiprows=range(22),\
-                header=None, names = [i for i in range(-2, 60)], sep='\t', engine='python')
+df = pd.read_csv(file_path, skiprows=range(22), header=None,\
+                 names=column_names, sep='\t', engine='python')
 
-df.rename(columns={-2: 'Frame', -1: 'Part'}, inplace=True) # Change some column names
+# Change some column names
+df.rename(columns={-2: 'Frame', -1: 'Part'}, inplace=True) 
 
 # Replace any strings with nan in the Frame column
 df['Frame'] = df['Frame'].replace(r'[^0-9]', np.nan, regex=True)
 
-df['Frame'] = pd.to_numeric(df['Frame'])  # Convert the strings in the frame column to numbers
+df['Frame'] = pd.to_numeric(df['Frame'])
 
 parts = df.groupby('Part').groups.keys()  # Part names
-
 
 
 # Parameters
@@ -59,7 +61,6 @@ score_func = lambda x : -(x - 1)**2 + 1
 
 # Dataframe for current image frame
 frame_df = df[df['Frame'] == 624]
-
 
 
 part_types = ['HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG', 'FOOT']
@@ -77,7 +78,8 @@ is_simple = np.array([1, 1, 0, 1, 1, 0, 1]).astype(bool)
 
 edges_simple = edges[is_simple, :]
 
-population_dict = {part: read_positions(frame_df, part, max_num_coords) for part in parts}
+population_dict = {part: read_positions(frame_df, part, max_num_coords) \
+                   for part in parts}
 population, labels = pe.get_population(population_dict, part_types)
 
 
@@ -86,16 +88,20 @@ expected_lengths_simple = pe.lengths_lookup(edges_simple, lengths)
 
 dist_matrix = cdist(population, population)
 
-ratio_func = lambda a, b: 1 / gen.norm_ratio(a, b)
+ratio_func = lambda a, b: 1.0 / gen.norm_ratio(a, b)
+
 # %%
 
-ratio_matrix = pe.distances_to_adj_matrix(dist_matrix, labels, expected_lengths, ratio_func)
+ratio_matrix = pe.distances_to_adj_matrix(dist_matrix, labels, \
+                                          expected_lengths, ratio_func)
 score_matrix = score_func(ratio_matrix)
 
-M = pe.distances_to_adj_matrix(dist_matrix, labels, expected_lengths_simple, cost_func)
+M = pe.distances_to_adj_matrix(dist_matrix, labels, \
+                               expected_lengths_simple, cost_func)
 G = gr.adj_matrix_to_list(M)
 
-prev, dist = gr.dag_shortest_paths(G, G.keys(), 0)
+source_nodes = tuple(np.where(labels == 0)[0])
+prev, dist = gr.dag_shortest_paths(G, G.keys(), source_nodes)
 
 
 path_matrix = pe.paths_to_foot(prev, labels)
@@ -117,21 +123,10 @@ pop_A, pop_B = population[path_A, :], population[path_B, :]
 
 # %% Visual results
 
-#plt.scatter(pop_A[:, 0], pop_A[:, 1])
-#plt.scatter(pop_B[:, 0], pop_B[:, 1])
 
-#plt.scatter(population[:, 0], population[:, 1])
-import seaborn
-seaborn.set()
-fig = plt.figure()
-ax = Axes3D(fig)
+colours = ['blue', 'green', 'red', 'orange', 'gray', 'black']
+pl.scatter_colour(pop_A, colours, part_types)
 
-ax.scatter(population[:, 0], population[:, 2], population[:, 1])
-ax.scatter(pop_A[:, 0], pop_A[:, 2], pop_A[:, 1])
-
-ax.set_xlim3d(-100, 100)
-ax.set_ylim3d(100, 300)
-ax.set_zlim3d(-100, 100)
-#
-plt.show()
+plt.xlim(-100, 100)
+plt.ylim(-100, 100)
 
