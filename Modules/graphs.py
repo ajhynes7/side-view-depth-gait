@@ -24,6 +24,15 @@ def adj_matrix_to_list(M):
     return G
 
 
+def total_path_weight(G, path):
+
+    total = 0
+    for a, b in pairwise(path):
+        total += G[a][b]
+
+    return total
+
+
 def dag_shortest_paths(G, V, source_nodes):
     dist = {i: np.inf for i in G}
     prev = {i: np.nan for i in G}

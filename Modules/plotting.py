@@ -7,7 +7,8 @@ def scatter_colour(points, colours, labels):
     plt.figure()
 
     for i, c in enumerate(colours):
-        plt.scatter(points[i, 0], points[i, 1], color=c, label='{i}'.format(i=labels[i]))
+        plt.scatter(points[i, 0], points[i, 1], color=c,\
+         label='{i}'.format(i=labels[i]))
 
     plt.legend(loc='best')
     plt.show()
