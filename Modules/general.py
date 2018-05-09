@@ -6,11 +6,12 @@ def norm_ratio(a, b):
     else:
         return b / a
 
+
 def inside_spheres(dist_matrix, point_nums, r):
     
     n_points = len(dist_matrix)
     
-    in_spheres = np.full((n_points), False)
+    in_spheres = np.full(n_points, False)
 
     for i in point_nums:
         
