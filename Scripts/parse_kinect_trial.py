@@ -1,6 +1,9 @@
 import pandas as pd
 import numpy as np
 from scipy.spatial.distance import cdist
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
 
 import sys
 sys.path.insert(0, '../Modules/')
@@ -48,6 +51,8 @@ parts = df.groupby('Part').groups.keys()  # Part names
 
 # Parameters
 max_num_coords = 60
+radii = [i for i in range(30)]
+
 cost_func = lambda a, b: (a - b)**2
 score_func = lambda x : -(x - 1)**2 + 1
 
@@ -81,18 +86,52 @@ expected_lengths_simple = pe.lengths_lookup(edges_simple, lengths)
 
 dist_matrix = cdist(population, population)
 
-
+ratio_func = lambda a, b: 1 / gen.norm_ratio(a, b)
 # %%
 
-ratio_matrix = pe.distances_to_adj_matrix(dist_matrix, labels, expected_lengths, gen.norm_ratio)
+ratio_matrix = pe.distances_to_adj_matrix(dist_matrix, labels, expected_lengths, ratio_func)
 score_matrix = score_func(ratio_matrix)
 
 M = pe.distances_to_adj_matrix(dist_matrix, labels, expected_lengths_simple, cost_func)
 G = gr.adj_matrix_to_list(M)
 
-n_nodes = len(G)
 prev, dist = gr.dag_shortest_paths(G, G.keys(), 0)
 
 
 path_matrix = pe.paths_to_foot(prev, labels)
+
+filtered_score_matrix = pe.filter_by_path(score_matrix, path_matrix,\
+                                          expected_lengths_simple)
+
+
+# %%
+
+
+foot_A, foot_B = pe.select_best_feet(dist_matrix, filtered_score_matrix,\
+                                  path_matrix, radii)
+
+path_A, path_B = path_matrix[foot_A, :], path_matrix[foot_B, :]
+
+pop_A, pop_B = population[path_A, :], population[path_B, :]
+
+
+# %% Visual results
+
+#plt.scatter(pop_A[:, 0], pop_A[:, 1])
+#plt.scatter(pop_B[:, 0], pop_B[:, 1])
+
+#plt.scatter(population[:, 0], population[:, 1])
+import seaborn
+seaborn.set()
+fig = plt.figure()
+ax = Axes3D(fig)
+
+ax.scatter(population[:, 0], population[:, 2], population[:, 1])
+ax.scatter(pop_A[:, 0], pop_A[:, 2], pop_A[:, 1])
+
+ax.set_xlim3d(-100, 100)
+ax.set_ylim3d(100, 300)
+ax.set_zlim3d(-100, 100)
+#
+plt.show()
 

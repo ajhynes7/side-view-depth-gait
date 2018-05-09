@@ -1,5 +1,8 @@
+import itertools
 import numpy as np
 import graphs as gr
+import general as gen
+
 
 def get_population(population_dict, part_types):
 
@@ -75,4 +78,84 @@ def paths_to_foot(prev, labels):
         
         path_matrix[i, :] = gr.trace_path(prev, foot)
 
-    return path_matrix
+    return path_matrix.astype(int)
+
+
+def filter_by_path(input_matrix, path_matrix, expected_lengths):
+    
+    filtered_matrix = np.zeros(input_matrix.shape)
+    
+    n_rows, n_cols = path_matrix.shape
+    
+    for i in range(n_rows):
+        for j in range(n_cols):
+            for k in range(n_cols):
+                if k in expected_lengths[j]:
+                    # These two nodes in the path are connected in the body graph
+                    A, B = path_matrix[i, j], path_matrix[i, k]
+                    
+                    filtered_matrix[A, B] = input_matrix[A, B]
+    
+    return filtered_matrix
+
+
+def inside_radii(dist_matrix, path_matrix, radii):
+                 
+    in_spheres_list = []
+    
+    for path in path_matrix:
+        temp = []
+        
+        for r in radii:
+            
+            
+            in_spheres = gen.inside_spheres(dist_matrix, path, r) 
+            temp.append(in_spheres)
+            
+        in_spheres_list.append(temp)
+
+    return in_spheres_list
+
+
+def select_best_feet(dist_matrix, score_matrix, path_matrix, radii):
+    
+    n_paths = len(path_matrix)
+    n_radii = len(radii)
+    
+    in_spheres_list = inside_radii(dist_matrix, path_matrix, radii)
+    
+    # All possible pairs of paths
+    combos = list(itertools.combinations(range(n_paths), 2))
+    
+    n_combos = len(combos)
+        
+    votes, combo_scores = np.zeros(n_combos), np.zeros(n_combos)
+    
+    for i in range(n_radii):
+        
+        for ii, combo in enumerate(combos):
+            
+            in_spheres_A = in_spheres_list[combo[0]][i]
+            in_spheres_B = in_spheres_list[combo[1]][i]
+    
+            in_spheres = in_spheres_A | in_spheres_B
+            
+            temp = score_matrix[in_spheres, :]
+            score_subset = temp[:, in_spheres]
+            
+            combo_scores[ii] = np.sum(score_subset)
+            
+        max_score = max(combo_scores)
+        
+        # Winning combos for this radius
+        radius_winners = combo_scores == max_score;
+    
+        # Votes go to the winners
+        votes = votes + radius_winners;
+
+    winning_combo = np.argmax(votes)
+    
+    foot_A = combos[winning_combo][0]
+    foot_B = combos[winning_combo][1]
+    
+    return foot_A, foot_B
