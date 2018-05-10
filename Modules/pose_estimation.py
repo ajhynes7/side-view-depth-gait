@@ -71,11 +71,20 @@ def dist_to_adj_matrix(dist_matrix, labels, expected_lengths, cost_func):
 
 def paths_to_foot(prev, dist, labels):
     """
-    Params
-    ------
+    Finds the path to each foot node
 
-    Outputs
+    Parameters
+    ----------
+    prev : array_like
+
+    dist : array_like
+
+    labels : array_like
+
+    Returns
     -------
+    path_matrix : array_like
+
     """
 
     max_label = max(labels)
