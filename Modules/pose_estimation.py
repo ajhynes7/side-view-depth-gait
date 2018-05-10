@@ -2,7 +2,6 @@ import itertools
 import numpy as np
 import graphs as gr
 import general as gen
-import read_data as rd
 
 from scipy.spatial.distance import cdist
 

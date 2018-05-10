@@ -17,7 +17,7 @@ max_num_coords = 60
 file_path = '../../../MEGA/Data/Kinect trials/2014-12-22_P007_Pre_004.txt'
 column_names = [i for i in range(-2, max_num_coords)]
 
-df = pd.read_csv(file_path, skiprows=range(22), header=None,\
+df = pd.read_csv(file_path, skiprows=22, header=None,\
                  names=column_names, sep='\t', engine='python')
 
 # Change some column names
