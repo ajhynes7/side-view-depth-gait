@@ -14,7 +14,7 @@ import read_data as rd
 
 max_num_coords = 60
 
-file_path = '../../../MEGA/Data/Kinect trials/2014-12-22_P007_Pre_004.txt'
+file_path = '../../../MEGA/Data/Kinect Zeno/Kinect trials/2014-12-22_P007_Pre_004.txt'
 column_names = [i for i in range(-2, max_num_coords)]
 
 df = pd.read_csv(file_path, skiprows=22, header=None,\
@@ -52,10 +52,10 @@ edges = np.matrix('0 1;  \
 
 chosen_pos_dict = {k: {} for k in ['HEAD', 'L_FOOT', 'R_FOOT']}
 
-start_frame, end_frame = 600, 700
+start_frame, end_frame = 624, 625
 
 total = 0
-for f in range(600, 700):
+for f in range(start_frame, end_frame):
 
     # Dataframe for current image frame
     df_current = df[df.Frame == f]
