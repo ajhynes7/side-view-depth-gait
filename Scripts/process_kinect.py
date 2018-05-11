@@ -2,21 +2,22 @@ import os
 import pandas as pd
 import numpy as np
 
+file_name = '2014-12-22_P007_Pre_004.txt'
+load_dir = '../../../MEGA/Data/Kinect Zeno/Kinect trials'
+save_dir = '../../../MEGA/Data/Kinect Zeno/Kinect processed'
+
+load_path = os.path.join(load_dir, file_name)
+
 # Number of columns for the position coordinates
 # Number should be sufficiently large and divisible by 3
 n_coord_cols = 90
 
-directory = '../../../MEGA/Data/Kinect Zeno/Kinect trials'
-file_name = '2014-12-22_P007_Pre_004.txt'
-
-path = os.path.join(directory, file_name)
-
-df = pd.read_csv(path, skiprows=range(22), header=None,\
-     names = [i for i in range(-2, n_coord_cols)], sep='\t', engine='python')
+df = pd.read_csv(load_path, skiprows=range(22), header=None,\
+    names = [i for i in range(-2, n_coord_cols)], sep='\t', engine='python')
 
 # Change some column names
 df.rename(columns={-2: 'Frame', -1: 'Part'}, inplace=True)
-    
+
 # Replace any non-number strings with nan in the Frame column
 df['Frame'] = df['Frame'].replace(r'[^0-9]', np.nan, regex=True)
 
@@ -32,44 +33,35 @@ df = df.loc[:last_index, :]
 
 df.set_index('Frame', inplace=True)
 
-parts = df.groupby('Part').groups.keys() # Part names
+# Part names
+parts = df.groupby('Part').groups.keys()
 
+population_list = []
 
-# %% Convert to new dataframe
-
-@profile
-def foo():
-    population_list = []
+for part in parts:
+    df_part = df[df.Part == part]
+    
+    population_dict = {}
     
     for frame in range(n_frames):
-    
-        population_dict = {'Frame': frame}
-        df_frame = df.loc[frame, :]
-    
-        for i, part in enumerate(parts):
-    
-            # Convert the dataframe into an array of coordinates
-            # Begin at 1 to skip the part name
-            part_vector = df_frame.iloc[0, 1:].as_matrix()
-    
-            # Reshape array into an n x 3 matrix. Each row is an x, y, z position
-            # The -1 means the row dimension is inferred
-            population = np.reshape(part_vector, (-1, 3))
-    
-            population_dict[part] = population
-    
-        population_list.append(population_dict)
-    
-    df_final = pd.DataFrame(population_list)
-    df_final.set_index('Frame', inplace=True)
+        
+        part_vector = df_part.iloc[frame][1:].dropna()  
+        
+        # Reshape array into an n x 3 matrix. Each row is an x, y, z position
+        # The -1 means the row dimension is inferred
+        population = part_vector.values.reshape(-1, 3).astype(float)
+        population.round(2) # Round to save space
+        
+        population_dict[frame] = population
+        
+    population_list.append(population_dict)
 
-    return df_final
 
-df_final = foo()
-
-# %% Save new dataframe
+df_final = pd.DataFrame(population_list).T
+df_final.columns = parts
+df_final.index.name = 'Frame'
 
 save_name = file_name.replace(".txt", "")
-df_final.to_pickle(save_name)
-
-
+save_path = os.path.join(save_dir, save_name)
+df_final.to_pickle(save_path)
+    
