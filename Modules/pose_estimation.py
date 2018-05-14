@@ -21,7 +21,7 @@ def get_population(population_dict, part_types):
     population : array_like
         n x 3 matrix of all part position hypotheses
 
-    labels : 
+    labels :
     """
     population_list, label_list = [], []
 
@@ -200,16 +200,18 @@ def process_frame(pop_dict, part_types, edges, lengths, radii):
     score_func  = lambda x : -(x - 1)**2 + 1
     ratio_func  = lambda a, b: 1.0 / gen.norm_ratio(a, b)
 
+    population, labels = get_population(pop_dict, part_types)
+
+    if labels.size == 0:
+        return np.nan, np.nan
+
     n_lengths = len(lengths)
     edges_simple = edges[range(n_lengths), :]
-
-    population, labels = get_population(pop_dict, part_types)
 
     expected_lengths        = lengths_lookup(edges, lengths)
     expected_lengths_simple = lengths_lookup(edges_simple, lengths)
 
     dist_matrix = cdist(population, population)
-
     ratio_matrix = dist_to_adj_matrix(dist_matrix, labels, \
                                               expected_lengths, ratio_func)
     score_matrix = score_func(ratio_matrix)

@@ -36,30 +36,49 @@ df.set_index('Frame', inplace=True)
 # Part names
 parts = df.groupby('Part').groups.keys()
 
-population_list = []
+confidence_list, population_list = [], []
 
 for part in parts:
     df_part = df[df.Part == part]
     
-    population_dict = {}
+    confidence_dict, population_dict = {}, {}
     
     for frame in range(n_frames):
         
-        part_vector = df_part.iloc[frame][1:].dropna()  
+        # The first 3 coordinates are the highest confidence position, 
+        # in camera coordinates
+        conf_vector = df_part.iloc[frame].iloc[1:4]
+       
+        # The remaining coordinates are the body part hypotheses
+        part_vector = df_part.iloc[frame][4:].dropna()  
         
         # Reshape array into an n x 3 matrix. Each row is an x, y, z position
         # The -1 means the row dimension is inferred
-        population = part_vector.values.reshape(-1, 3).astype(float)
+        population      = part_vector.values.reshape(-1, 3).astype(float)
+        confidence_pos  = conf_vector.values.reshape(-1, 3).astype(float)
+         
         population.round(2) # Round to save space
         
+        confidence_dict[frame] = confidence_pos
         population_dict[frame] = population
         
+    confidence_list.append(confidence_dict)
     population_list.append(population_dict)
 
+
+df_conf = pd.DataFrame(confidence_list).T
+df_conf.columns = parts
+df_conf.index.name = 'Frame'
 
 df_final = pd.DataFrame(population_list).T
 df_final.columns = parts
 df_final.index.name = 'Frame'
+
+# %%  Save data to pickles
+
+conf_save_name = file_name.replace(".txt", "_conf")
+conf_save_path = os.path.join(save_dir, conf_save_name)
+df_conf.to_pickle(conf_save_path)
 
 save_name = file_name.replace(".txt", "")
 save_path = os.path.join(save_dir, save_name)
