@@ -65,7 +65,7 @@ for f in range(start_frame, end_frame):
                 for part in parts}
 
     t = time()
-    pop_A, pop_B = pe.process_frame(df_current, pop_dict, part_types, edges,\
+    pop_A, pop_B = pe.process_frame(pop_dict, part_types, edges,\
                                     lengths, radii)
 
     total += time() - t

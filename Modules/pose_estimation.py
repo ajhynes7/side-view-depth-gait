@@ -7,7 +7,22 @@ from scipy.spatial.distance import cdist
 
 
 def get_population(population_dict, part_types):
+    """
+    Parameters
+    ----------
 
+    population_dict : dict
+
+    part_types : array_like
+        List of strings for the types of body parts
+
+    Returns
+    -------
+    population : array_like
+        n x 3 matrix of all part position hypotheses
+
+    labels : 
+    """
     population_list, label_list = [], []
 
     for i, part_type in enumerate(part_types):
@@ -179,7 +194,7 @@ def select_best_feet(dist_matrix, score_matrix, path_matrix, radii):
     return foot_A, foot_B
 
 
-def process_frame(frame_df, pop_dict, part_types, edges, lengths, radii):
+def process_frame(pop_dict, part_types, edges, lengths, radii):
 
     cost_func   = lambda a, b: (a - b)**2
     score_func  = lambda x : -(x - 1)**2 + 1
