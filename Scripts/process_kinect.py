@@ -76,11 +76,11 @@ df_final.index.name = 'Frame'
 
 # %%  Save data to pickles
 
-conf_save_name = file_name.replace(".txt", "_conf")
+conf_save_name = file_name.replace(".txt", "_conf.pkl")
 conf_save_path = os.path.join(save_dir, conf_save_name)
 df_conf.to_pickle(conf_save_path)
 
-save_name = file_name.replace(".txt", "")
+save_name = file_name.replace(".txt", ".pkl")
 save_path = os.path.join(save_dir, save_name)
 df_final.to_pickle(save_path)
     

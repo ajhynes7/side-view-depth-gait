@@ -1,41 +1,29 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from time import time
+import os
+from sklearn.cluster import KMeans
 
 import sys
 sys.path.insert(0, '../Modules/')
 sys.path.insert(0, '../Shared code/')
 
-from peakdet import peakdet
 import pose_estimation as pe
-import read_data as rd
+from gait_metrics import gait_dataframe
+from peakdet import peakdet
 
 
-max_num_coords = 60
+# %% Read dataframe
 
-file_path = '../../../MEGA/Data/Kinect Zeno/Kinect trials/2014-12-22_P007_Pre_004.txt'
-column_names = [i for i in range(-2, max_num_coords)]
+directory = '../../../MEGA/Data/Kinect Zeno/Kinect processed'
+file_name = '2014-12-22_P007_Pre_004.pkl'
 
-df = pd.read_csv(file_path, skiprows=22, header=None,\
-                 names=column_names, sep='\t', engine='python')
+load_path = os.path.join(directory, file_name)
+df = pd.read_pickle(load_path)
 
-# Change some column names
-df.rename(columns={-2: 'Frame', -1: 'Part'}, inplace=True)
+# %% Parameters
 
-# Replace any strings with nan in the Frame column
-df.Frame = df.Frame.replace(r'[^0-9]', np.nan, regex=True)
-
-df.Frame = pd.to_numeric(df.Frame)
-
-
-# %% Inputs
-
-parts = df.groupby('Part').groups.keys()  # Part names
-
-n_frames = int(max(df.Frame)) + 1
-
-part_types = ['HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG', 'FOOT']
+lower_part_types = ['HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG', 'FOOT']
 lengths = [63.9626,   19.3718,   12.8402,   22.0421,   20.5768]
 radii = [i for i in range(0, 30, 5)]
 
@@ -47,61 +35,57 @@ edges = np.matrix('0 1;  \
                    3 5;  \
                    1 3')
 
+# %%
 
-#%%  Process all frames in dataset
-
-chosen_pos_dict = {k: {} for k in ['HEAD', 'L_FOOT', 'R_FOOT']}
-
-start_frame, end_frame = 624, 625
-
-total = 0
-for f in range(start_frame, end_frame):
-
-    # Dataframe for current image frame
-    df_current = df[df.Frame == f]
+func = lambda x: pe.process_frame(x.to_dict(), lower_part_types, edges, lengths, radii)
+best_pos_series = df.apply(func, axis=1)
 
 
-    pop_dict = {part: rd.read_positions(df_current, part, max_num_coords)\
-                for part in parts}
+# Each row i is a tuple containing the best positions for frame i
+# Split each tuple into columns of a dataframe
+df_best_pos = pd.DataFrame(best_pos_series.values.tolist(),\
+                           columns=['Side A', 'Side B'])
 
-    t = time()
-    pop_A, pop_B = pe.process_frame(pop_dict, part_types, edges,\
-                                    lengths, radii)
+df_best_pos = df_best_pos.dropna()
 
-    total += time() - t
+# Extract the head and feet positions
+head_pos = df_best_pos['Side A'].apply(lambda row: row[0, :])
+L_foot_pos = df_best_pos['Side A'].apply(lambda row: row[-1, :])
+R_foot_pos = df_best_pos['Side B'].apply(lambda row: row[-1, :])
 
-    chosen_pos_dict['HEAD'][f]    = pop_A[0, :]
-    chosen_pos_dict['L_FOOT'][f]  = pop_A[-1, :]
-    chosen_pos_dict['R_FOOT'][f]  = pop_B[-1, :]
+# Combine into new dataframe
+df_head_feet = pd.concat([head_pos, L_foot_pos, R_foot_pos], axis=1) 
+df_head_feet.columns = ['HEAD', 'L_FOOT', 'R_FOOT']
+df_head_feet.index.name = 'Frame'
 
+
+dist_func = lambda row: np.linalg.norm(row['L_FOOT'] - row['R_FOOT'])
+foot_dist = df_head_feet.apply(dist_func, axis=1)
 
 
 # %% Gait metrics
 
-chosen_pos_df = pd.DataFrame(chosen_pos_dict)
 
-# Specify order of columns
-chosen_pos_df = chosen_pos_df[['HEAD', 'L_FOOT', 'R_FOOT']]
+# Detect peaks in the foot distance data
+# Pass in the foot distance index so the peak x-values align with the frames
+dist_peaks, _ = peakdet(foot_dist, 20, foot_dist.index)
 
-foot_dist_func = lambda row: np.linalg.norm(row[1] - row[2])
-chosen_pos_df['Foot_dist'] = chosen_pos_df.apply(foot_dist_func, axis=1)
+peak_frames, peak_vals = dist_peaks[:, 0], dist_peaks[:, 1]
+peak_frames = peak_frames.astype(int)
 
-dist_peaks, _ = peakdet(chosen_pos_df.Foot_dist, 0.01)
-dist_peaks[:, 0] += start_frame
+# Cluster the peak frame numbers, to assign frame to passes
+kmeans = KMeans(n_clusters=4, random_state=0).fit(peak_frames.reshape(-1, 1))
+
+
+gait_df = gait_dataframe(df_head_feet, peak_frames, kmeans.labels_)
 
 
 # %% Visual results
 
-
-#colours = ['blue', 'green', 'red', 'orange', 'gray', 'black']
-#pl.scatter_colour(pop_A, colours, part_types)
-
 plt.figure()
-plt.scatter(pop_A[:, 0], pop_A[:, 1], color='b')
-plt.scatter(pop_B[:, 0], pop_B[:, 1], color='r')
-plt.xlim(-100, 100)
-plt.ylim(-100, 100)
+plt.plot(foot_dist, color='k', linewidth=0.7)
+plt.scatter(peak_frames, peak_vals, cmap='Set1', c=kmeans.labels_)
+plt.xlabel('Frame number')
+plt.ylabel('Distance between feet [cm]')
+plt.show()
 
-plt.figure()
-plt.plot(chosen_pos_df.Foot_dist)
-plt.scatter(dist_peaks[:, 0], dist_peaks[:, 1], color='r', alpha=1)
