@@ -269,8 +269,7 @@ def process_frame(pop_dict, part_types, edges, lengths, radii):
     """
     def cost_func(a, b): return (a - b)**2
 
-    # def score_func(x): return -(x - 1)**2 + 1
-    def score_func(x): return -10 * x ** 2 + 1
+    def score_func(x): return -(x - 1)**2 + 1
 
     population, labels = get_population(pop_dict, part_types)
 
@@ -286,17 +285,10 @@ def process_frame(pop_dict, part_types, edges, lengths, radii):
     dist_matrix = cdist(population, population)
     expected_matrix = gen.matrix_from_labels(expected_lengths, labels)
 
-    # vectorized_ratio_func = np.vectorize(gen.ratio_func)
-    # ratio_matrix = vectorized_ratio_func(dist_matrix, expected_matrix)
+    vectorized_ratio_func = np.vectorize(gen.ratio_func)
+    ratio_matrix = vectorized_ratio_func(dist_matrix, expected_matrix)
 
-    vectorized_rel_error = np.vectorize(gen.relative_error)
-    rel_error_matrix = abs(vectorized_rel_error(dist_matrix, expected_matrix))
-    # normalize_array()
-
-    n_rows = len(rel_error_matrix)
-    # rel_error_matrix = gen.normalize_array(rel_error_matrix.flatten()).reshape(-1, n_rows)
-
-    score_matrix = score_func(rel_error_matrix)
+    score_matrix = score_func(ratio_matrix)
     score_matrix[np.isnan(score_matrix)] = 0
 
     adj_matrix = dist_to_adj_matrix(dist_matrix, labels,

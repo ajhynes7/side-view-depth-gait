@@ -1,5 +1,20 @@
 import numpy as np
 import math
+from statsmodels import robust
+
+
+def mad_outliers(x, c):
+
+    mad = robust.mad(x)
+    median = np.median(x)
+
+    lower_bound = median - c * mad
+    upper_bound = median + c * mad
+
+    x_filtered = np.copy(x)
+    x_filtered[np.logical_or(x < lower_bound, x > upper_bound)] = np.nan
+
+    return x_filtered
 
 
 def sigmoid(x, a=1):
