@@ -1,4 +1,28 @@
 import numpy as np
+import math
+
+
+def sigmoid(x, a=1):
+
+    return 1 / (1 + math.exp(-a * x))
+
+
+def relative_error(measured, actual, absolute=False):
+
+    error = (measured - actual) / actual
+
+    if absolute:
+        error = abs(error)
+
+    return error
+
+
+def score_func(measured, actual):
+
+    absolute_error = relative_error(measured, actual, absolute=True)
+    normalized_error = sigmoid(absolute_error)
+
+    return math.log(-normalized_error + 1) + 1
 
 
 def ratio_func(a, b):
@@ -17,12 +41,29 @@ def ratio_func(a, b):
         Ratio between a and b
     """
     if a == 0 or b == 0:
-        return np.inf
+        return np.nan
 
     ratio = np.divide(a, b)
 
     if ratio < 1:
-        return np.reciprocal(ratio)
+        ratio = np.reciprocal(ratio)
+
+    return ratio
+
+
+def matrix_from_labels(expected_values, labels):
+
+    n_rows = len(labels)
+
+    mat = np.full((n_rows, n_rows), np.nan)
+
+    for i, label_i in enumerate(labels):
+        for j, label_j in enumerate(labels):
+
+            if label_j in expected_values[label_i]:
+                mat[i, j] = expected_values[label_i][label_j]
+
+    return mat
 
 
 def inside_spheres(dist_matrix, point_nums, r):

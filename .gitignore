@@ -3,3 +3,4 @@ Modules/__pycache__/*
 Shared\ code/__pycache__/*
 *checkpoint*
 *xml
+*.iml

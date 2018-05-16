@@ -6,6 +6,21 @@ import general as gen
 from scipy.spatial.distance import cdist
 
 
+def consecutive_lengths(points):
+
+    n_points = len(points)
+    lengths = np.zeros((n_points-1, 1))
+
+    for i in range(n_points - 1):
+
+        point_1 = points[i, :]
+        point_2 = points[i + 1, :]
+
+        lengths[i] = np.linalg.norm(point_1 - point_2)
+
+    return lengths
+
+
 def get_population(population_dict, part_types):
     """
     Parameters
@@ -84,23 +99,21 @@ def dist_to_adj_matrix(dist_matrix, labels, expected_lengths, cost_func):
     """
     n_nodes = len(dist_matrix)
 
-    M = np.full((n_nodes, n_nodes), np.nan)
+    adj_matrix = np.full((n_nodes, n_nodes), np.nan)
 
     for i in range(n_nodes):
-        label_A = labels[i]
-        is_child = labels == label_A + 1
+        label_i = labels[i]
 
         for j in range(n_nodes):
+            label_j = labels[j]
+            measured_length = dist_matrix[i, j]
 
-            if is_child[j]:
-                label_B = labels[j]
+            if label_j in expected_lengths[label_i]:
+                expected_length = expected_lengths[label_i][label_j]
 
-                expected_length = expected_lengths[label_A][label_B]
-                measured_length = dist_matrix[i, j]
+                adj_matrix[i, j] = cost_func(expected_length, measured_length)
 
-                M[i, j] = cost_func(expected_length, measured_length)
-
-    return M
+    return adj_matrix
 
 
 def paths_to_foot(prev, dist, labels):
@@ -218,10 +231,10 @@ def select_best_feet(dist_matrix, score_matrix, path_matrix, radii):
 
         for ii, combo in enumerate(combos):
 
-            in_spheres_A = in_spheres_list[combo[0]][i]
-            in_spheres_B = in_spheres_list[combo[1]][i]
+            in_spheres_1 = in_spheres_list[combo[0]][i]
+            in_spheres_2 = in_spheres_list[combo[1]][i]
 
-            in_spheres = in_spheres_A | in_spheres_B
+            in_spheres = in_spheres_1 | in_spheres_2
 
             temp = score_matrix[in_spheres, :]
             score_subset = temp[:, in_spheres]
@@ -237,11 +250,9 @@ def select_best_feet(dist_matrix, score_matrix, path_matrix, radii):
         votes = votes + radius_winners
 
     winning_combo = np.argmax(votes)
+    foot_1, foot_2 = combos[winning_combo]
 
-    foot_A = combos[winning_combo][0]
-    foot_B = combos[winning_combo][1]
-
-    return foot_A, foot_B
+    return foot_1, foot_2
 
 
 def process_frame(pop_dict, part_types, edges, lengths, radii):
@@ -272,34 +283,47 @@ def process_frame(pop_dict, part_types, edges, lengths, radii):
     expected_lengths_simple = lengths_lookup(edges_simple, lengths)
 
     dist_matrix = cdist(population, population)
-    ratio_matrix = dist_to_adj_matrix(dist_matrix, labels,
-                                      expected_lengths, gen.ratio_func)
+    expected_matrix = gen.matrix_from_labels(expected_lengths, labels)
+
+    vectorized_ratio_func = np.vectorize(gen.ratio_func)
+    ratio_matrix = vectorized_ratio_func(dist_matrix, expected_matrix)
 
     score_matrix = score_func(ratio_matrix)
+    score_matrix[np.isnan(score_matrix)] = 0
 
-    M = dist_to_adj_matrix(dist_matrix, labels,
-                           expected_lengths_simple, cost_func)
+    adj_matrix = dist_to_adj_matrix(dist_matrix, labels,
+                                    expected_lengths_simple, cost_func)
 
-    G = gr.adj_matrix_to_list(M)
+    adj_list = gr.adj_matrix_to_list(adj_matrix)
 
     source_nodes = np.where(labels == 0)[0]
-    prev, dist = gr.dag_shortest_paths(G, G.keys(), source_nodes)
+    prev, dist = gr.dag_shortest_paths(adj_list, adj_list.keys(), source_nodes)
 
     path_matrix, path_dist = paths_to_foot(prev, dist, labels)
 
     filtered_score_matrix = filter_by_path(score_matrix, path_matrix,
-                                           expected_lengths_simple)
+                                           expected_lengths)
 
-    foot_A, foot_B = select_best_feet(dist_matrix, filtered_score_matrix,
+    # Add in scores for foot height
+    pop_height = population[:, 1].reshape(-1, 1)
+    height_matrix = cdist(pop_height, pop_height)
+
+    foot_label = labels.max()
+    is_foot = (labels == foot_label).reshape(-1, 1)
+    boolean_matrix = is_foot @ is_foot.T
+
+    filtered_score_matrix[boolean_matrix] -= 0.01 * height_matrix[boolean_matrix]
+
+    foot_1, foot_2 = select_best_feet(dist_matrix, filtered_score_matrix,
                                       path_matrix, radii)
 
-    path_A, path_B = path_matrix[foot_A, :], path_matrix[foot_B, :]
-    pop_A, pop_B = population[path_A, :], population[path_B, :]
+    path_1, path_2 = path_matrix[foot_1, :], path_matrix[foot_2, :]
+    pop_1, pop_2 = population[path_1, :], population[path_2, :]
 
     # Select the head along the minimum shortest path
     min_path = path_matrix[np.argmin(path_dist), :]
     head_pos = population[min_path[0], :]
 
-    pop_A[0, :], pop_B[0, :] = head_pos, head_pos
+    pop_1[0, :], pop_2[0, :] = head_pos, head_pos
 
-    return pop_A, pop_B
+    return pop_1, pop_2
