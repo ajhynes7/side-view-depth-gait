@@ -17,6 +17,14 @@ def relative_error(measured, actual, absolute=False):
     return error
 
 
+def normalize_array(x):
+
+    max_value = np.nanmax(x)
+    min_value = np.nanmin(x)
+
+    return (x - min_value) / (max_value - min_value)
+
+
 def score_func(measured, actual):
 
     absolute_error = relative_error(measured, actual, absolute=True)

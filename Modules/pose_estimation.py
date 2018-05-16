@@ -269,7 +269,8 @@ def process_frame(pop_dict, part_types, edges, lengths, radii):
     """
     def cost_func(a, b): return (a - b)**2
 
-    def score_func(x): return -(x - 1)**2 + 1
+    # def score_func(x): return -(x - 1)**2 + 1
+    def score_func(x): return -10 * x ** 2 + 1
 
     population, labels = get_population(pop_dict, part_types)
 
@@ -285,10 +286,17 @@ def process_frame(pop_dict, part_types, edges, lengths, radii):
     dist_matrix = cdist(population, population)
     expected_matrix = gen.matrix_from_labels(expected_lengths, labels)
 
-    vectorized_ratio_func = np.vectorize(gen.ratio_func)
-    ratio_matrix = vectorized_ratio_func(dist_matrix, expected_matrix)
+    # vectorized_ratio_func = np.vectorize(gen.ratio_func)
+    # ratio_matrix = vectorized_ratio_func(dist_matrix, expected_matrix)
 
-    score_matrix = score_func(ratio_matrix)
+    vectorized_rel_error = np.vectorize(gen.relative_error)
+    rel_error_matrix = abs(vectorized_rel_error(dist_matrix, expected_matrix))
+    # normalize_array()
+
+    n_rows = len(rel_error_matrix)
+    # rel_error_matrix = gen.normalize_array(rel_error_matrix.flatten()).reshape(-1, n_rows)
+
+    score_matrix = score_func(rel_error_matrix)
     score_matrix[np.isnan(score_matrix)] = 0
 
     adj_matrix = dist_to_adj_matrix(dist_matrix, labels,
@@ -308,11 +316,11 @@ def process_frame(pop_dict, part_types, edges, lengths, radii):
     pop_height = population[:, 1].reshape(-1, 1)
     height_matrix = cdist(pop_height, pop_height)
 
-    foot_label = labels.max()
-    is_foot = (labels == foot_label).reshape(-1, 1)
-    boolean_matrix = is_foot @ is_foot.T
-
-    filtered_score_matrix[boolean_matrix] -= 0.01 * height_matrix[boolean_matrix]
+    # foot_label = labels.max()
+    # is_foot = (labels == foot_label).reshape(-1, 1)
+    # boolean_matrix = is_foot @ is_foot.T
+    #
+    # filtered_score_matrix[boolean_matrix] -= 0.01 * height_matrix[boolean_matrix]
 
     foot_1, foot_2 = select_best_feet(dist_matrix, filtered_score_matrix,
                                       path_matrix, radii)
