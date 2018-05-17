@@ -104,7 +104,6 @@ def centre_of_mass(points, masses):
         mass = masses[i]
         total += mass * point
 
-    print('heeee')
     centre = total / sum(masses)
     return centre.reshape(-1, 1)
 

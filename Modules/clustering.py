@@ -29,31 +29,25 @@ def flat_kernel_shift(points, mean_pos, radius):
     return centre_of_mass(points_in_radius, masses)
 
 
-def shift_to_convergence(points, mean_pos, shift_func, radius=1):
-
-    n_points = len(points)
-    within_radius = np.full(n_points, True)
-
-    dist_matrix = cdist(points, points)
+def shift_to_convergence(points, mean_pos, shift_func, radius, eps):
 
     while True:
-
-        prev_within_radius = within_radius
-
-        _, nearest_index = closest_point(points, mean_pos)
-        distances = dist_matrix[:, nearest_index]
-
-        within_radius = distances <= radius
-
-        if np.array_equal(within_radius, prev_within_radius):
-            break
+    
+        prev_mean_pos = mean_pos
 
         mean_pos = shift_func(points, mean_pos, radius)
+        
+        if np.linalg.norm(prev_mean_pos - mean_pos) < eps:
+            # Mean position has converged
+            
+            distances = np.linalg.norm(points - mean_pos, axis=1)
+            in_radius = distances <= radius
+            break
 
-    return mean_pos, within_radius
+    return mean_pos, in_radius
 
 
-def mean_shift(points, shift_func, radius=1):
+def mean_shift(points, shift_func, radius=1, eps=0.001):
 
     n_points, n_dimensions = points.shape
 
@@ -62,9 +56,9 @@ def mean_shift(points, shift_func, radius=1):
 
     for i, mean_pos in enumerate(points):
         # Shift mean until convergence
-        mean_pos, within_radius = shift_to_convergence(points, mean_pos, shift_func, radius)
+        mean_pos, in_radius = shift_to_convergence(points, mean_pos, shift_func, radius, eps)
 
-        index_matrix[i, :] = within_radius
+        index_matrix[i, :] = in_radius
         all_centroids[i, :] = mean_pos
 
     _, unique_indices, labels = np.unique(index_matrix,
