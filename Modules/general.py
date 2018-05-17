@@ -22,6 +22,11 @@ def sigmoid(x, a=1):
     return 1 / (1 + math.exp(-a * x))
 
 
+def root_mean_square(x):
+    
+    return np.sqrt(sum(x**2) / x.size)
+
+
 def relative_error(measured, actual, absolute=False):
 
     error = (measured - actual) / actual
@@ -99,7 +104,9 @@ def centre_of_mass(points, masses):
         mass = masses[i]
         total += mass * point
 
-    return total / sum(masses)
+    print('heeee')
+    centre = total / sum(masses)
+    return centre.reshape(-1, 1)
 
 
 def closest_point(candidate_points, target_point):
