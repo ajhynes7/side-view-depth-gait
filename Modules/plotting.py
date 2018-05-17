@@ -44,3 +44,7 @@ def scatter_pos(points):
     ax.set_xlim3d(-100, 100)
     ax.set_ylim3d(100, 300)
     ax.set_zlim3d(-100, 100)
+
+
+def scatter2(points):
+    plt.scatter(points[:, 0], points[:, 1])

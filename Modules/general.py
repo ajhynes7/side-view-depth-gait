@@ -89,39 +89,34 @@ def matrix_from_labels(expected_values, labels):
     return mat
 
 
-def inside_spheres(dist_matrix, point_nums, r):
-    """
-    Given n points, m of these points are centres of spheres.
-    Calculates which of the n points are contained inside these m spheres.
+def centre_of_mass(points, masses):
 
-    Parameters
-    ----------
-    dist_matrix : ndarray
-        | (n, n) distance matrix
-        | Element (i, j) is distance from point i to point j
+    _, n_dimensions = points.shape
 
-    point_nums : array_like
-        | (m, ) List of points that are the sphere centres
-        | Numbers between 1 and n
+    total = np.zeros(n_dimensions)
 
-    r : float
-        Radius of spheres
+    for i, point in enumerate(points):
+        mass = masses[i]
+        total += mass * point
 
-    Returns
-    -------
-    in_spheres : array_like
-        (n,) array of bools
-        Element i is true if point i is in the set of spheres
-    """
-    n_points = len(dist_matrix)
+    return total / sum(masses)
 
-    in_spheres = np.full(n_points, False)
 
-    for i in point_nums:
+def closest_point(candidate_points, target_point):
 
-        distances = dist_matrix[i, :]
+    vectors_to_target = candidate_points - target_point
+    distances_to_target = np.linalg.norm(vectors_to_target, axis=1)
 
-        in_current_sphere = distances <= r
-        in_spheres = in_spheres | in_current_sphere
+    close_index = np.argmin(distances_to_target)
+    close_point = candidate_points[close_index, :]
 
-    return in_spheres
+    return close_point, close_index
+
+
+def gaussian(x, mu, sigma):
+    
+    coeff = 1.0 / np.sqrt(np.pi * sigma**2)
+    exponent = np.exp(- (x - mu)**2 / (2 * sigma**2))
+    
+    return coeff * exponent
+
