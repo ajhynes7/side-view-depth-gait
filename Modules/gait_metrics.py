@@ -1,7 +1,47 @@
 import numpy as np
 import pandas as pd
+import general as gen
+
 from numpy.linalg import norm
 from linear_algebra import dist_point_line
+from clustering import mean_shift, gaussian_kernel_shift
+
+
+def foot_dist_peaks(foot_dist, frame_labels):
+
+    frames = foot_dist.index.values.reshape(-1, 1)
+    
+    # Upper foot distance values are those above
+    # the root mean square value
+    rms = gen.root_mean_square(foot_dist.values)
+    is_upper_value = foot_dist > rms
+
+    unique_labels = np.unique(frame_labels)
+
+    frame_list = []
+    
+    # Each label represent one walking pass by the camera
+    for i in unique_labels:
+
+        # Upper foot distance values of one walking pass
+        upper_of_pass = (frame_labels == i) & is_upper_value
+
+        # Find centres of foot distance peaks with mean shift
+        input_frames = frames[upper_of_pass]
+        _, centroids, k = mean_shift(input_frames, 
+                                     gaussian_kernel_shift, radius=5)
+        
+        # Find the frames closest to the mean shift centroids 
+        upper_pass_frames = frames[upper_of_pass]
+        centroid_frames = [gen.closest_point(upper_pass_frames, 
+                                         x)[0].item() for x in centroids]  
+    
+        frame_list.append(centroid_frames)
+    
+    # Flatten list and sort to obtain peak frames from whole walking trial
+    peak_frames = sorted([x for sublist in frame_list for x in sublist])
+    
+    return peak_frames
 
 
 def get_gait_metrics(df, frame_i, frame_f):
@@ -40,7 +80,6 @@ def get_gait_metrics(df, frame_i, frame_f):
     points_i, points_f = [L_foot_i, R_foot_i], [L_foot_f, R_foot_f]
 
     P_swing_i, P_swing_f = points_i[swing_num], points_f[swing_num]
-
     P_stance_i, P_stance_f = points_i[stance_num], points_f[stance_num]
     P_stance = np.mean(np.vstack((P_stance_f, P_stance_i)))
 
@@ -85,7 +124,7 @@ def gait_dataframe(df, peak_frames, frame_labels):
     """
     gait_list, frame_list = [], []
 
-    n_peaks = peak_frames.size
+    n_peaks = len(peak_frames)
 
     for i in range(1, n_peaks):
 

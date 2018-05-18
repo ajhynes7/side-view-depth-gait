@@ -113,9 +113,3 @@ plt.xlabel('Frame number')
 plt.ylabel('Distance between feet [cm]')
 plt.show()
 
-# %%
-
-from clustering import mean_shift, gaussian_kernel_shift
- 
-frames = foot_dist.index.values.reshape(-1, 1)
-labels, centroids, k = mean_shift(frames, gaussian_kernel_shift, radius=120)

@@ -1,5 +1,5 @@
 import numpy as np
-from general import gaussian, centre_of_mass, closest_point 
+from general import gaussian, centre_of_mass
 from scipy.spatial.distance import cdist
 from functools import partial
 
@@ -47,7 +47,7 @@ def shift_to_convergence(points, mean_pos, shift_func, radius, eps):
     return mean_pos, in_radius
 
 
-def mean_shift(points, shift_func, radius=1, eps=0.001):
+def mean_shift(points, shift_func, radius=1, eps=0.01):
 
     n_points, n_dimensions = points.shape
 
@@ -56,16 +56,17 @@ def mean_shift(points, shift_func, radius=1, eps=0.001):
 
     for i, mean_pos in enumerate(points):
         # Shift mean until convergence
-        mean_pos, in_radius = shift_to_convergence(points, mean_pos, shift_func, radius, eps)
+        mean_pos, in_radius = shift_to_convergence(points, mean_pos, 
+                                                   shift_func, radius, eps)
 
         index_matrix[i, :] = in_radius
         all_centroids[i, :] = mean_pos
 
-    _, unique_indices, labels = np.unique(index_matrix,
-                                          return_index=True, return_inverse=True, axis=0)
+    _, unique_indices, labels = np.unique(index_matrix, return_index=True, 
+                                          return_inverse=True, axis=0)
 
     centroids = all_centroids[unique_indices, :]
-    k, _ = centroids.shape
+    k = len(centroids)
 
     return labels, centroids, k
 
