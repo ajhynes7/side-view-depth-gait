@@ -16,12 +16,11 @@ def foot_dist_peaks(foot_dist, frame_labels):
     rms = gen.root_mean_square(foot_dist.values)
     is_upper_value = foot_dist > rms
 
-    unique_labels = np.unique(frame_labels)
-
+    n_labels = frame_labels.max() + 1
     frame_list = []
     
     # Each label represent one walking pass by the camera
-    for i in unique_labels:
+    for i in range(n_labels):
 
         # Upper foot distance values of one walking pass
         upper_of_pass = (frame_labels == i) & is_upper_value

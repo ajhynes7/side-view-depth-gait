@@ -9,8 +9,7 @@ sys.path.insert(0, '../Modules/')
 sys.path.insert(0, '../Shared code/')
 
 import pose_estimation as pe  # noqa (ignore PEP 8 style)
-from gait_metrics import gait_dataframe  # noqa
-from peakdet import peakdet  # noqa
+from gait_metrics import gait_dataframe, foot_dist_peaks  # noqa
 from general import mad_outliers
 
 # %% Read DataFrame
@@ -43,10 +42,6 @@ best_pos_series = df.apply(lambda x: pe.process_frame(x.to_dict(),
 n_frames = len(df)
 for f in range(n_frames):
     row = df.loc[f]
-
-    if f == 1147:
-        print('h')
-
     pe.process_frame(row.to_dict(), lower_part_types, edges, lengths, radii)
 
 
@@ -59,7 +54,7 @@ df_best_pos = pd.DataFrame(best_pos_series.values.tolist(),
 
 df_best_pos = df_best_pos.dropna()
 
-# Extract the head and feet positions
+# Head and foot positions
 head_pos = df_best_pos['Side A'].apply(lambda row: row[0, :])
 L_foot_pos = df_best_pos['Side A'].apply(lambda row: row[-1, :])
 R_foot_pos = df_best_pos['Side B'].apply(lambda row: row[-1, :])
@@ -84,32 +79,45 @@ good_frame_R = ~np.isnan(y_foot_R_filtered)
 df_head_feet = df_head_feet[good_frame_L & good_frame_R]
 
 
-# %% Gait metrics
+# %% Enforce consistency of the body part sides
 
+
+# Cluster frames with k means to locate the 4 walking passes
+frames = df_head_feet.index.values.reshape(-1, 1)
+k_means = KMeans(n_clusters=4, random_state=0).fit(frames)
+frame_labels = k_means.labels_
+
+switch_sides = pe.consistent_sides(df_head_feet, frame_labels)
+
+for frame, switch in switch_sides.iteritems():
+    if switch:
+        df_head_feet.loc[frame, ['L_FOOT', 'R_FOOT']] = \
+            df_head_feet.loc[frame, ['R_FOOT', 'L_FOOT']].values
+
+
+# %% Peak detection
 
 foot_dist = df_head_feet.apply(lambda row: np.linalg.norm(
                                row['L_FOOT'] - row['R_FOOT']), axis=1)
 
+
 # Detect peaks in the foot distance data
 # Pass in the foot distance index so the peak x-values align with the frames
-dist_peaks, _ = peakdet(foot_dist, 20, foot_dist.index)
-
-peak_frames, peak_values = dist_peaks[:, 0], dist_peaks[:, 1]
-peak_frames = peak_frames.astype(int)
-
-# Cluster the peak frame numbers, to assign frame to passes
-k_means = KMeans(n_clusters=4, random_state=0).fit(peak_frames.reshape(-1, 1))
+peak_frames = foot_dist_peaks(foot_dist, frame_labels)
 
 
-gait_df = gait_dataframe(df_head_feet, peak_frames, k_means.labels_)
+# %% Gait metrics
+
+gait_df = gait_dataframe(df_head_feet, peak_frames, frame_labels)
 
 
 # %% Visual results
 
+"""
 plt.figure()
 plt.plot(foot_dist, color='k', linewidth=0.7)
 plt.scatter(peak_frames, peak_values, cmap='Set1', c=k_means.labels_)
 plt.xlabel('Frame number')
 plt.ylabel('Distance between feet [cm]')
 plt.show()
-
+"""

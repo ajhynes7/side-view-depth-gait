@@ -1,7 +1,10 @@
 import itertools
 import numpy as np
+import pandas as pd
+
 import graphs as gr
 import general as gen
+import linear_algebra as lin
 
 from scipy.spatial.distance import cdist
 
@@ -342,10 +345,6 @@ def process_frame(pop_dict, part_types, edges, lengths, radii):
     filtered_score_matrix = filter_by_path(score_matrix, path_matrix,
                                            expected_lengths)
 
-    # Add in scores for foot height
-    pop_height = population[:, 1].reshape(-1, 1)
-    height_matrix = cdist(pop_height, pop_height)
-
     foot_1, foot_2 = select_best_feet(dist_matrix, filtered_score_matrix,
                                       path_matrix, radii)
 
@@ -362,16 +361,63 @@ def process_frame(pop_dict, part_types, edges, lengths, radii):
 
 
 def assign_LR(foot_A, foot_B, line_vector):
-    
+
     # Up direction defined as positive y
-    up = np.array([0, 1, 0])  
-    
+    up = np.array([0, 1, 0])
+
     # Points on line
     line_point_A = (foot_A + foot_B) / 2
-    line_point_B = line_point_A + line_vector
-          
+
     # Vector from mean foot position to current foot
     target_direction = foot_A - line_point_A
 
     # Check if point is left or right of the line
-    return angle_direction(target_direction, line_vector, up)
+    return lin.angle_direction(target_direction, line_vector, up)
+
+
+def consistent_sides(df_head_feet, frame_labels):
+    """
+    Parameters
+    ----------
+    df_head_feet : DataFrame
+    frame_labels : array_like
+
+    Returns
+    -------
+    switch_sides : Series
+    """
+
+    frames = df_head_feet.index.values
+
+    n_frames = len(frame_labels)
+    n_labels = frame_labels.max() + 1
+
+    switch_sides = pd.Series(np.full(n_frames, False), index=frames)
+
+    # Loop through each main cluster, i.e., each walking pass
+    for i in range(n_labels):
+
+        cluster_i = frame_labels == i
+
+        # All head positions on one walking pass
+        head_points = np.stack(tuple(df_head_feet['HEAD'][cluster_i]))
+
+        # Line of best fit for head positions
+        centroid, direction = lin.best_fit_line(head_points)
+
+        cluster_frames = frames[frame_labels == i]
+
+        for frame in cluster_frames:
+
+            foot_A = df_head_feet.loc[frame, 'L_FOOT']
+            foot_B = df_head_feet.loc[frame, 'R_FOOT']
+
+            side_of_A = assign_LR(foot_A, foot_B, direction)
+
+            if side_of_A == 1:
+                # A value of 1 indicates that foot A is on the right
+                # of the line of best fit
+                # Thus, the sides should be switched
+                switch_sides.loc[frame] = True
+
+    return switch_sides
