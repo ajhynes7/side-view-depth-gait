@@ -346,12 +346,6 @@ def process_frame(pop_dict, part_types, edges, lengths, radii):
     pop_height = population[:, 1].reshape(-1, 1)
     height_matrix = cdist(pop_height, pop_height)
 
-    # foot_label = labels.max()
-    # is_foot = (labels == foot_label).reshape(-1, 1)
-    # boolean_matrix = is_foot @ is_foot.T
-    #
-    # filtered_score_matrix[boolean_matrix] -= 0.01 * height_matrix[boolean_matrix]
-
     foot_1, foot_2 = select_best_feet(dist_matrix, filtered_score_matrix,
                                       path_matrix, radii)
 
@@ -365,3 +359,19 @@ def process_frame(pop_dict, part_types, edges, lengths, radii):
     pop_1[0, :], pop_2[0, :] = head_pos, head_pos
 
     return pop_1, pop_2
+
+
+def assign_LR(foot_A, foot_B, line_vector):
+    
+    # Up direction defined as positive y
+    up = np.array([0, 1, 0])  
+    
+    # Points on line
+    line_point_A = (foot_A + foot_B) / 2
+    line_point_B = line_point_A + line_vector
+          
+    # Vector from mean foot position to current foot
+    target_direction = foot_A - line_point_A
+
+    # Check if point is left or right of the line
+    return angle_direction(target_direction, line_vector, up)
