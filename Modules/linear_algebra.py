@@ -21,30 +21,6 @@ def unit(v):
     return v / norm(v)
 
 
-def dist_point_plane(P, normal, plane_pt):
-    """
-    Distance from a point to a plane.
-
-    Parameters
-    ----------
-    P : array_like
-        Point in space
-    normal : array_like
-        Normal of plane
-    plane_pt : array_like
-        Point on plane
-
-    Returns
-    -------
-    float
-        Distance from point to plane
-
-    """
-    n_hat = unit(normal)
-
-    return abs(np.dot(n_hat, P - plane_pt))
-
-
 def dist_point_line(P, A, B):
     """
     Distance from a point to a line.
@@ -68,6 +44,30 @@ def dist_point_line(P, A, B):
     denom = norm(A - B)
 
     return num / denom
+
+
+def dist_point_plane(P, P_plane, normal):
+    """
+    Distance from a point to a plane.
+
+    Parameters
+    ----------
+    P : array_like
+        Point in space
+    normal : array_like
+        Normal of plane
+    plane_pt : array_like
+        Point on plane
+
+    Returns
+    -------
+    float
+        Distance from point to plane
+
+    """
+    n_hat = unit(normal)
+
+    return abs(np.dot(n_hat, P - P_plane))
 
 
 def proj_point_line(P, A, B):
