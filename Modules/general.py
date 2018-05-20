@@ -126,3 +126,7 @@ def gaussian(x, mu, sigma):
     
     return coeff * exponent
 
+
+def pairwise(lst):
+
+    return zip(lst[:-1], lst[1:])

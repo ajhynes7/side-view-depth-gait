@@ -5,8 +5,9 @@ import numpy.testing as npt
 import sys
 sys.path.insert(0, '..//Modules/')
 import linear_algebra as lin
+import graphs as gr
 
-class TestCalc(unittest.TestCase):
+class TestLinearAlgebra(unittest.TestCase):
 
     def test_line_distance(self):
         """ Testing the linear algebra module """
@@ -69,18 +70,66 @@ class TestCalc(unittest.TestCase):
     def test_angle_direction(self):
 
         forward = np.array([0, 1, 0])
-        up = np.array([0, 0, -1])
- 
-        x1 = lin.angle_direction(np.array([3, 5, 0]), forward, up)
-        x2 = lin.angle_direction(np.array([2, -1, 0]), forward, up)
-        x3 = lin.angle_direction(np.array([-2, 1, 0]), forward, up)
-        x4 = lin.angle_direction(np.array([0, 10, 5]), forward, up)
+        up = np.array([0, 0, 1])
 
-        self.assertEqual(x1, 1)
+        x1 = lin.angle_direction(np.array([1, 1, 0]), forward, up)
+        x2 = lin.angle_direction(np.array([-1, 5, 0]), forward, up)
+        x3 = lin.angle_direction(np.array([0, 5, 0]), forward, up)
+        x4 = lin.angle_direction(np.array([0, -5, -10]), forward, up)
+        x5 = lin.angle_direction(np.array([4, 2, 1]), forward, up)
+
+        self.assertEqual(x1, -1)
         self.assertEqual(x2, 1)
-        self.assertEqual(x3, -1)
+        self.assertEqual(x3, 0)
         self.assertEqual(x4, 0)
+        self.assertEqual(x5, -1)
 
+
+class TestGraphs(unittest.TestCase):
+
+    def test_adj_list_conversion(self):
+
+        G = {0: {1: 5}, 
+            1: {2: -4}, 
+            2: {1: 3}
+            }
+
+        M = np.array([[np.nan, 5, np.nan], 
+            [np.nan, np.nan, -4], 
+            [np.nan, 3, np.nan]])
+
+        npt.assert_array_equal(gr.adj_list_to_matrix(G), M)
+
+        G_converted = gr.adj_matrix_to_list(M)
+        self.assertDictEqual(G, G_converted)
+
+
+    def test_paths(self):
+
+        G = {0: {1: 2, 2: 5},
+            1: {3: 10, 2: 4},
+            2: {3: 3, 4: 1},
+            3: {4: 15, 5: 6},
+            4: {5: 3},
+            5: {}
+        }
+
+        source_nodes = {0, 1}
+        V = [v for v in G]
+
+        prev, dist = gr.dag_shortest_paths(G, V, source_nodes)
+
+        self.assertEqual(gr.trace_path(prev, 5), [1, 2, 4, 5])   
+        self.assertEqual(gr.trace_path(prev, 3), [1, 2, 3])
+        self.assertEqual(gr.trace_path(prev, 0), [0])           
+
+
+        prev, dist = gr.dag_shortest_paths(G, V, {0})
+        shortest_path = gr.trace_path(prev, 5)
+        path_weight = gr.weight_along_path(G, shortest_path)
+        self.assertEqual(path_weight, 9)
+
+        self.assertEqual(gr.weight_along_path(G, range(6)), 27)
 
 if __name__ == '__main__':
     unittest.main()

@@ -170,13 +170,11 @@ def angle_direction(target_direction, forward, up):
     Returns
     -------
     int
-        Value is -1 if target is to the left, 
-        1 if to the right, 0 if straight ahead
+        Value is 1 if target is to the left, 
+        -1 if to the right, 0 if straight ahead
     """
-
     perpendicular = np.cross(forward, target_direction)
-    direction = np.dot(perpendicular, up);
 
-    return np.sign(direction)
+    return np.sign(np.dot(perpendicular, up))
 
 

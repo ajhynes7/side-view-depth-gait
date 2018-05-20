@@ -1,5 +1,5 @@
 import numpy as np
-
+from general import pairwise
 
 def adj_list_to_matrix(G):
     """
@@ -40,7 +40,10 @@ def adj_matrix_to_list(M):
 
     for u in range(n_nodes):
         for v in range(n_nodes):
-            G[u][v] = M[u, v]
+            element = M[u, v]
+
+            if ~np.isnan(element):
+                G[u][v] = element
 
     return G
 
@@ -70,6 +73,7 @@ def dag_shortest_paths(G, V, source_nodes):
                 # Relax the edge
                 dist[v] = dist[u] + weight
                 prev[v] = u
+
     return prev, dist
 
 
@@ -94,3 +98,13 @@ def trace_path(prev, last_node):
 
     path = [x for x in path if ~np.isnan(x)]
     return path[::-1]  # Reverse the path
+
+
+def weight_along_path(G, path):
+
+    total_weight = 0
+
+    for a, b in pairwise(path):
+        total_weight += G[a][b]
+
+    return total_weight
