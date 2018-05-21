@@ -23,7 +23,7 @@ def sigmoid(x, a=1):
 
 
 def root_mean_square(x):
-    
+
     return np.sqrt(sum(x**2) / x.size)
 
 
@@ -120,10 +120,10 @@ def closest_point(candidate_points, target_point):
 
 
 def gaussian(x, mu, sigma):
-    
+
     coeff = 1.0 / np.sqrt(np.pi * sigma**2)
     exponent = np.exp(- (x - mu)**2 / (2 * sigma**2))
-    
+
     return coeff * exponent
 
 

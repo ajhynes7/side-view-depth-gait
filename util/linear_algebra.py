@@ -1,4 +1,3 @@
-
 import numpy as np
 from numpy.linalg import norm
 
@@ -124,7 +123,7 @@ def best_fit_line(points):
     """
     Finds the line of best fit for a set of multi-dimensional points.
     Uses singular value decomposition.
- 
+
     Parameters
     ----------
     points : ndarray
@@ -136,28 +135,28 @@ def best_fit_line(points):
         Centroid of all the points. Line of best fit passes through centroid
     direction : array_like
         Direction vector for line of best fit
-        Right singular vector which corresponds to the largest singular value of A
+        Right singular vector which corresponds to the largest
+        singular value of A
     """
-    
+
     # Ensure that points have no nan values
     points = points[~np.isnan(points).any(axis=1)]
 
     centroid = np.mean(points, axis=0)
     A = points - centroid
-    
+
     _, _, vh = np.linalg.svd(A)
 
     direction = vh[0, :]
-    
+
     return centroid, direction
 
 
 def angle_direction(target_direction, forward, up):
     """
-    Finds the direction (right or left) of a target, 
+    Finds the direction (right or left) of a target,
     given an orientation specifying the forward and up directions
-    
-    
+
     Parameters
     ----------
     target : array_like
@@ -170,11 +169,9 @@ def angle_direction(target_direction, forward, up):
     Returns
     -------
     int
-        Value is 1 if target is to the left, 
+        Value is 1 if target is to the left,
         -1 if to the right, 0 if straight ahead
     """
     perpendicular = np.cross(forward, target_direction)
 
     return np.sign(np.dot(perpendicular, up))
-
-

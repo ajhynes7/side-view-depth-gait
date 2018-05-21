@@ -1,5 +1,6 @@
 import numpy as np
-from general import pairwise
+from .general import pairwise
+
 
 def adj_list_to_matrix(G):
     """

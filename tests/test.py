@@ -2,10 +2,9 @@ import unittest
 import numpy as np
 import numpy.testing as npt
 
-import sys
-sys.path.insert(0, '..//Modules/')
-import linear_algebra as lin
-import graphs as gr
+from util import linear_algebra as lin
+from util import graphs as gr
+
 
 class TestLinearAlgebra(unittest.TestCase):
 
@@ -22,7 +21,7 @@ class TestLinearAlgebra(unittest.TestCase):
         npt.assert_allclose(d, 1.752549)
         npt.assert_allclose(d, np.linalg.norm(P_proj - P))
 
-        low, high= -10, 10  # Limits for random numbers 
+        low, high = -10, 10  # Limits for random numbers
 
         for _ in range(10):
 
@@ -30,7 +29,7 @@ class TestLinearAlgebra(unittest.TestCase):
 
             # Generate random arrays
             P, A, B = [np.random.uniform(low, high, dim)
-                                  for _ in range(3)]
+                       for _ in range(3)]
 
             P_proj = lin.proj_point_line(P, A, B)
             d = lin.dist_point_line(P, A, B)
@@ -38,9 +37,9 @@ class TestLinearAlgebra(unittest.TestCase):
             npt.assert_allclose(d, np.linalg.norm(P_proj - P))
 
     def test_plane_distance(self):
-        """ Tests functiions related to a point and plane """
+        """ Tests functions related to a point and plane """
 
-        low, high= -10, 10
+        low, high = -10, 10
 
         for _ in range(10):
 
@@ -57,7 +56,7 @@ class TestLinearAlgebra(unittest.TestCase):
 
     def test_unit(self):
 
-        low, high= -10, 10
+        low, high = -10, 10
 
         for i in range(10):
 
@@ -89,40 +88,38 @@ class TestGraphs(unittest.TestCase):
 
     def test_adj_list_conversion(self):
 
-        G = {0: {1: 5}, 
-            1: {2: -4}, 
-            2: {1: 3}
-            }
+        G = {0: {1: 5},
+             1: {2: -4},
+             2: {1: 3}
+             }
 
-        M = np.array([[np.nan, 5, np.nan], 
-            [np.nan, np.nan, -4], 
-            [np.nan, 3, np.nan]])
+        M = np.array([[np.nan, 5, np.nan],
+                      [np.nan, np.nan, -4],
+                      [np.nan, 3, np.nan]])
 
         npt.assert_array_equal(gr.adj_list_to_matrix(G), M)
 
         G_converted = gr.adj_matrix_to_list(M)
         self.assertDictEqual(G, G_converted)
 
-
     def test_paths(self):
 
         G = {0: {1: 2, 2: 5},
-            1: {3: 10, 2: 4},
-            2: {3: 3, 4: 1},
-            3: {4: 15, 5: 6},
-            4: {5: 3},
-            5: {}
-        }
+             1: {3: 10, 2: 4},
+             2: {3: 3, 4: 1},
+             3: {4: 15, 5: 6},
+             4: {5: 3},
+             5: {}
+             }
 
         source_nodes = {0, 1}
         V = [v for v in G]
 
         prev, dist = gr.dag_shortest_paths(G, V, source_nodes)
 
-        self.assertEqual(gr.trace_path(prev, 5), [1, 2, 4, 5])   
+        self.assertEqual(gr.trace_path(prev, 5), [1, 2, 4, 5])
         self.assertEqual(gr.trace_path(prev, 3), [1, 2, 3])
-        self.assertEqual(gr.trace_path(prev, 0), [0])           
-
+        self.assertEqual(gr.trace_path(prev, 0), [0])
 
         prev, dist = gr.dag_shortest_paths(G, V, {0})
         shortest_path = gr.trace_path(prev, 5)
@@ -130,6 +127,7 @@ class TestGraphs(unittest.TestCase):
         self.assertEqual(path_weight, 9)
 
         self.assertEqual(gr.weight_along_path(G, range(6)), 27)
+
 
 if __name__ == '__main__':
     unittest.main()

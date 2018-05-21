@@ -2,6 +2,7 @@
 Modules/__pycache__/*
 Shared\ code/__pycache__/*
 *checkpoint*
-*xml
+*.xml
 *.iml
+*.pyc
 *_old.*
