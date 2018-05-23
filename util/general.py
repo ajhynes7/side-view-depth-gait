@@ -38,6 +38,10 @@ def relative_error(measured, actual, absolute=False):
 
 
 def normalize_array(x):
+    """ 
+    x : array_like
+        Array of length 2 or greater
+    """
 
     max_value = np.nanmax(x)
     min_value = np.nanmin(x)
