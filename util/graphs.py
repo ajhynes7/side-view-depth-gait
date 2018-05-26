@@ -2,19 +2,33 @@ import numpy as np
 from .general import pairwise
 
 
-def adj_list_to_matrix(G):
+def adj_list_to_matrix(G, n_nodes):
     """
-
+    Convert an adjacency list to an adjacency matrix.
 
     Parameters
     ----------
+    G : dict
+        Adjacency list in the form of a dictionary
+        G[u][v] is the weight from node u to node v
 
+    n_nodes : int
+        Number of nodes in the graph
 
     Returns
     -------
+    M : ndarray
+        Adjacency matrix
 
+    Examples
+    --------
+    >>> G = {2: {1: 10}}
+
+    >>> adj_list_to_matrix(G, 3)
+    array([[nan, nan, nan],
+           [nan, nan, nan],
+           [nan, 10., nan]])
     """
-    n_nodes = len(G)
     M = np.full((n_nodes, n_nodes), np.nan)
 
     for u in G:
@@ -109,3 +123,9 @@ def weight_along_path(G, path):
         total_weight += G[a][b]
 
     return total_weight
+
+
+if __name__ == "__main__":
+
+    import doctest
+    doctest.testmod()

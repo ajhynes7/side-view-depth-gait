@@ -5,6 +5,18 @@ import numpy.testing as npt
 from util import linear_algebra as lin
 
 
+def test_unit():
+
+    low, high = -10, 10
+
+    for _ in range(10):
+
+        dim = np.random.randint(1, 5)  # Vector dimension
+        v = np.random.uniform(low, high, dim)
+
+        npt.assert_allclose(np.linalg.norm(lin.unit(v)), 1)
+
+
 def test_line_distance():
 
     P = np.array([2, 3, 4])
@@ -51,18 +63,6 @@ def test_plane_distance():
         npt.assert_allclose(d, np.linalg.norm(P_proj - P))
 
 
-def test_unit():
-
-    low, high = -10, 10
-
-    for _ in range(10):
-
-        dim = np.random.randint(1, 5)  # Vector dimension
-        v = np.random.uniform(low, high, dim)
-
-        npt.assert_allclose(np.linalg.norm(lin.unit(v)), 1)
-
-
 @pytest.mark.parametrize("test_input, expected", [
     (np.array([1, 1, 0]), -1),
     (np.array([-1, 5, 0]), 1),
@@ -76,3 +76,32 @@ def test_angle_direction(test_input, expected):
     up = np.array([0, 0, 1])
 
     assert lin.angle_direction(test_input, forward, up) == expected
+
+
+def test_best_fit_line():
+
+    points = np.random.rand(10, 3)
+    _, direction = lin.best_fit_line(points)
+
+    points_reversed = np.flip(points, axis=0)
+
+    _, direction_reversed = lin.best_fit_line(points_reversed)
+
+    # The two vectors should be parallel
+    cross_prod = np.cross(direction_reversed, direction)
+    npt.assert_array_almost_equal(cross_prod, np.array([0, 0, 0]))
+
+    npt.assert_allclose(np.linalg.norm(direction), 1)
+
+
+@pytest.mark.parametrize("a, b, expected", [
+    (np.array([2, 0]), np.array([-2, 0]), np.pi),
+    (np.array([5, 5, 5]), np.array([1, 1, 1]), 0),
+    (np.array([1, 0]), np.array([1, 1]), np.pi / 4),
+    (np.array([1, 0]), np.array([-5, -5]), 3 * np.pi / 4),
+])
+def test_angle_between(a, b, expected):
+
+    angle = lin.angle_between(a, b)
+
+    npt.assert_allclose(angle, expected)

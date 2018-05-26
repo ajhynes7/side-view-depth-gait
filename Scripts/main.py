@@ -5,7 +5,7 @@ import os
 from sklearn.cluster import KMeans
 
 import sys
-sys.path.insert(0, '../Modules/')
+sys.path.insert(0, '../util/')
 sys.path.insert(0, '../Shared code/')
 
 import pose_estimation as pe  # noqa (ignore PEP 8 style)

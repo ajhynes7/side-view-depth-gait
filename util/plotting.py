@@ -36,18 +36,20 @@ def scatter_pos(fig, point_list, colors='b'):
     -------
 
     """
-    
+
     ax = Axes3D(fig)
 
-    # The z values of the points represent depth values, while y values represent height
+    # The z values of the points represent depth values,
+    # while y values represent height
     # Thus, y and z are switched for plotting
     for i, points in enumerate(point_list):
-        ax.scatter(points[:, 0], points[:, 2], points[:, 1], c=colors[i], depthshade=False)
+        ax.scatter(points[:, 0], points[:, 2], points[:, 1],
+                   c=colors[i], depthshade=False)
 
     ax.set_xlim3d(-100, 100)
     ax.set_ylim3d(100, 300)
     ax.set_zlim3d(-100, 100)
-    
+
     ax.set_xlabel('X')
     ax.set_ylabel('Z')
     ax.set_zlabel('Y')

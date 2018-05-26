@@ -14,7 +14,7 @@ def test_normalize_array():
         normalized = gen.normalize_array(v)
 
         in_range = np.logical_and(np.all(normalized >= 0),
-            np.all(normalized <= 1))
+                                  np.all(normalized <= 1))
 
         assert in_range
 
@@ -27,4 +27,3 @@ def test_ratio_func():
         b = np.random.randint(1, 10)
 
         assert gen.ratio_func(a, b) >= 1
-        

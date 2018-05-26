@@ -16,19 +16,20 @@ def test_adj_list_conversion():
                   [np.nan, np.nan, -4],
                   [np.nan, 3, np.nan]])
 
-    npt.assert_array_equal(gr.adj_list_to_matrix(G), M)
+    n_nodes = len(G)
+    npt.assert_array_equal(gr.adj_list_to_matrix(G, n_nodes), M)
 
     G_converted = gr.adj_matrix_to_list(M)
     assert G == G_converted
 
 
 @pytest.mark.parametrize("test_input, expected", [
-(5, [1, 2, 4, 5]),
-(3, [1, 2, 3]),
-(0, [0]),
-])
+    (5, [1, 2, 4, 5]),
+    (3, [1, 2, 3]),
+    (0, [0]),
+    ])
 def test_paths(test_input, expected):
-    
+
     prev, dist = gr.dag_shortest_paths(G, V, source_nodes)
 
     assert gr.trace_path(prev, test_input) == expected
@@ -43,8 +44,6 @@ def test_path_weight():
 
     assert gr.weight_along_path(G, shortest_path) == 9
     assert gr.weight_along_path(G, range(6)) == 27
-
-
 
 
 G = {0: {1: 2, 2: 5},

@@ -38,7 +38,7 @@ def relative_error(measured, actual, absolute=False):
 
 
 def normalize_array(x):
-    """ 
+    """
     x : array_like
         Array of length 2 or greater
     """
@@ -110,17 +110,6 @@ def centre_of_mass(points, masses):
 
     centre = total / sum(masses)
     return centre.reshape(-1, 1)
-
-
-def closest_point(candidate_points, target_point):
-
-    vectors_to_target = candidate_points - target_point
-    distances_to_target = np.linalg.norm(vectors_to_target, axis=1)
-
-    close_index = np.argmin(distances_to_target)
-    close_point = candidate_points[close_index, :]
-
-    return close_point, close_index
 
 
 def gaussian(x, mu, sigma):
