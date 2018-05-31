@@ -4,17 +4,14 @@ import matplotlib.pyplot as plt
 import os
 from sklearn.cluster import KMeans
 
-import sys
-sys.path.insert(0, '../util/')
-sys.path.insert(0, '../Shared code/')
+import modules.pose_estimation as pe  # noqa (ignore PEP 8 style)
+from modules.gait_metrics import gait_dataframe, foot_dist_peaks  # noqa
+from modules.general import mad_outliers
 
-import pose_estimation as pe  # noqa (ignore PEP 8 style)
-from gait_metrics import gait_dataframe, foot_dist_peaks  # noqa
-from general import mad_outliers
 
 # %% Read DataFrame
 
-directory = '../../../MEGA/Data/Kinect Zeno/Kinect processed'
+directory = '../../MEGA/Data/Kinect Zeno/Kinect processed'
 file_name = '2014-12-22_P007_Pre_004.pkl'
 
 load_path = os.path.join(directory, file_name)

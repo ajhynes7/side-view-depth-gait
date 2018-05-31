@@ -1,10 +1,12 @@
 import numpy as np
 import pandas as pd
-import general as gen
 
 from numpy.linalg import norm
-import linear_algebra as lin
-from clustering import mean_shift, gaussian_kernel_shift
+
+import modules.general as gen
+import modules.linear_algebra as lin
+
+from .clustering import mean_shift, gaussian_kernel_shift
 
 
 def foot_dist_peaks(foot_dist, frame_labels):

@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 import numpy.testing as npt
 
-from util import graphs as gr
+import modules.graphs as gr
 
 
 def test_adj_list_conversion():

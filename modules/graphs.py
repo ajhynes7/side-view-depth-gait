@@ -129,3 +129,5 @@ if __name__ == "__main__":
 
     import doctest
     doctest.testmod()
+
+    print(pairwise([1, 2, 3]))

@@ -1,7 +1,8 @@
 import numpy as np
-from general import gaussian, centre_of_mass
 from scipy.spatial.distance import cdist
 from functools import partial
+
+from .general import gaussian, centre_of_mass
 
 
 def gaussian_kernel_shift(points, mean_pos, radius):

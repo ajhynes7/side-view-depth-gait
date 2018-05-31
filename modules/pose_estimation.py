@@ -2,11 +2,11 @@ import itertools
 import numpy as np
 import pandas as pd
 
-import graphs as gr
-import general as gen
-import linear_algebra as lin
-
 from scipy.spatial.distance import cdist
+
+import modules.general as gen
+import modules.graphs as gr
+import modules.linear_algebra as lin
 
 
 def consecutive_lengths(points):

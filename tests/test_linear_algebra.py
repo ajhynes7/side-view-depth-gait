@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 import numpy.testing as npt
 
-from util import linear_algebra as lin
+import modules.linear_algebra as lin
 
 
 def test_unit():
@@ -105,3 +105,5 @@ def test_angle_between(a, b, expected):
     angle = lin.angle_between(a, b)
 
     npt.assert_allclose(angle, expected)
+
+

@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from util import general as gen
+import modules.general as gen
 
 
 def test_normalize_array():
