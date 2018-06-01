@@ -82,9 +82,9 @@ def get_gait_metrics(df, frame_i, frame_f):
 
     P_swing_i, P_swing_f = points_i[swing_num], points_f[swing_num]
     P_stance_i, P_stance_f = points_i[stance_num], points_f[stance_num]
-    P_stance = np.mean(np.vstack((P_stance_f, P_stance_i)))
+    P_stance = np.mean(np.vstack((P_stance_f, P_stance_i)), axis=0)
 
-    P_proj = lin.dist_point_line(P_stance, P_swing_i, P_swing_f)
+    P_proj = lin.proj_point_line(P_stance, P_swing_i, P_swing_f)
 
     # Multiply frame difference by 30, because frame rate is 30 fps
     stride_time = 30 * (frame_f - frame_i)

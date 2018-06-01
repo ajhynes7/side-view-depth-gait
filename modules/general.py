@@ -4,6 +4,28 @@ from statsmodels import robust
 
 
 def mad_outliers(x, c):
+    """
+
+    [description]
+
+    Parameters
+    ----------
+    x : array_like
+        Input array.
+    c : {float, int}
+        Coefficient for MAD
+
+    Returns
+    -------
+    x_filtered : ndarray
+        [description]
+
+    Examples
+    --------
+    >>> mad_outliers([2.0, 3.0, 100.0, 3.0], 2.5)
+    array([ 2.,  3., nan,  3.])
+
+    """
 
     mad = robust.mad(x)
     median = np.median(x)
@@ -11,7 +33,7 @@ def mad_outliers(x, c):
     lower_bound = median - c * mad
     upper_bound = median + c * mad
 
-    x_filtered = np.copy(x)
+    x_filtered = np.array(x)
     x_filtered[np.logical_or(x < lower_bound, x > upper_bound)] = np.nan
 
     return x_filtered
@@ -123,3 +145,9 @@ def gaussian(x, mu, sigma):
 def pairwise(lst):
 
     return zip(lst[:-1], lst[1:])
+
+
+if __name__ == "__main__":
+
+    import doctest
+    doctest.testmod()

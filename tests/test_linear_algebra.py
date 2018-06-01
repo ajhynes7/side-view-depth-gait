@@ -17,6 +17,21 @@ def test_unit():
         npt.assert_allclose(np.linalg.norm(lin.unit(v)), 1)
 
 
+def test_consecutive_dist():
+
+    lengths = list(lin.consecutive_dist(points))
+
+    npt.assert_array_equal(np.round(lengths, 4), [2.2361, 9.0554, 8.1854])
+
+
+def test_closest_point():
+
+    target = [2, 3, 4]
+    close_point, close_index = lin.closest_point(np.array(points), target)
+
+    assert close_index == 3
+
+
 def test_line_distance():
 
     P = np.array([2, 3, 4])
@@ -107,3 +122,4 @@ def test_angle_between(a, b, expected):
     npt.assert_allclose(angle, expected)
 
 
+points = [[1, 2, 3], [2, 2, 5], [-1, 10, 2], [2, 3, 5]]

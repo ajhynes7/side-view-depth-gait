@@ -1,6 +1,8 @@
 import numpy as np
 from numpy.linalg import norm
 
+from .general import pairwise
+
 
 def unit(v):
     """
@@ -26,6 +28,33 @@ def unit(v):
 
     """
     return v / norm(v)
+
+
+def consecutive_dist(points):
+    """
+    Calculate the distance between each consecutive pair of points
+
+    Parameters
+    ----------
+    points : array_like
+        List of points
+
+    Yields
+    ------
+    float
+        Distance between two consecutive points
+
+    Examples
+    --------
+    >>> points = [[1, 1], [2, 1], [0, 1]]
+    >>> list(consecutive_dist(points))
+    [1.0, 2.0]
+
+    """
+    for point_1, point_2 in pairwise(points):
+
+        vector = np.subtract(point_1, point_2)
+        yield norm(vector)
 
 
 def closest_point(candidate_points, target_point):
@@ -60,7 +89,6 @@ def closest_point(candidate_points, target_point):
     1
 
     """
-
     vectors_to_target = candidate_points - target_point
     distances_to_target = norm(vectors_to_target, axis=1)
 
@@ -195,7 +223,6 @@ def proj_point_plane(P, P_plane, normal):
     array([10.,  2.,  0.])
 
     """
-
     unit_normal = unit(normal)
 
     return P - np.dot(P - P_plane, unit_normal) * unit_normal
@@ -304,7 +331,6 @@ def angle_between(x, y, degrees=False):
     180.0
 
     """
-
     dot_product = np.dot(x, y)
 
     cos_theta = dot_product / (norm(x) * norm(y))

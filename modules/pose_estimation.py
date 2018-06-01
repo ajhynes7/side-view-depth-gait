@@ -9,21 +9,6 @@ import modules.graphs as gr
 import modules.linear_algebra as lin
 
 
-def consecutive_lengths(points):
-
-    n_points = len(points)
-    lengths = np.zeros((n_points-1, 1))
-
-    for i in range(n_points - 1):
-
-        point_1 = points[i, :]
-        point_2 = points[i + 1, :]
-
-        lengths[i] = np.linalg.norm(point_1 - point_2)
-
-    return lengths
-
-
 def get_population(population_dict, part_types):
     """
     Parameters
@@ -81,9 +66,9 @@ def lengths_lookup(edges, lengths):
     n_rows = len(edges)
 
     for i in range(n_rows):
-            u, v = edges[i, 0], edges[i, 1]
+        u, v = edges[i, 0], edges[i, 1]
 
-            expected_lengths[u][v] = sum(lengths[u:v])
+        expected_lengths[u][v] = sum(lengths[u:v])
 
     return expected_lengths
 

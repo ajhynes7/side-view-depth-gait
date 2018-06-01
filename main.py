@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import os
 from sklearn.cluster import KMeans
 
-import modules.pose_estimation as pe  # noqa (ignore PEP 8 style)
-from modules.gait_metrics import gait_dataframe, foot_dist_peaks  # noqa
+import modules.pose_estimation as pe
+from modules.gait_metrics import gait_dataframe, foot_dist_peaks
 from modules.general import mad_outliers
 
 
@@ -109,6 +109,7 @@ gait_df = gait_dataframe(df_head_feet, peak_frames, frame_labels)
 
 
 # %% Visual results
+
 
 """
 plt.figure()
