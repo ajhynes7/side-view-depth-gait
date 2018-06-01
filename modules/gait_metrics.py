@@ -89,8 +89,8 @@ def get_gait_metrics(df, frame_i, frame_f):
     step_length_i = norm(P_proj - P_swing_i)
     step_length_f = norm(P_proj - P_swing_f)
 
-    # Multiply frame difference by 30, because frame rate is 30 fps
-    stride_time = 30 * (frame_f - frame_i)
+    # Divide frame difference by 30, because frame rate is 30 fps
+    stride_time = (frame_f - frame_i) / 30
 
     metrics = {'Stride length': norm(P_swing_f - P_swing_i),
                'Stride width':  norm(P_stance - P_proj),
