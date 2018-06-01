@@ -86,6 +86,9 @@ def get_gait_metrics(df, frame_i, frame_f):
 
     P_proj = lin.proj_point_line(P_stance, P_swing_i, P_swing_f)
 
+    step_length_i = norm(P_proj - P_swing_i)
+    step_length_f = norm(P_proj - P_swing_f)
+
     # Multiply frame difference by 30, because frame rate is 30 fps
     stride_time = 30 * (frame_f - frame_i)
 
@@ -94,8 +97,7 @@ def get_gait_metrics(df, frame_i, frame_f):
 
                'Stride vel':    norm(Head_f - Head_i) / stride_time,
 
-               'Step length i': norm(P_proj - P_swing_i),
-               'Step length f': norm(P_proj - P_swing_f)
+               'Step length':   np.mean((step_length_i, step_length_f))
                }
 
     return metrics

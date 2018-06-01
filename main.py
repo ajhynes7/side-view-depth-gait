@@ -108,6 +108,21 @@ peak_frames = foot_dist_peaks(foot_dist, frame_labels)
 gait_df = gait_dataframe(df_head_feet, peak_frames, frame_labels)
 
 
+write_dir = '../../MEGA/Data/Kinect Zeno/Results'
+write_filename = 'kinect_gait_metrics.csv'
+
+write_path = os.path.join(write_dir, write_filename)
+
+write_df = pd.read_csv(write_path, index_col=0)
+
+# File without extension
+file_no_ext = os.path.splitext(file_name)[0]
+
+# Fill in row of dataframe
+write_df.loc[file_no_ext] = gait_df.mean()
+
+write_df.to_csv(write_path)
+
 # %% Visual results
 
 
