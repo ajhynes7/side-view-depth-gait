@@ -4,9 +4,57 @@ import pandas as pd
 
 from scipy.spatial.distance import cdist
 
-import modules.general as gen
 import modules.graphs as gr
 import modules.linear_algebra as lin
+
+
+def matrix_from_labels(expected_values, labels):
+
+    n_rows = len(labels)
+
+    mat = np.full((n_rows, n_rows), np.nan)
+
+    for i, label_i in enumerate(labels):
+        for j, label_j in enumerate(labels):
+
+            if label_j in expected_values[label_i]:
+                mat[i, j] = expected_values[label_i][label_j]
+
+    return mat
+
+
+def score_func(measured, actual):
+
+    absolute_error = relative_error(measured, actual, absolute=True)
+    normalized_error = sigmoid(absolute_error)
+
+    return math.log(-normalized_error + 1) + 1
+
+
+def ratio_func(a, b):
+    """
+    Ratio between two positive inputs.
+    If ratio a / b is less than one, the reciprocal is returned instead.
+
+    Parameters
+    ----------
+    a, b : float
+        Positive inputs
+
+    Returns
+    -------
+    float
+        Ratio between a and b
+    """
+    if a == 0 or b == 0:
+        return np.nan
+
+    ratio = np.divide(a, b)
+
+    if ratio < 1:
+        ratio = np.reciprocal(ratio)
+
+    return ratio
 
 
 def get_population(population_dict, part_types):
@@ -309,9 +357,9 @@ def process_frame(pop_dict, part_types, edges, lengths, radii):
     expected_lengths_simple = lengths_lookup(edges_simple, lengths)
 
     dist_matrix = cdist(population, population)
-    expected_matrix = gen.matrix_from_labels(expected_lengths, labels)
+    expected_matrix = matrix_from_labels(expected_lengths, labels)
 
-    vectorized_ratio_func = np.vectorize(gen.ratio_func)
+    vectorized_ratio_func = np.vectorize(ratio_func)
     ratio_matrix = vectorized_ratio_func(dist_matrix, expected_matrix)
 
     score_matrix = score_func(ratio_matrix)
