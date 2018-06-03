@@ -1,10 +1,12 @@
 import numpy as np
+import numpy.testing as npt
+
 from statsmodels import robust
 
 
 def mad_outliers(x, c):
     """
-    Removes outliers from an array of data using the
+    Remove outliers from an array of data using the
     Median Absolute Deviation (MAD).
 
     Values beyond the Median ± c(MAD) are set to NaN.
@@ -24,11 +26,11 @@ def mad_outliers(x, c):
 
     Examples
     --------
-    >>> mad_outliers([2.0, 3.0, 100.0, 3.0], 2.5)
-    array([ 2.,  3., nan,  3.])
+    >>> x_filtered = mad_outliers([2.0, 3.0, 100.0, 3.0], 2.5)
+    >>> npt.assert_array_equal(x_filtered, [2, 3, np.nan, 3])
 
-    >>> mad_outliers([5, 6, 4, 20], 3)
-    array([ 5.,  6.,  4., nan])
+    >>> x_filtered = mad_outliers([5, 6, 4, 20], 3)
+    >>> npt.assert_array_equal(x_filtered, [5, 6, 4, np.nan])
 
     """
     mad = robust.mad(x)
@@ -61,7 +63,7 @@ def relative_error(measured, actual, absolute=False):
 
     Returns
     -------
-    error
+    error : float
         Relative error.
 
     Examples

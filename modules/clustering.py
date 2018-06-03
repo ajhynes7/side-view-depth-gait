@@ -10,7 +10,7 @@ def gaussian_kernel_shift(points, mean_pos, radius):
     distances = np.linalg.norm(points - mean_pos, axis=1)
 
     # Gaussian kernel with standard deviation set to the radius parameter
-    K = partial(gaussian, mu=0, sigma=radius)
+    K = partial(gaussian, sigma=radius)
     masses = K(distances)
 
     return centre_of_mass(points, masses)
