@@ -6,3 +6,5 @@
 *.iml
 *.pyc
 *_old.*
+docs/_build
+docs/stubs

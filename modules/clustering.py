@@ -2,7 +2,7 @@ import numpy as np
 from scipy.spatial.distance import cdist
 from functools import partial
 
-from .general import gaussian, centre_of_mass
+import modules.math_funcs as mf
 
 
 def gaussian_kernel_shift(points, mean_pos, radius):
@@ -10,10 +10,10 @@ def gaussian_kernel_shift(points, mean_pos, radius):
     distances = np.linalg.norm(points - mean_pos, axis=1)
 
     # Gaussian kernel with standard deviation set to the radius parameter
-    K = partial(gaussian, sigma=radius)
+    K = partial(mf.gaussian, sigma=radius)
     masses = K(distances)
 
-    return centre_of_mass(points, masses)
+    return mf.centre_of_mass(points, masses)
 
 
 def flat_kernel_shift(points, mean_pos, radius):
@@ -27,7 +27,7 @@ def flat_kernel_shift(points, mean_pos, radius):
 
     masses = np.ones(n_in_radius)
 
-    return centre_of_mass(points_in_radius, masses)
+    return mf.centre_of_mass(points_in_radius, masses)
 
 
 def shift_to_convergence(points, mean_pos, shift_func, radius, eps):

@@ -5,8 +5,9 @@ from numpy.linalg import norm
 
 import modules.general as gen
 import modules.linear_algebra as lin
+import modules.clustering as cl
+import modules.math_funcs as mf
 
-from .clustering import mean_shift, gaussian_kernel_shift
 
 
 def foot_dist_peaks(foot_dist, frame_labels):
@@ -15,7 +16,7 @@ def foot_dist_peaks(foot_dist, frame_labels):
 
     # Upper foot distance values are those above
     # the root mean square value
-    rms = gen.root_mean_square(foot_dist.values)
+    rms = mf.root_mean_square(foot_dist.values)
     is_upper_value = foot_dist > rms
 
     n_labels = frame_labels.max() + 1
@@ -29,8 +30,8 @@ def foot_dist_peaks(foot_dist, frame_labels):
 
         # Find centres of foot distance peaks with mean shift
         input_frames = frames[upper_of_pass]
-        _, centroids, k = mean_shift(input_frames,
-                                     gaussian_kernel_shift, radius=5)
+        _, centroids, k = cl.mean_shift(input_frames,
+                                        cl.gaussian_kernel_shift, radius=5)
 
         # Find the frames closest to the mean shift centroids
         upper_pass_frames = frames[upper_of_pass]

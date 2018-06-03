@@ -11,12 +11,12 @@ def unit(v):
     Parameters
     ----------
     v : array_like
-        Input vector
+        Input vector.
 
     Returns
     -------
     ndarray
-        Unit vector
+        Unit vector.
 
     Examples
     --------
@@ -32,17 +32,17 @@ def unit(v):
 
 def consecutive_dist(points):
     """
-    Calculate the distance between each consecutive pair of points
+    Calculate the distance between each consecutive pair of points.
 
     Parameters
     ----------
     points : array_like
-        List of points
+        List of points.
 
     Yields
     ------
     float
-        Distance between two consecutive points
+        Distance between two consecutive points.
 
     Examples
     --------
@@ -64,16 +64,16 @@ def closest_point(candidate_points, target_point):
     Parameters
     ----------
     candidate_points : ndarray
-        (n, dim) array of n points
+        (n, dim) array of n points.
     target_point : array_like
         Target position
 
     Returns
     -------
     close_point : ndarray
-        Closest point from the set of candidates
+        Closest point from the set of candidates.
     close_index : int
-        Row index of the closest point in the candidates array
+        Row index of the closest point in the candidates array.
 
     Examples
     --------
@@ -105,16 +105,16 @@ def dist_point_line(P, A, B):
     Parameters
     ----------
     P : ndarray
-        Point in space
+        Point in space.
     A : ndarray
-        Point A on line
+        Point A on line.
     B : ndarray
-        Point B on line
+        Point B on line.
 
     Returns
     -------
     float
-        Distance from point to plane
+        Distance from point to plane.
 
     Examples
     --------
@@ -140,16 +140,16 @@ def dist_point_plane(P, P_plane, normal):
     Parameters
     ----------
     P : ndarray
-        Point in space
+        Point in space.
     normal : ndarray
-        Normal of plane
+        Normal of plane.
     plane_pt : ndarray
-        Point on plane
+        Point on plane.
 
     Returns
     -------
     float
-        Distance from point to plane
+        Distance from point to plane.
 
     Examples
     --------
@@ -171,16 +171,16 @@ def proj_point_line(P, A, B):
     Parameters
     ----------
     P : ndarray
-        Point in space
+        Point in space.
     A : ndarray
-        Point A on line
+        Point A on line.
     B : ndarray
-        Point B on line
+        Point B on line.
 
     Returns
     -------
     ndarray
-        Projection of point P onto the line
+        Projection of point P onto the line.
 
     Examples
     --------
@@ -204,16 +204,16 @@ def proj_point_plane(P, P_plane, normal):
     Parameters
     ----------
     P : ndarray
-        Point in space
+        Point in space..
     P_plane : ndarray
-        Point on plane
+        Point on plane..
     normal : ndarray
-        Normal vector of plane
+        Normal vector of plane..
 
     Returns
     -------
     ndarray
-        Projection of point P onto the plane
+        Projection of point P onto the plane..
 
     Examples
     --------
@@ -236,16 +236,16 @@ def best_fit_line(points):
     Parameters
     ----------
     points : ndarray
-         Each row is a position vector
+         Each row is a position vector..
 
     Returns
     -------
     centroid : ndarray
-        Centroid of all the points. Line of best fit passes through centroid
+        Centroid of all the points. Line of best fit passes through centroid..
     direction : ndarray
-        Direction vector for line of best fit
+        Direction vector for line of best fit..
         Right singular vector which corresponds to the largest
-        singular value of A
+        singular value of A..
 
     """
 
@@ -267,22 +267,22 @@ def angle_direction(target_direction, forward, up):
     Find the direction (right or left) of a target,
     given an orientation specifying the forward and up directions.
 
-    All input arrays have shape (3,)
+    All input arrays have shape (3,).
 
     Parameters
     ----------
     target : array_like
-        Vector in direction of a target point
+        Vector in direction of a target point.
     forward : array_like
-        Vector for forward direction
+        Vector for forward direction.
      up : array_like
-        Vector for up direction
+        Vector for up direction.
 
     Returns
     -------
     int
         Value is 1 if target is to the left,
-        -1 if to the right, 0 if straight ahead
+        -1 if to the right, 0 if straight ahead.
 
     Examples
     --------
@@ -295,7 +295,7 @@ def angle_direction(target_direction, forward, up):
 
     >>> angle_direction(np.array([0, -1, 0]), fwd, up)
     0
-
+    
     """
     perpendicular = np.cross(forward, target_direction)
 

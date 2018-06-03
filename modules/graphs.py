@@ -1,5 +1,5 @@
 import numpy as np
-from .general import pairwise
+from modules.general import pairwise
 
 
 def adj_list_to_matrix(G, n_nodes):

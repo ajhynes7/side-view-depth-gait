@@ -39,12 +39,12 @@ def ratio_func(a, b):
     Parameters
     ----------
     a, b : float
-        Positive inputs
+        Positive inputs.
 
     Returns
     -------
     float
-        Ratio between a and b
+        Ratio between a and b.
     """
     if a == 0 or b == 0:
         return np.nan
@@ -65,12 +65,12 @@ def get_population(population_dict, part_types):
     population_dict : dict
 
     part_types : array_like
-        List of strings for the types of body parts
+        List of strings for the types of body parts.
 
     Returns
     -------
     population : array_like
-        n x 3 matrix of all part position hypotheses
+        n x 3 matrix of all part position hypotheses.
 
     labels :
     """

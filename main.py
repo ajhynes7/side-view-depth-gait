@@ -5,8 +5,8 @@ import os
 from sklearn.cluster import KMeans
 
 import modules.pose_estimation as pe
-from modules.gait_metrics import gait_dataframe, foot_dist_peaks
-from modules.general import mad_outliers
+import modules.gait_metrics as gm
+import modules.stats as st
 
 
 # %% Read DataFrame
@@ -67,8 +67,8 @@ df_head_feet.index.name = 'Frame'
 y_foot_L = df_head_feet.apply(lambda row: row['L_FOOT'][1], axis=1).values
 y_foot_R = df_head_feet.apply(lambda row: row['R_FOOT'][1], axis=1).values
 
-y_foot_L_filtered = mad_outliers(y_foot_L, 2)
-y_foot_R_filtered = mad_outliers(y_foot_R, 2)
+y_foot_L_filtered = st.mad_outliers(y_foot_L, 2)
+y_foot_R_filtered = st.mad_outliers(y_foot_R, 2)
 
 good_frame_L = ~np.isnan(y_foot_L_filtered)
 good_frame_R = ~np.isnan(y_foot_R_filtered)
@@ -100,12 +100,12 @@ foot_dist = df_head_feet.apply(lambda row: np.linalg.norm(
 
 # Detect peaks in the foot distance data
 # Pass in the foot distance index so the peak x-values align with the frames
-peak_frames = foot_dist_peaks(foot_dist, frame_labels)
+peak_frames = gm.foot_dist_peaks(foot_dist, frame_labels)
 
 
 # %% Gait metrics
 
-gait_df = gait_dataframe(df_head_feet, peak_frames, frame_labels)
+gait_df = gm.gait_dataframe(df_head_feet, peak_frames, frame_labels)
 
 
 write_dir = '../../MEGA/Data/Kinect Zeno/Results'
