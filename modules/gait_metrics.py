@@ -9,7 +9,6 @@ import modules.clustering as cl
 import modules.math_funcs as mf
 
 
-
 def foot_dist_peaks(foot_dist, frame_labels):
 
     frames = foot_dist.index.values.reshape(-1, 1)
@@ -128,14 +127,9 @@ def gait_dataframe(df, peak_frames, frame_labels):
     """
     gait_list, frame_list = [], []
 
-    n_peaks = len(peak_frames)
+    for frame_i, frame_f in gen.pairwise(peak_frames):
 
-    for i in range(1, n_peaks):
-
-        if frame_labels[i] == frame_labels[i-1]:
-
-            frame_i, frame_f = peak_frames[i-1], peak_frames[i]
-
+        if frame_labels[frame_i] == frame_labels[frame_f]:
             metrics = get_gait_metrics(df, frame_i, frame_f)
 
             gait_list.append(metrics)

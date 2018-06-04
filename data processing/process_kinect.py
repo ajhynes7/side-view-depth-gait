@@ -2,9 +2,9 @@ import os
 import pandas as pd
 import numpy as np
 
-file_name = '2014-12-22_P007_Pre_004.txt'
+file_name = '2014-12-22_P005_Pre_000.txt'
 load_dir = '../../../MEGA/Data/Kinect Zeno/Kinect trials'
-save_dir = '../../MEGA/Data/Kinect Zeno/Kinect processed'
+save_dir = '../../../MEGA/Data/Kinect Zeno/Kinect processed'
 
 load_path = os.path.join(load_dir, file_name)
 

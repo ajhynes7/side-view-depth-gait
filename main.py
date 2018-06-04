@@ -12,7 +12,7 @@ import modules.stats as st
 # %% Read DataFrame
 
 directory = '../../MEGA/Data/Kinect Zeno/Kinect processed'
-file_name = '2014-12-22_P007_Pre_004.pkl'
+file_name = '2014-12-22_P007_Pre_003.pkl'
 
 load_path = os.path.join(directory, file_name)
 df = pd.read_pickle(load_path)
@@ -36,8 +36,8 @@ edges = np.matrix('0 1; 1 2; 2 3; 3 4; 4 5; 3 5; 1 3')
 best_pos_series = df.apply(lambda x: pe.process_frame(x.to_dict(),
                            lower_part_types, edges, lengths, radii), axis=1)
 
-n_frames = len(df)
-for f in range(n_frames):
+for f in df.index:
+
     row = df.loc[f]
     pe.process_frame(row.to_dict(), lower_part_types, edges, lengths, radii)
 
@@ -82,9 +82,11 @@ df_head_feet = df_head_feet[good_frame_L & good_frame_R]
 # Cluster frames with k means to locate the 4 walking passes
 frames = df_head_feet.index.values.reshape(-1, 1)
 k_means = KMeans(n_clusters=4, random_state=0).fit(frames)
-frame_labels = k_means.labels_
 
-switch_sides = pe.consistent_sides(df_head_feet, frame_labels)
+# Dictionary that maps image frames to cluster labels
+label_dict = dict(zip(frames.flatten(), k_means.labels_))
+
+switch_sides = pe.consistent_sides(df_head_feet, k_means.labels_)
 
 for frame, switch in switch_sides.iteritems():
     if switch:
@@ -100,12 +102,12 @@ foot_dist = df_head_feet.apply(lambda row: np.linalg.norm(
 
 # Detect peaks in the foot distance data
 # Pass in the foot distance index so the peak x-values align with the frames
-peak_frames = gm.foot_dist_peaks(foot_dist, frame_labels)
+peak_frames = gm.foot_dist_peaks(foot_dist, k_means.labels_)
 
 
 # %% Gait metrics
 
-gait_df = gm.gait_dataframe(df_head_feet, peak_frames, frame_labels)
+gait_df = gm.gait_dataframe(df_head_feet, peak_frames, label_dict)
 
 
 write_dir = '../../MEGA/Data/Kinect Zeno/Results'
@@ -126,11 +128,12 @@ write_df.to_csv(write_path)
 # %% Visual results
 
 
-"""
-plt.figure()
+fig, ax = plt.subplots()
+
+# plt.figure()
 plt.plot(foot_dist, color='k', linewidth=0.7)
-plt.scatter(peak_frames, peak_values, cmap='Set1', c=k_means.labels_)
+# plt.scatter(peak_frames, peak_values, cmap='Set1', c=k_means.labels_)
 plt.xlabel('Frame number')
 plt.ylabel('Distance between feet [cm]')
-plt.show()
-"""
+
+ax.vlines(x=peak_frames, ymin=0, ymax=50, colors='r')
