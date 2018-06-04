@@ -46,10 +46,9 @@
 .. autosummary::
    :toctree: stubs
 
-   adj_list_to_matrix
+    adj_list_to_matrix
     adj_matrix_to_list
     dag_shortest_paths
-    pairwise
     trace_path
     weight_along_path
 

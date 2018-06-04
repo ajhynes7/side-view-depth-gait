@@ -8,27 +8,6 @@ import modules.graphs as gr
 import modules.linear_algebra as lin
 
 
-def matrix_from_labels(expected_values, labels):
-
-    n_rows = len(labels)
-
-    mat = np.full((n_rows, n_rows), np.nan)
-
-    for i, label_i in enumerate(labels):
-        for j, label_j in enumerate(labels):
-
-            if label_j in expected_values[label_i]:
-                mat[i, j] = expected_values[label_i][label_j]
-
-    return mat
-
-
-def score_func(measured, actual):
-
-    absolute_error = relative_error(measured, actual, absolute=True)
-    normalized_error = sigmoid(absolute_error)
-
-    return math.log(-normalized_error + 1) + 1
 
 
 def ratio_func(a, b):

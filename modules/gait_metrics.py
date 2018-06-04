@@ -103,7 +103,7 @@ def get_gait_metrics(df, frame_i, frame_f):
     return metrics
 
 
-def gait_dataframe(df, peak_frames, frame_labels):
+def gait_dataframe(df, peak_frames, label_dict):
     """
     Produces a pandas DataFrame containing gait metrics from a walking trial.
 
@@ -115,7 +115,7 @@ def gait_dataframe(df, peak_frames, frame_labels):
         | Each element is a position vector
     peak_frames : array_like
         Array of all frames with a detected peak in the foot distance data
-    frame_labels : array_like
+    label_dict : dict
         | Label of each peak frame
         | The labels are determined by clustering the peak frames
 
@@ -129,7 +129,7 @@ def gait_dataframe(df, peak_frames, frame_labels):
 
     for frame_i, frame_f in gen.pairwise(peak_frames):
 
-        if frame_labels[frame_i] == frame_labels[frame_f]:
+        if label_dict[frame_i] == label_dict[frame_f]:
             metrics = get_gait_metrics(df, frame_i, frame_f)
 
             gait_list.append(metrics)
