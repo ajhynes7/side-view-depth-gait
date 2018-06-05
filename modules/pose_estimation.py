@@ -8,8 +8,6 @@ import modules.graphs as gr
 import modules.linear_algebra as lin
 
 
-
-
 def ratio_func(a, b):
     """
     Ratio between two positive inputs.

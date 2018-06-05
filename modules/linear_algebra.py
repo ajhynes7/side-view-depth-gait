@@ -295,7 +295,7 @@ def angle_direction(target_direction, forward, up):
 
     >>> angle_direction(np.array([0, -1, 0]), fwd, up)
     0
-    
+
     """
     perpendicular = np.cross(forward, target_direction)
 
