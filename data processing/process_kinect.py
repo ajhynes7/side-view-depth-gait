@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import numpy as np
 
-file_name = '2014-12-22_P005_Pre_000.txt'
+file_name = '2014-12-22_P007_Pre_004.txt'
 load_dir = '../../../MEGA/Data/Kinect Zeno/Kinect trials'
 save_dir = '../../../MEGA/Data/Kinect Zeno/Kinect processed'
 
@@ -55,12 +55,12 @@ for part in parts:
         # Reshape array into an n x 3 matrix. Each row is an x, y, z position
         # The -1 means the row dimension is inferred
         population = part_vector.values.reshape(-1, 3).astype(float)
-        confidence_pos = conf_vector.values.reshape(-1, 3).astype(float)
+        conf_pos = conf_vector.values.reshape(-1, 3).astype(float)
 
         population.round(2)  # Round to save space
 
-        confidence_dict[frame] = confidence_pos
-        population_dict[frame] = population
+        confidence_dict[frame] = conf_pos if ~np.all(conf_pos == 0) else np.nan
+        population_dict[frame] = population if len(population) > 0 else np.nan
 
     confidence_list.append(confidence_dict)
     population_list.append(population_dict)
@@ -73,6 +73,7 @@ df_conf.index.name = 'Frame'
 df_final = pd.DataFrame(population_list).T
 df_final.columns = parts
 df_final.index.name = 'Frame'
+
 
 # %%  Save data to pickles
 
