@@ -375,7 +375,7 @@ def foot_to_pop(population, path_matrix, path_dist, foot_1, foot_2):
     return pop_1, pop_2
 
 
-def process_frame(population, labels, expected_lengths_all, radii, cost_func, score_func):
+def process_frame(population, labels, lengths, lengths_all, radii, cost_func, score_func):
     """
 
 
@@ -387,13 +387,13 @@ def process_frame(population, labels, expected_lengths_all, radii, cost_func, sc
     -------
 
     """
+
+    path_matrix, path_dist = frame_paths(population, labels, lengths, cost_func)
     
-    path_matrix, path_dist = frame_paths(population, labels, expected_lengths_all, cost_func)
-    
-    score_matrix, dist_matrix = get_score_matrix(population, labels, expected_lengths_all, score_func)
+    score_matrix, dist_matrix = get_score_matrix(population, labels, lengths_all, score_func)
     
     filtered_score_matrix = filter_by_path(score_matrix, path_matrix,
-                                        expected_lengths_all)
+                                        lengths_all)
     
     foot_1, foot_2 = select_best_feet(dist_matrix, filtered_score_matrix,
                                       path_matrix, radii)

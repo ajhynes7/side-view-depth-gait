@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import os
 from sklearn.cluster import KMeans
 
@@ -11,7 +10,7 @@ import modules.stats as st
 
 # %% Parameters
 
-def cost_func(a, b): return (a - b)**2
+cost_func = lambda a, b: (a - b)**2
 
 
 def score_func(a, b):
@@ -25,11 +24,9 @@ lower_part_types = ['HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG', 'FOOT']
 
 radii = [i for i in range(0, 30, 5)]
 
-lengths = [62.1080, 20.1733, 14.1756, 19.4509, 20.4996]
+length_list = [62.1080, 20.1733, 14.1756, 19.4509, 20.4996]
 
 part_connections = np.matrix('0 1; 1 2; 2 3; 3 4; 4 5; 3 5; 1 3')
-
-
 
 
 # %% Read DataFrame
@@ -59,49 +56,34 @@ label_series = df_lower.apply(
 
 
 # Number of lengths between adjacent body parts (e.g. calf to foot)
-n_lengths = len(lengths)
+n_lengths = len(length_list)
 
 # Expected lengths between adjacenct body parts
-expected_lengths = pe.lengths_lookup(part_connections[:n_lengths], lengths)
+lengths = pe.lengths_lookup(part_connections[:n_lengths], length_list)
 
-# Expected lengths for all part connections, including non-adjacent (e.g., knee to foot)
-expected_lengths_all = pe.lengths_lookup(part_connections, lengths)
+# Expected lengths for all part connections,
+# including non-adjacent (e.g., knee to foot)
+lengths_all = pe.lengths_lookup(part_connections, length_list)
 
+
+# %% Select paths to feet on each frame
 
 # List of image frames with data
 frames = population_series.index.values
 
-for f in frames[:1]:
+best_pos_list = []
 
+for f in frames:
     population = population_series.loc[f]
     labels = label_series.loc[f]
+    pos_1, pos_2 = pe.process_frame(population, labels, lengths, lengths_all,
+                                    radii, cost_func, score_func)
 
-    pop_1, pop_2 = pe.process_frame(population, labels, expected_lengths_all, radii, cost_func, score_func)
+    best_pos_list.append((pos_1, pos_2))
 
-
-"""
-
-# %% Select positions
-
-# Find the best positions for each image frame
-best_pos_series = df.apply(lambda x: pe.process_frame(x.to_dict(),
-                           lower_part_types, edges, lengths, radii), axis=1)
-
-
-for f in df.index:
-
-    row = df.loc[f]
-    pe.process_frame(row.to_dict(), lower_part_types, edges, lengths, radii)
-
-
-# %% Extract head and foot positions
-
-# Each row i is a tuple containing the best positions for frame i
-# Split each tuple into columns of a DataFrame
-df_best_pos = pd.DataFrame(best_pos_series.values.tolist(),
+df_best_pos = pd.DataFrame(best_pos_list, index=frames,
                            columns=['Side A', 'Side B'])
 
-df_best_pos = df_best_pos.dropna()
 
 # Head and foot positions
 head_pos = df_best_pos['Side A'].apply(lambda row: row[0, :])
@@ -145,10 +127,6 @@ for frame, switch in switch_sides.iteritems():
             df_head_feet.loc[frame, ['R_FOOT', 'L_FOOT']].values
 
 
-
-
+# %% Save data
 
 df_head_feet.to_pickle(save_path)
-
-
-"""
