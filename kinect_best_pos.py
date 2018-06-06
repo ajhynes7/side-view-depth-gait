@@ -24,8 +24,6 @@ lower_part_types = ['HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG', 'FOOT']
 
 radii = [i for i in range(0, 30, 5)]
 
-length_list = [62.1080, 20.1733, 14.1756, 19.4509, 20.4996]
-
 part_connections = np.matrix('0 1; 1 2; 2 3; 3 4; 4 5; 3 5; 1 3')
 
 
@@ -55,20 +53,14 @@ label_series = df_lower.apply(
     lambda row: pe.get_population(row, part_labels)[1], axis=1)
 
 
-# %% Estimate lengths between adjacent parts
+# %% Estimate lengths between consecutive parts
 
-length_list = pe.estimate_lengths(population_series, label_series,
-                                  cost_func, 60, eps=0.01)
-
-# Number of lengths between adjacent body parts (e.g. calf to foot)
-n_lengths = len(length_list)
-
-# Expected lengths between adjacenct body parts
-lengths = pe.lengths_lookup(part_connections[:n_lengths], length_list)
+lengths = pe.estimate_lengths(population_series, label_series,
+                              cost_func, 60, eps=0.01)
 
 # Expected lengths for all part connections,
 # including non-adjacent (e.g., knee to foot)
-lengths_all = pe.lengths_lookup(part_connections, length_list)
+label_adj_list = pe.lengths_to_adj_list(part_connections, lengths)
 
 
 # %% Select paths to feet on each frame
@@ -81,7 +73,7 @@ best_pos_list = []
 for f in frames:
     population = population_series.loc[f]
     labels = label_series.loc[f]
-    pos_1, pos_2 = pe.process_frame(population, labels, lengths, lengths_all,
+    pos_1, pos_2 = pe.process_frame(population, labels, label_adj_list,
                                     radii, cost_func, score_func)
 
     best_pos_list.append((pos_1, pos_2))

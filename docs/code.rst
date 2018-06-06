@@ -35,7 +35,11 @@
 .. autosummary::
    :toctree: stubs
 
+   dict_to_array
+   iterable_to_dict
    pairwise
+   strings_with_any_substrings
+   
 
 
 :mod:`graphs`
@@ -50,6 +54,9 @@
     adj_matrix_to_list
     dag_shortest_paths
     trace_path
+    labelled_nodes_to_graph
+    min_shortest_path
+    points_to_graph
     weight_along_path
 
 
@@ -98,17 +105,18 @@
 
     assign_LR
     consistent_sides
-    dist_to_adj_matrix
+    estimate_lengths
     filter_by_path
+    foot_to_pop
     get_population
+    get_score_matrix
     inside_radii
     inside_spheres
-    lengths_lookup
-    matrix_from_labels
+    lengths_to_adj_list
+    only_consecutive_labels
     paths_to_foot
+    pop_shortest_paths
     process_frame
-    ratio_func
-    score_func
     select_best_feet
 
 

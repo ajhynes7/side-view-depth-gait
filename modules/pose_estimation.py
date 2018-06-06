@@ -4,14 +4,58 @@ import pandas as pd
 
 from scipy.spatial.distance import cdist
 
+import sys
+sys.path.append('..')
+
 import modules.graphs as gr
 import modules.linear_algebra as lin
 import modules.general as gen
 
 
+def only_consecutive_labels(label_adj_list):
+    """
+    Return a label adjacency list with only consecutive labels.
+
+    For example, if the original adjacency list includes 2->3, 3->4, and 2->4,
+    the returned adjacency list will only have 2->3 and 3->4.
+
+    Parameters
+    ----------
+    label_adj_list : dict
+        Adjacency list for the labels.
+        label_adj_list[A][B] is the expected distance between
+        a point with label A and a point with label B.
+
+    Returns
+    -------
+    consecutive_adj_list : dict
+        Adjacency list for consecutive labels only.
+        Every key in original label_adj_list is included.
+
+    Examples
+    --------
+    >>> label_adj_list = {0: {1: 6}, 1: {2: 1, 3: 3}, 3: {4: 20}, 4: {5: 20}}
+
+    >>> only_consecutive_labels(label_adj_list)
+    {0: {1: 6}, 1: {2: 1}, 3: {4: 20}, 4: {5: 20}}
+
+    """
+    consecutive_adj_list = {k: {} for k in label_adj_list}
+
+    for key_1 in label_adj_list:
+        for key_2 in label_adj_list[key_1]:
+
+            if key_2 - key_1 == 1:
+
+                consecutive_adj_list[key_1] = {
+                    key_2: label_adj_list[key_1][key_2]}
+
+    return consecutive_adj_list
+
+
 def estimate_lengths(pop_series, label_series, cost_func, n_frames, eps=0.01):
     """
-    Estimates the lengths between adjacent body parts.
+    Estimate the lengths between consecutive body parts (e.g., calf to foot).
 
     Starting with an initial estimate of zeros, the lengths are updated by
     iterating over a number of frames and taking the median of the results.
@@ -62,8 +106,8 @@ def estimate_lengths(pop_series, label_series, cost_func, n_frames, eps=0.01):
             population = pop_series.loc[f]
             labels = label_series.loc[f]
 
-            prev, dist = population_shortest_path(population, labels,
-                                                  length_dict, cost_func)
+            prev, dist = pop_shortest_paths(population, labels,
+                                            length_dict, cost_func)
 
             label_dict = gen.iterable_to_dict(labels)
             min_path = gr.min_shortest_path(prev, dist, label_dict, n_lengths)
@@ -139,81 +183,88 @@ def get_population(frame_series, part_labels):
     return population, labels
 
 
-def lengths_lookup(edges, lengths):
+def lengths_to_adj_list(label_connections, lengths):
     """
-
+    [description]
 
     Parameters
     ----------
-
+    label_connections : ndarray
+        Each row is a connection from label A to label B.
+        Column 1 is label A, column 2 is label B.
+    lengths : array_like
+        List of lengths between consecutive body parts
+        (e.g., calf to foot).
 
     Returns
     -------
+    label_adj_list : dict
+        Adjacency list for the labels.
+        label_adj_list[A][B] is the expected distance between
+        a point with label A and a point with label B.
+
+    Examples
+    --------
+    >>> label_connections = np.matrix('0 1; 1 2; 2 3; 3 4; 4 5; 3 5')
+    >>> lengths = [62, 20, 14, 19, 20]
+
+    >>> lengths_to_adj_list(label_connections, lengths)
+    {0: {1: 62}, 1: {2: 20}, 2: {3: 14}, 3: {4: 19, 5: 39}, 4: {5: 20}, 5: {}}
 
     """
-    last_part = edges.max()
+    last_part = label_connections.max()
+    label_adj_list = {i: {} for i in range(last_part+1)}
 
-    expected_lengths = {i: {} for i in range(last_part+1)}
-
-    n_rows = len(edges)
+    n_rows = len(label_connections)
 
     for i in range(n_rows):
-        u, v = edges[i, 0], edges[i, 1]
+        u, v = label_connections[i, 0], label_connections[i, 1]
 
-        expected_lengths[u][v] = sum(lengths[u:v])
+        label_adj_list[u][v] = sum(lengths[u:v])
 
-    return expected_lengths
-
-
-def dist_to_adj_matrix(dist_matrix, labels, expected_lengths, cost_func):
-    """
-
-
-    Parameters
-    ----------
-
-
-    Returns
-    -------
-
-    """
-    n_nodes = len(dist_matrix)
-
-    adj_matrix = np.full((n_nodes, n_nodes), np.nan)
-
-    for i in range(n_nodes):
-        label_i = labels[i]
-
-        for j in range(n_nodes):
-            label_j = labels[j]
-            measured_length = dist_matrix[i, j]
-
-            if label_j in expected_lengths[label_i]:
-                expected_length = expected_lengths[label_i][label_j]
-
-                adj_matrix[i, j] = cost_func(expected_length, measured_length)
-
-    return adj_matrix
+    return label_adj_list
 
 
 def paths_to_foot(prev, dist, labels):
     """
-    Finds the path to each foot node
+    Retrieve the shortest path to each foot position.
 
     Parameters
     ----------
-    prev : array_like
-
-    dist : array_like
-
-    labels : array_like
+    prev : dict
+        For each node u in the graph, prev[u] is the previous node
+        on the shortest path to u.
+    dist : dict
+        For each node u in the graph, dist[u] is the total distance (weight)
+        of the shortest path to u.
+    labels : ndarray
+        Label of each node.
 
     Returns
     -------
-    path_matrix : array_like
+    path_matrix : ndarray
+        One row for each foot position.
+        Each row is a shortest path from head to foot.
+    path_dist : ndarray
+        Total distance of the path to each foot.
+
+    Examples
+    --------
+    >>> prev = {0: np.nan, 1: 0, 2: 1, 3: 2, 4: 3, 5: 3}
+    >>> dist = {0: 0, 1: 0, 2: 20, 3: 5, 4: 11, 5: 10}
+
+    >>> labels = np.array([0, 1, 2, 3, 4, 4])
+
+    >>> path_matrix, path_dist = paths_to_foot(prev, dist, labels)
+
+    >>> path_matrix
+    array([[0, 1, 2, 3, 4],
+           [0, 1, 2, 3, 5]])
+
+    >>> path_dist
+    array([11., 10.])
 
     """
-
     max_label = max(labels)
 
     foot_index = np.where(labels == max_label)[0]
@@ -230,29 +281,79 @@ def paths_to_foot(prev, dist, labels):
     return path_matrix.astype(int), path_dist
 
 
-def get_score_matrix(population, labels, expected_lengths, score_func):
+def get_score_matrix(population, labels, label_adj_list, score_func):
+    """
+    Compute a score matrix by comparing measured distance
+    between points to the expected distances.
 
-    label_dict = gen.iterable_to_dict(labels)
+    Parameters
+    ----------
+    population : ndarray
+        (n, 3) array of n points.
+    labels : array_like
+        Label for each point.
+    label_adj_list : dict
+        Adjacency list for the labels.
+        label_adj_list[A][B] is the expected distance between
+        a point with label A and a point with label B.
+    score_func : function
+        Function of form f(a, b) -> c
+        Outputs a score given a measured distance and an expected distance.
+
+    Returns
+    -------
+    score_matrix : ndarray
+       (n, n) array of scores.
+
+    dist_matrix : ndarray
+        (n, n) array of measured distances between the n points.
+
+    """
+    # Matrix of measured distances between all n points
     dist_matrix = cdist(population, population)
 
-    expected_adj_list = gr.labelled_nodes_to_graph(
-        label_dict, expected_lengths)
+    # Adjacency list of all n nodes in the graph
+    # Edge weights are the expected distances between points
+    label_dict = gen.iterable_to_dict(labels)
+    expected_adj_list = gr.labelled_nodes_to_graph(label_dict, label_adj_list)
 
-    expected_matrix = gr.adj_list_to_matrix(expected_adj_list)
+    # Convert adj list to a matrix so it can be compared to the
+    # actual distance matrix
+    expected_dist_matrix = gr.adj_list_to_matrix(expected_adj_list)
 
     vectorized_score_func = np.vectorize(score_func)
 
-    score_matrix = vectorized_score_func(dist_matrix, expected_matrix)
+    # Score is high if measured distance is close to expected distance
+    score_matrix = vectorized_score_func(dist_matrix, expected_dist_matrix)
     score_matrix[np.isnan(score_matrix)] = 0
 
     return score_matrix, dist_matrix
 
 
-def population_shortest_path(population, labels, expected_lengths, cost_func):
+def pop_shortest_paths(population, labels, label_adj_list, cost_func):
+    """
+    [description]
+
+    Parameters
+    ----------
+    population : {[type]}
+        [description]
+    labels : {[type]}
+        [description]
+    label_adj_list : {[type]}
+        [description]
+    cost_func : {[type]}
+        [description]
+
+    Returns
+    -------
+    [type]
+        [description]
+    """
 
     # Represent population as a weighted directed acyclic graph
     pop_graph = gr.points_to_graph(population, labels,
-                                   expected_lengths, cost_func)
+                                   label_adj_list, cost_func)
 
     # Run shortest path algorithm
     head_nodes = np.where(labels == 0)[0]  # Source nodes
@@ -262,34 +363,23 @@ def population_shortest_path(population, labels, expected_lengths, cost_func):
     return prev, dist
 
 
-def frame_paths(population, labels, expected_lengths, cost_func):
-
-    # Represent population as a weighted directed acyclic graph
-    pop_graph = gr.points_to_graph(population, labels,
-                                   expected_lengths, cost_func)
-
-    # Run shortest path algorithm
-    head_nodes = np.where(labels == 0)[0]  # Source nodes
-    order = pop_graph.keys()  # Topological ordering of the nodes
-    prev, dist = gr.dag_shortest_paths(pop_graph, order, head_nodes)
-
-    # Get shortest path to each foot
-    path_matrix, path_dist = paths_to_foot(prev, dist, labels)
-
-    return path_matrix, path_dist
-
-
 def filter_by_path(input_matrix, path_matrix, part_connections):
     """
-
+    [description]
 
     Parameters
     ----------
-
+    input_matrix : {[type]}
+        [description]
+    path_matrix : {[type]}
+        [description]
+    part_connections : {[type]}
+        [description]
 
     Returns
     -------
-
+    [type]
+        [description]
     """
     filtered_matrix = np.zeros(input_matrix.shape)
     n_paths, n_path_nodes = path_matrix.shape
@@ -310,7 +400,7 @@ def filter_by_path(input_matrix, path_matrix, part_connections):
 def inside_spheres(dist_matrix, point_nums, r):
     """
     Given n points, m of these points are centres of spheres.
-    Calculates which of the n points are contained inside these m spheres.
+    Calculate which of the n points are contained inside these m spheres.
 
     Parameters
     ----------
@@ -347,15 +437,21 @@ def inside_spheres(dist_matrix, point_nums, r):
 
 def inside_radii(dist_matrix, path_matrix, radii):
     """
-
+    [description]
 
     Parameters
     ----------
-
+    dist_matrix : {[type]}
+        [description]
+    path_matrix : {[type]}
+        [description]
+    radii : {[type]}
+        [description]
 
     Returns
     -------
-
+    [type]
+        [description]
     """
     in_spheres_list = []
 
@@ -373,15 +469,23 @@ def inside_radii(dist_matrix, path_matrix, radii):
 
 def select_best_feet(dist_matrix, score_matrix, path_matrix, radii):
     """
-
+    [description]
 
     Parameters
     ----------
-
+    dist_matrix : {[type]}
+        [description]
+    score_matrix : {[type]}
+        [description]
+    path_matrix : {[type]}
+        [description]
+    radii : {[type]}
+        [description]
 
     Returns
     -------
-
+    [type]
+        [description]
     """
     n_paths = len(path_matrix)
     n_radii = len(radii)
@@ -424,6 +528,27 @@ def select_best_feet(dist_matrix, score_matrix, path_matrix, radii):
 
 
 def foot_to_pop(population, path_matrix, path_dist, foot_1, foot_2):
+    """
+    [description]
+
+    Parameters
+    ----------
+    population : {[type]}
+        [description]
+    path_matrix : {[type]}
+        [description]
+    path_dist : {[type]}
+        [description]
+    foot_1 : {[type]}
+        [description]
+    foot_2 : {[type]}
+        [description]
+
+    Returns
+    -------
+    [type]
+        [description]
+    """
 
     path_1, path_2 = path_matrix[foot_1, :], path_matrix[foot_2, :]
     pop_1, pop_2 = population[path_1, :], population[path_2, :]
@@ -437,28 +562,46 @@ def foot_to_pop(population, path_matrix, path_dist, foot_1, foot_2):
     return pop_1, pop_2
 
 
-def process_frame(population, labels, lengths, lengths_all, radii, cost_func,
+def process_frame(population, labels, label_adj_list, radii, cost_func,
                   score_func):
     """
-
+    [description]
 
     Parameters
     ----------
-
+    population : {[type]}
+        [description]
+    labels : {[type]}
+        [description]
+    label_adj_list : {[type]}
+        [description]
+    radii : {[type]}
+        [description]
+    cost_func : {[type]}
+        [description]
+    score_func : {[type]}
+        [description]
 
     Returns
     -------
+    [type]
+        [description]
 
     """
 
-    path_matrix, path_dist = frame_paths(population, labels, lengths,
-                                         cost_func)
+    cons_label_adj_list = only_consecutive_labels(label_adj_list)
+
+    prev, dist = pop_shortest_paths(population, labels,
+                                    cons_label_adj_list, cost_func)
+
+    # Get shortest path to each foot
+    path_matrix, path_dist = paths_to_foot(prev, dist, labels)
 
     score_matrix, dist_matrix = get_score_matrix(population, labels,
-                                                 lengths_all, score_func)
+                                                 label_adj_list, score_func)
 
     filtered_score_matrix = filter_by_path(score_matrix, path_matrix,
-                                           lengths_all)
+                                           label_adj_list)
 
     foot_1, foot_2 = select_best_feet(dist_matrix, filtered_score_matrix,
                                       path_matrix, radii)
@@ -469,7 +612,26 @@ def process_frame(population, labels, lengths, lengths_all, radii, cost_func,
     return pop_1, pop_2
 
 
-def assign_LR(foot_A, foot_B, line_vector):
+def assign_LR(foot_A, foot_B, direction):
+    """
+    Assign two foot positions to respective sides (left / right)
+    using the direction of motion.
+
+    Parameters
+    ----------
+    foot_A : ndarray
+        Position of foot A.
+    foot_B : ndarray
+        Position of foot B.
+    direction : ndarray
+        Vector in the direction of motion.
+
+    Returns
+    -------
+    int
+        Value is 1 if foot A is to the left,
+        -1 if to the right, 0 if straight ahead.
+    """
 
     # Up direction defined as positive y
     up = np.array([0, 1, 0])
@@ -481,19 +643,24 @@ def assign_LR(foot_A, foot_B, line_vector):
     target_direction = foot_A - line_point_A
 
     # Check if point is left or right of the line
-    return lin.angle_direction(target_direction, line_vector, up)
+    return lin.angle_direction(target_direction, direction, up)
 
 
 def consistent_sides(df_head_feet, frame_labels):
     """
+    [description]
+
     Parameters
     ----------
-    df_head_feet : DataFrame
-    frame_labels : array_like
+    df_head_feet : {[type]}
+        [description]
+    frame_labels : {[type]}
+        [description]
 
     Returns
     -------
-    switch_sides : Series
+    [type]
+        [description]
     """
 
     frames = df_head_feet.index.values

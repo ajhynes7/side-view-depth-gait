@@ -8,6 +8,7 @@ from sklearn.cluster import KMeans
 import modules.pose_estimation as pe
 import modules.gait_metrics as gm
 
+
 # %% Read DataFrame
 
 trial_id = '2014-12-22_P007_Pre_004'
