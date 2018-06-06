@@ -9,32 +9,6 @@ import modules.linear_algebra as lin
 import modules.general as gen
 
 
-def ratio_func(a, b):
-    """
-    Ratio between two positive inputs.
-    If ratio a / b is less than one, the reciprocal is returned instead.
-
-    Parameters
-    ----------
-    a, b : float
-        Positive inputs.
-
-    Returns
-    -------
-    float
-        Ratio between a and b.
-    """
-    if a == 0 or b == 0:
-        return np.nan
-
-    ratio = np.divide(a, b)
-
-    if ratio < 1:
-        ratio = np.reciprocal(ratio)
-
-    return ratio
-
-
 def get_population(frame_series, part_labels):
     """
     Return the population of part hypotheses from one image frame.

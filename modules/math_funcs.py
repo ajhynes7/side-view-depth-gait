@@ -92,6 +92,48 @@ def root_mean_square(x):
     return np.sqrt(sum(x**2) / x.size)
 
 
+def norm_ratio(a, b):
+    """
+    Normalized ratio between two positive inputs.
+    If ratio a / b is greater than one, the reciprocal is returned instead.
+    Returns nan if either input is zero.
+
+    Parameters
+    ----------
+    a, b : float
+        Positive inputs.
+
+    Returns
+    -------
+    float
+        Ratio between a and b, with value in range (0, 1].
+
+    Examples
+    --------
+    >>> norm_ratio(5, 10)
+    0.5
+
+    >>> norm_ratio(10, 5)
+    0.5
+
+    >>> norm_ratio(5, 0)
+    nan
+
+    >>> norm_ratio(5, 5)
+    1.0
+
+    """
+    if a == 0 or b == 0:
+        return np.nan
+
+    ratio = np.divide(a, b)
+
+    if ratio > 1:
+        ratio = np.reciprocal(ratio)
+
+    return ratio
+
+
 def normalize_array(x):
     """
     Map all values in an array to the range [0, 1].
@@ -161,6 +203,3 @@ if __name__ == "__main__":
 
     import doctest
     doctest.testmod()
-
-    points = np.array([[1, 2, 3], [-1, 2, 5], [3, 5, 8]])
-    masses = [1 for _ in range(3)]

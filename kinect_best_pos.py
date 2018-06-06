@@ -4,18 +4,19 @@ import os
 from sklearn.cluster import KMeans
 
 import modules.general as gen
+import modules.math_funcs as mf
 import modules.pose_estimation as pe
 import modules.stats as st
 
 
 # %% Parameters
 
-cost_func = lambda a, b: (a - b)**2
+def cost_func(a, b): return (a - b)**2
 
 
 def score_func(a, b):
 
-    x = pe.ratio_func(a, b)
+    x = 1 / mf.norm_ratio(a, b)
 
     return -(x - 1)**2 + 1
 
