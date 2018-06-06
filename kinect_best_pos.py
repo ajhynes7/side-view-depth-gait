@@ -2,8 +2,6 @@ import os
 import pandas as pd
 import numpy as np
 
-from sklearn.cluster import KMeans
-
 import modules.general as gen
 import modules.math_funcs as mf
 import modules.pose_estimation as pe
@@ -115,23 +113,6 @@ good_frame_L = ~np.isnan(y_foot_L_filtered)
 good_frame_R = ~np.isnan(y_foot_R_filtered)
 
 df_head_feet = df_head_feet[good_frame_L & good_frame_R]
-
-
-# %% Enforce consistency of the body part sides
-
-# Cluster frames with k means to locate the 4 walking passes
-frames = df_head_feet.index.values.reshape(-1, 1)
-k_means = KMeans(n_clusters=4, random_state=0).fit(frames)
-
-# Dictionary that maps image frames to cluster labels
-label_dict = dict(zip(frames.flatten(), k_means.labels_))
-
-switch_sides = pe.consistent_sides(df_head_feet, k_means.labels_)
-
-for frame, switch in switch_sides.iteritems():
-    if switch:
-        df_head_feet.loc[frame, ['L_FOOT', 'R_FOOT']] = \
-            df_head_feet.loc[frame, ['R_FOOT', 'L_FOOT']].values
 
 
 # %% Save data
