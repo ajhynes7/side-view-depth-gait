@@ -9,6 +9,78 @@ import modules.linear_algebra as lin
 import modules.general as gen
 
 
+def estimate_lengths(pop_series, label_series, cost_func, n_frames, eps=0.01):
+    """
+    Estimates the lengths between adjacent body parts.
+
+    Starting with an initial estimate of zeros, the lengths are updated by
+    iterating over a number of frames and taking the median of the results.
+
+    Parameters
+    ----------
+    pop_series : pandas series
+        Index of the series is image frame numbers.
+        Value at each frame is the population of body part hypotheses.
+    label_series : pandas series
+        Index of the series is image frame numbers.
+        Value at each frame is the labels of the body part hypotheses.
+    cost_func : function
+        Cost function for creating the weighted graph.
+    n_frames : int
+        Number of frames used to estimate the lengths.
+    eps : float, optional
+        The convergence criterion epsilon (the default is 0.01).
+        When all lengths have changed by less
+        than epsilon from the previous iteration,
+        the iterative process ends.
+
+    Returns
+    -------
+    lengths : ndarray
+        1-D array of estimated lengths between adjacent parts.
+
+    """
+    n_lengths = label_series.iloc[0].max()
+
+    # List of image frames with data
+    frames = pop_series.index.values
+
+    # Initial estimate of lengths
+    lengths = np.zeros(n_lengths)
+
+    while True:
+
+        prev_lengths = lengths
+
+        length_dict = {i: {i + 1: length} for i, length in enumerate(lengths)}
+        length_dict[n_lengths] = {}
+
+        length_array = np.full((n_frames, n_lengths), np.nan)
+
+        for i, f in enumerate(frames[:n_frames]):
+
+            population = pop_series.loc[f]
+            labels = label_series.loc[f]
+
+            prev, dist = population_shortest_path(population, labels,
+                                                  length_dict, cost_func)
+
+            label_dict = gen.iterable_to_dict(labels)
+            min_path = gr.min_shortest_path(prev, dist, label_dict, n_lengths)
+
+            min_pop = population[min_path]
+
+            length_array[i, :] = list(lin.consecutive_dist(min_pop))
+
+        # Update lengths
+        lengths = np.median(length_array, axis=0)
+
+        if np.all(abs(lengths - prev_lengths)) < eps:
+            break
+
+    return lengths
+
+
 def get_population(frame_series, part_labels):
     """
     Return the population of part hypotheses from one image frame.
@@ -159,11 +231,12 @@ def paths_to_foot(prev, dist, labels):
 
 
 def get_score_matrix(population, labels, expected_lengths, score_func):
-    
+
     label_dict = gen.iterable_to_dict(labels)
     dist_matrix = cdist(population, population)
 
-    expected_adj_list = gr.labelled_nodes_to_graph(label_dict, expected_lengths)
+    expected_adj_list = gr.labelled_nodes_to_graph(
+        label_dict, expected_lengths)
 
     expected_matrix = gr.adj_list_to_matrix(expected_adj_list)
 
@@ -175,11 +248,25 @@ def get_score_matrix(population, labels, expected_lengths, score_func):
     return score_matrix, dist_matrix
 
 
+def population_shortest_path(population, labels, expected_lengths, cost_func):
+
+    # Represent population as a weighted directed acyclic graph
+    pop_graph = gr.points_to_graph(population, labels,
+                                   expected_lengths, cost_func)
+
+    # Run shortest path algorithm
+    head_nodes = np.where(labels == 0)[0]  # Source nodes
+    order = pop_graph.keys()  # Topological ordering of the nodes
+    prev, dist = gr.dag_shortest_paths(pop_graph, order, head_nodes)
+
+    return prev, dist
+
+
 def frame_paths(population, labels, expected_lengths, cost_func):
 
     # Represent population as a weighted directed acyclic graph
-    pop_graph = gr.points_to_graph(
-        population, labels, expected_lengths, cost_func)
+    pop_graph = gr.points_to_graph(population, labels,
+                                   expected_lengths, cost_func)
 
     # Run shortest path algorithm
     head_nodes = np.where(labels == 0)[0]  # Source nodes
@@ -212,7 +299,8 @@ def filter_by_path(input_matrix, path_matrix, part_connections):
             for k in range(n_path_nodes):
 
                 if k in part_connections[j]:
-                    # These nodes in the path are connected in the body part graph
+                    # These nodes in the path are connected
+                    # in the body part graph
                     A, B = path_matrix[i, j], path_matrix[i, k]
                     filtered_matrix[A, B] = input_matrix[A, B]
 
@@ -349,7 +437,8 @@ def foot_to_pop(population, path_matrix, path_dist, foot_1, foot_2):
     return pop_1, pop_2
 
 
-def process_frame(population, labels, lengths, lengths_all, radii, cost_func, score_func):
+def process_frame(population, labels, lengths, lengths_all, radii, cost_func,
+                  score_func):
     """
 
 
@@ -362,17 +451,20 @@ def process_frame(population, labels, lengths, lengths_all, radii, cost_func, sc
 
     """
 
-    path_matrix, path_dist = frame_paths(population, labels, lengths, cost_func)
-    
-    score_matrix, dist_matrix = get_score_matrix(population, labels, lengths_all, score_func)
-    
+    path_matrix, path_dist = frame_paths(population, labels, lengths,
+                                         cost_func)
+
+    score_matrix, dist_matrix = get_score_matrix(population, labels,
+                                                 lengths_all, score_func)
+
     filtered_score_matrix = filter_by_path(score_matrix, path_matrix,
-                                        lengths_all)
-    
+                                           lengths_all)
+
     foot_1, foot_2 = select_best_feet(dist_matrix, filtered_score_matrix,
                                       path_matrix, radii)
 
-    pop_1, pop_2 = foot_to_pop(population, path_matrix, path_dist, foot_1, foot_2)
+    pop_1, pop_2 = foot_to_pop(population, path_matrix, path_dist,
+                               foot_1, foot_2)
 
     return pop_1, pop_2
 

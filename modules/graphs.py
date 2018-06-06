@@ -29,7 +29,7 @@ def adj_list_to_matrix(G):
     array([[nan, nan, nan],
            [nan, nan, nan],
            [nan, 10., nan]])
-           
+
     """
     n_nodes = len(G)
 
@@ -63,7 +63,7 @@ def adj_matrix_to_list(M):
 
     >>> adj_matrix_to_list(M)
     {0: {1: 3, 2: 10}, 1: {2: 5}, 2: {}}
-    
+
     """
     n_nodes = len(M)
     G = {i: {} for i in range(n_nodes)}
@@ -168,7 +168,7 @@ def min_shortest_path(prev, dist, node_labels, l):
 
     >>> min_shortest_path(prev, dist, node_labels, 1)
     [1, 3]
-    
+
     """
     # Nodes in the graph with label l
     nodes_l = [v for v, label in node_labels.items() if label == l]
@@ -248,7 +248,7 @@ def weight_along_path(G, path):
 
     >>> weight_along_path(G, path)
     21
-    
+
     """
     total_weight = 0
 
@@ -291,7 +291,6 @@ def labelled_nodes_to_graph(node_labels, label_adj_list):
     {10: {13: 10}, 11: {13: 10}, 12: {13: 10}, 13: {}}
 
     """
-
     nodes = node_labels.keys()
 
     G = {v: {} for v in nodes}

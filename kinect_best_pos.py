@@ -1,6 +1,7 @@
+import os
 import pandas as pd
 import numpy as np
-import os
+
 from sklearn.cluster import KMeans
 
 import modules.general as gen
@@ -55,6 +56,11 @@ population_series = df_lower.apply(
 label_series = df_lower.apply(
     lambda row: pe.get_population(row, part_labels)[1], axis=1)
 
+
+# %% Estimate lengths between adjacent parts
+
+length_list = pe.estimate_lengths(population_series, label_series,
+                                  cost_func, 60, eps=0.01)
 
 # Number of lengths between adjacent body parts (e.g. calf to foot)
 n_lengths = len(length_list)
