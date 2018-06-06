@@ -6,6 +6,7 @@ from scipy.spatial.distance import cdist
 
 import modules.graphs as gr
 import modules.linear_algebra as lin
+import modules.general as gen
 
 
 def ratio_func(a, b):
@@ -34,40 +35,60 @@ def ratio_func(a, b):
     return ratio
 
 
-def get_population(population_dict, part_types):
+def get_population(frame_series, part_labels):
     """
+    Return the population of part hypotheses from one image frame.
+
     Parameters
     ----------
-
-    population_dict : dict
-
-    part_types : array_like
-        List of strings for the types of body parts.
+    frame_series : pandas series
+        Index of the series is body parts.
+        Values of the series are part hypotheses.
+    part_labels : array_like
+        Label for each body part in the series.
+        e.g. L_FOOT and R_FOOT both have the label 5.
 
     Returns
     -------
-    population : array_like
-        n x 3 matrix of all part position hypotheses.
+    points : ndarray
+        (n, d) array of n points with dimension d.
+    labels : ndarray
+        1-D array of labels.
+        The labels are sorted in ascending order.
 
-    labels :
+    Examples
+    --------
+    >>> head_points = np.array([-45, 66, 238]).reshape(-1, 3)
+    >>> foot_points = np.array([[-26., -57, 249], [-74, -58, 260]])
+
+    >>> frame_series = pd.Series({'L_FOOT': foot_points, 'HEAD': head_points})
+    >>> part_labels = [5, 0]
+
+    >>> points, labels = get_population(frame_series, part_labels)
+
+    >>> points
+    array([[-45.,  66., 238.],
+           [-26., -57., 249.],
+           [-74., -58., 260.]])
+
+    >>> labels
+    array([0, 5, 5])
+
     """
-    population_list, label_list = [], []
+    pop_list, label_list = [], []
 
-    for i, part_type in enumerate(part_types):
-        for full_part_name in population_dict:
+    for index_points, label in zip(frame_series, part_labels):
 
-            if part_type in full_part_name:
-                points = population_dict[full_part_name]
-                n_points, _ = points.shape
+        for point in index_points:
 
-                population_list.append(points)
-                label_list.extend([i for _ in range(n_points)])
+            pop_list.append(point)
+            label_list.append(label)
 
-    # Convert list to numpy matrix
-    population = np.concatenate(population_list)
-    labels = np.array(label_list)
+    population, labels = np.array(pop_list), np.array(label_list)
 
-    assert(population.shape[0] == len(labels))
+    # Sort the labels and apply the sorting to the points
+    sort_index = np.argsort(labels)
+    population, labels = population[sort_index], labels[sort_index]
 
     return population, labels
 
@@ -163,7 +184,41 @@ def paths_to_foot(prev, dist, labels):
     return path_matrix.astype(int), path_dist
 
 
-def filter_by_path(input_matrix, path_matrix, expected_lengths):
+def get_score_matrix(population, labels, expected_lengths, score_func):
+    
+    label_dict = gen.iterable_to_dict(labels)
+    dist_matrix = cdist(population, population)
+
+    expected_adj_list = gr.labelled_nodes_to_graph(label_dict, expected_lengths)
+
+    expected_matrix = gr.adj_list_to_matrix(expected_adj_list)
+
+    vectorized_score_func = np.vectorize(score_func)
+
+    score_matrix = vectorized_score_func(dist_matrix, expected_matrix)
+    score_matrix[np.isnan(score_matrix)] = 0
+
+    return score_matrix, dist_matrix
+
+
+def frame_paths(population, labels, expected_lengths, cost_func):
+
+    # Represent population as a weighted directed acyclic graph
+    pop_graph = gr.points_to_graph(
+        population, labels, expected_lengths, cost_func)
+
+    # Run shortest path algorithm
+    head_nodes = np.where(labels == 0)[0]  # Source nodes
+    order = pop_graph.keys()  # Topological ordering of the nodes
+    prev, dist = gr.dag_shortest_paths(pop_graph, order, head_nodes)
+
+    # Get shortest path to each foot
+    path_matrix, path_dist = paths_to_foot(prev, dist, labels)
+
+    return path_matrix, path_dist
+
+
+def filter_by_path(input_matrix, path_matrix, part_connections):
     """
 
 
@@ -182,8 +237,8 @@ def filter_by_path(input_matrix, path_matrix, expected_lengths):
         for j in range(n_path_nodes):
             for k in range(n_path_nodes):
 
-                if k in expected_lengths[j]:
-                    # These nodes in the path are connected in the body graph
+                if k in part_connections[j]:
+                    # These nodes in the path are connected in the body part graph
                     A, B = path_matrix[i, j], path_matrix[i, k]
                     filtered_matrix[A, B] = input_matrix[A, B]
 
@@ -306,7 +361,21 @@ def select_best_feet(dist_matrix, score_matrix, path_matrix, radii):
     return foot_1, foot_2
 
 
-def process_frame(pop_dict, part_types, edges, lengths, radii):
+def foot_to_pop(population, path_matrix, path_dist, foot_1, foot_2):
+
+    path_1, path_2 = path_matrix[foot_1, :], path_matrix[foot_2, :]
+    pop_1, pop_2 = population[path_1, :], population[path_2, :]
+
+    # Select the head along the minimum shortest path
+    min_path = path_matrix[np.argmin(path_dist), :]
+    head_pos = population[min_path[0], :]
+
+    pop_1[0, :], pop_2[0, :] = head_pos, head_pos
+
+    return pop_1, pop_2
+
+
+def process_frame(population, labels, expected_lengths_all, radii, cost_func, score_func):
     """
 
 
@@ -318,54 +387,18 @@ def process_frame(pop_dict, part_types, edges, lengths, radii):
     -------
 
     """
-    def cost_func(a, b): return (a - b)**2
-
-    def score_func(x): return -(x - 1)**2 + 1
-
-    population, labels = get_population(pop_dict, part_types)
-
-    if len(np.unique(labels)) != len(part_types):
-        return np.nan, np.nan
-
-    n_lengths = len(lengths)
-    edges_simple = edges[range(n_lengths), :]
-
-    expected_lengths = lengths_lookup(edges, lengths)
-    expected_lengths_simple = lengths_lookup(edges_simple, lengths)
-
-    dist_matrix = cdist(population, population)
-    expected_matrix = matrix_from_labels(expected_lengths, labels)
-
-    vectorized_ratio_func = np.vectorize(ratio_func)
-    ratio_matrix = vectorized_ratio_func(dist_matrix, expected_matrix)
-
-    score_matrix = score_func(ratio_matrix)
-    score_matrix[np.isnan(score_matrix)] = 0
-
-    adj_matrix = dist_to_adj_matrix(dist_matrix, labels,
-                                    expected_lengths_simple, cost_func)
-
-    adj_list = gr.adj_matrix_to_list(adj_matrix)
-
-    source_nodes = np.where(labels == 0)[0]
-    prev, dist = gr.dag_shortest_paths(adj_list, adj_list.keys(), source_nodes)
-
-    path_matrix, path_dist = paths_to_foot(prev, dist, labels)
-
+    
+    path_matrix, path_dist = frame_paths(population, labels, expected_lengths_all, cost_func)
+    
+    score_matrix, dist_matrix = get_score_matrix(population, labels, expected_lengths_all, score_func)
+    
     filtered_score_matrix = filter_by_path(score_matrix, path_matrix,
-                                           expected_lengths)
-
+                                        expected_lengths_all)
+    
     foot_1, foot_2 = select_best_feet(dist_matrix, filtered_score_matrix,
                                       path_matrix, radii)
 
-    path_1, path_2 = path_matrix[foot_1, :], path_matrix[foot_2, :]
-    pop_1, pop_2 = population[path_1, :], population[path_2, :]
-
-    # Select the head along the minimum shortest path
-    min_path = path_matrix[np.argmin(path_dist), :]
-    head_pos = population[min_path[0], :]
-
-    pop_1[0, :], pop_2[0, :] = head_pos, head_pos
+    pop_1, pop_2 = foot_to_pop(population, path_matrix, path_dist, foot_1, foot_2)
 
     return pop_1, pop_2
 
@@ -413,7 +446,7 @@ def consistent_sides(df_head_feet, frame_labels):
         head_points = np.stack(tuple(df_head_feet['HEAD'][cluster_i]))
 
         # Line of best fit for head positions
-        centroid, direction = lin.best_fit_line(head_points)
+        _, direction = lin.best_fit_line(head_points)
 
         cluster_frames = frames[frame_labels == i]
 
@@ -431,3 +464,9 @@ def consistent_sides(df_head_feet, frame_labels):
                 switch_sides.loc[frame] = True
 
     return switch_sides
+
+
+if __name__ == "__main__":
+
+    import doctest
+    doctest.testmod()

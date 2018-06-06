@@ -1,3 +1,4 @@
+import numpy as np
 
 
 def pairwise(x):
@@ -21,8 +22,8 @@ def pairwise(x):
     1 2
     2 3
     3 4
-    """
 
+    """
     return zip(x[:-1], x[1:])
 
 
@@ -38,26 +39,97 @@ def strings_with_any_substrings(strings, substrings):
     substrings : iterable
         Iterable of substrings
 
-    Yields
-    ------
-    str
-        String that contains of the substrings.
+    Returns
+    -------
+    matched_strings : list
+        List of strings that contain one of the substrings.
+
+    substring_indices : list
+        Index to the substring contained by each string.
 
     Examples
     --------
-    >>> strings = ['Wildcat', 'Sheepdog', 'Moose']
+    >>> strings = ['Wildcat', 'Sheepdog', 'Moose', 'Tomcat']
     >>> substrings = ['cat', 'dog']
 
-    >>> list(strings_with_any_substrings(strings, substrings))
-    ['Wildcat', 'Sheepdog']
+    >>> x, y = strings_with_any_substrings(strings, substrings)
+
+    >>> x
+    ['Wildcat', 'Sheepdog', 'Tomcat']
+
+    >>> y
+    [0, 1, 0]
 
     """
-    for s in strings:
-        for s_sub in substrings:
+    matched_strings, substring_index = [], []
 
-            if s_sub in s:
-                yield s
+    for string in strings:
+        for i, substring in enumerate(substrings):
+
+            if substring in string:
+                substring_index.append(i)
+                matched_strings.append(string)
                 break
+
+    return matched_strings, substring_index
+
+
+def iterable_to_dict(x):
+    """
+    Converts an iterable to a dictionary.
+
+    Parameters
+    ----------
+    x : iterable
+        Any iterable.
+
+    Returns
+    -------
+    dict
+        Dictionary version of iterable.
+
+    Examples
+    --------
+    >>> x = [1, 1, 2, 4, 5, 10, 20]
+
+    >>> iterable_to_dict(x)
+    {0: 1, 1: 1, 2: 2, 3: 4, 4: 5, 5: 10, 6: 20}
+
+    """
+    return {i: value for i, value in enumerate(x)}
+
+
+def dict_to_array(d):
+    """
+    Convert a dictionary to a numpy array.
+    Each dictionary key is an index to the array.
+
+    Parameters
+    ----------
+    d : Input dictionary.
+        All keys must be ints.
+
+    Returns
+    -------
+    x : ndarray
+        1-D numpy array.
+
+    Examples
+    --------
+    >>> d = {0: 1, 1: 1, 2: 2, 3: 4, 4: 5, 5: 10, 8: 20}
+
+    >>> dict_to_array(d)
+    array([ 1.,  1.,  2.,  4.,  5., 10., nan, nan, 20.])
+
+    """
+    n_elements = max(d.keys()) + 1
+
+    x = np.full(n_elements, np.nan)
+
+    for element in d:
+        x[element] = d[element]
+
+    return x
 
 
 if __name__ == "__main__":

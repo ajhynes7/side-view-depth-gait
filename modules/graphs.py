@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from scipy.spatial.distance import cdist
 
-from modules.general import pairwise
+import modules.general as gen
 
 
 def adj_list_to_matrix(G):
@@ -29,6 +29,7 @@ def adj_list_to_matrix(G):
     array([[nan, nan, nan],
            [nan, nan, nan],
            [nan, 10., nan]])
+           
     """
     n_nodes = len(G)
 
@@ -62,8 +63,8 @@ def adj_matrix_to_list(M):
 
     >>> adj_matrix_to_list(M)
     {0: {1: 3, 2: 10}, 1: {2: 5}, 2: {}}
+    
     """
-
     n_nodes = len(M)
     G = {i: {} for i in range(n_nodes)}
 
@@ -167,8 +168,8 @@ def min_shortest_path(prev, dist, node_labels, l):
 
     >>> min_shortest_path(prev, dist, node_labels, 1)
     [1, 3]
+    
     """
-
     # Nodes in the graph with label l
     nodes_l = [v for v, label in node_labels.items() if label == l]
 
@@ -247,11 +248,11 @@ def weight_along_path(G, path):
 
     >>> weight_along_path(G, path)
     21
+    
     """
-
     total_weight = 0
 
-    for a, b in pairwise(path):
+    for a, b in gen.pairwise(path):
         total_weight += G[a][b]
 
     return total_weight
@@ -308,7 +309,7 @@ def labelled_nodes_to_graph(node_labels, label_adj_list):
     return G
 
 
-def points_to_graph(points, point_labels, expected_dists, weight_func):
+def points_to_graph(points, labels, expected_dists, weight_func):
     """
     Construct a weighted graph from a set of labelled points in space.
 
@@ -316,8 +317,8 @@ def points_to_graph(points, point_labels, expected_dists, weight_func):
     ----------
     points : ndarray
         List of points in space.
-    point_labels : dict
-        point_labels[u] is the label of node u.
+    labels : array_like
+        Label of each point.
     expected_dists : dict
         The expected distance between pairs of labels.
         expected_dists[A][B] is the expected distance from a
@@ -333,18 +334,18 @@ def points_to_graph(points, point_labels, expected_dists, weight_func):
     Examples
     --------
     >>> points = np.array([[0, 3], [0, 10], [2, 3]])
-    >>> point_labels = {0: 0, 1: 1, 2: 1}
+    >>> labels = [0, 1, 1]
     >>> expected_dists = {0: {1: 5}, 1: {}}
     >>> weight_func = lambda a, b: abs(a - b)
 
-    >>> points_to_graph(points, point_labels, expected_dists, weight_func)
+    >>> points_to_graph(points, labels, expected_dists, weight_func)
     {0: {1: 2.0, 2: 3.0}, 1: {}, 2: {}}
 
     """
-    nodes = point_labels.keys()
+    label_dict = gen.iterable_to_dict(labels)
 
     # Expected distances between points
-    adj_list_expected = labelled_nodes_to_graph(point_labels, expected_dists)
+    adj_list_expected = labelled_nodes_to_graph(label_dict, expected_dists)
     dist_matrix_expected = adj_list_to_matrix(adj_list_expected)
 
     # Measured distances between all points

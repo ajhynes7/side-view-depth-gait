@@ -4,39 +4,89 @@ import matplotlib.pyplot as plt
 import os
 from sklearn.cluster import KMeans
 
+import modules.general as gen
 import modules.pose_estimation as pe
 import modules.stats as st
 
 
+# %% Parameters
+
+def cost_func(a, b): return (a - b)**2
+
+
+def score_func(a, b):
+
+    x = pe.ratio_func(a, b)
+
+    return -(x - 1)**2 + 1
+
+
+lower_part_types = ['HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG', 'FOOT']
+
+radii = [i for i in range(0, 30, 5)]
+
+lengths = [62.1080, 20.1733, 14.1756, 19.4509, 20.4996]
+
+part_connections = np.matrix('0 1; 1 2; 2 3; 3 4; 4 5; 3 5; 1 3')
+
+
+
+
 # %% Read DataFrame
 
-trial_id = '2014-12-22_P007_Pre_003'
+trial_id = '2014-12-22_P007_Pre_004'
 
 load_directory = '../../MEGA/Data/Kinect Zeno/Kinect processed'
 save_directory = '../../MEGA/Data/Kinect Zeno/Kinect best pos'
 
 load_path = os.path.join(load_directory, trial_id + '.pkl')
-save_path =  os.path.join(save_directory, trial_id + '.pkl')
+save_path = os.path.join(save_directory, trial_id + '.pkl')
 
 df = pd.read_pickle(load_path)
 
 
-# %% Parameters
-lower_part_types = ['HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG', 'FOOT']
+# %% Select frames with data
 
-radii = [i for i in range(0, 30, 5)]
-edges = np.matrix('0 1; 1 2; 2 3; 3 4; 4 5; 3 5; 1 3')
+lower_parts, part_labels = gen.strings_with_any_substrings(
+    df.columns, lower_part_types)
+df_lower = df[lower_parts].dropna(axis=0)
 
-lengths = [62.1080, 20.1733, 14.1756, 19.4509, 20.4996]
+population_series = df_lower.apply(
+    lambda row: pe.get_population(row, part_labels)[0], axis=1)
+
+label_series = df_lower.apply(
+    lambda row: pe.get_population(row, part_labels)[1], axis=1)
 
 
+# Number of lengths between adjacent body parts (e.g. calf to foot)
+n_lengths = len(lengths)
 
+# Expected lengths between adjacenct body parts
+expected_lengths = pe.lengths_lookup(part_connections[:n_lengths], lengths)
+
+# Expected lengths for all part connections, including non-adjacent (e.g., knee to foot)
+expected_lengths_all = pe.lengths_lookup(part_connections, lengths)
+
+
+# List of image frames with data
+frames = population_series.index.values
+
+for f in frames[:1]:
+
+    population = population_series.loc[f]
+    labels = label_series.loc[f]
+
+    pop_1, pop_2 = pe.process_frame(population, labels, expected_lengths_all, radii, cost_func, score_func)
+
+
+"""
 
 # %% Select positions
 
 # Find the best positions for each image frame
 best_pos_series = df.apply(lambda x: pe.process_frame(x.to_dict(),
                            lower_part_types, edges, lengths, radii), axis=1)
+
 
 for f in df.index:
 
@@ -99,3 +149,6 @@ for frame, switch in switch_sides.iteritems():
 
 
 df_head_feet.to_pickle(save_path)
+
+
+"""
