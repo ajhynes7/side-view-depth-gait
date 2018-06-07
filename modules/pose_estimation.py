@@ -4,9 +4,6 @@ import pandas as pd
 
 from scipy.spatial.distance import cdist
 
-import sys
-sys.path.append('..')
-
 import modules.graphs as gr
 import modules.linear_algebra as lin
 import modules.general as gen

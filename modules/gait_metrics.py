@@ -9,7 +9,7 @@ import modules.clustering as cl
 import modules.math_funcs as mf
 
 
-def foot_dist_peaks(foot_dist, frame_labels):
+def foot_dist_peaks(foot_dist, frame_labels, r=1):
 
     frames = foot_dist.index.values.reshape(-1, 1)
 
@@ -30,7 +30,7 @@ def foot_dist_peaks(foot_dist, frame_labels):
         # Find centres of foot distance peaks with mean shift
         input_frames = frames[upper_of_pass]
         _, centroids, k = cl.mean_shift(input_frames,
-                                        cl.gaussian_kernel_shift, radius=5)
+                                        cl.gaussian_kernel_shift, radius=r)
 
         # Find the frames closest to the mean shift centroids
         upper_pass_frames = frames[upper_of_pass]
@@ -82,7 +82,8 @@ def get_gait_metrics(df, frame_i, frame_f):
 
     P_swing_i, P_swing_f = points_i[swing_num], points_f[swing_num]
     P_stance_i, P_stance_f = points_i[stance_num], points_f[stance_num]
-    P_stance = np.mean(np.vstack((P_stance_f, P_stance_i)), axis=0)
+
+    P_stance = np.mean(np.array([P_stance_f, P_stance_i]), axis=0)
 
     P_proj = lin.proj_point_line(P_stance, P_swing_i, P_swing_f)
 

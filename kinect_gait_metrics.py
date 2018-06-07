@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from sklearn.cluster import KMeans
+from scipy.signal import medfilt
 
 import modules.pose_estimation as pe
 import modules.gait_metrics as gm
@@ -42,9 +43,14 @@ foot_dist = df_head_feet.apply(lambda row: np.linalg.norm(
                                row['L_FOOT'] - row['R_FOOT']), axis=1)
 
 
+# # Apply median filter to foot distance signal
+# filtered = medfilt(foot_dist)
+# foot_dist = pd.Series(filtered, index=foot_dist.index)
+
+
 # Detect peaks in the foot distance data
 # Pass in the foot distance index so the peak x-values align with the frames
-peak_frames = gm.foot_dist_peaks(foot_dist, k_means.labels_)
+peak_frames = gm.foot_dist_peaks(foot_dist, k_means.labels_, r=5)
 
 
 # %% Gait metrics
