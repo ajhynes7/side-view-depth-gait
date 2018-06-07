@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.linalg import norm
 
-from .general import pairwise
+import modules.general as gen
 
 
 def unit(v):
@@ -51,7 +51,7 @@ def consecutive_dist(points):
     [1.0, 2.0]
 
     """
-    for point_1, point_2 in pairwise(points):
+    for point_1, point_2 in gen.pairwise(points):
 
         vector = np.subtract(point_1, point_2)
         yield norm(vector)
@@ -293,13 +293,15 @@ def angle_direction(target_direction, forward, up):
     >>> angle_direction(np.array([-1, 1, 0]), fwd, up)
     1
 
-    >>> angle_direction(np.array([0, -1, 0]), fwd, up)
+    >>> angle_direction(np.array([0.0, -1.0, 0.0]), fwd, up)
     0
 
     """
     perpendicular = np.cross(forward, target_direction)
 
-    return np.sign(np.dot(perpendicular, up))
+    signed = np.sign(np.dot(perpendicular, up))
+
+    return int(signed)
 
 
 def angle_between(x, y, degrees=False):

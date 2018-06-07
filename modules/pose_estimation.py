@@ -140,11 +140,12 @@ def get_population(frame_series, part_labels):
 
     Returns
     -------
-    points : ndarray
-        (n, d) array of n points with dimension d.
+    population : ndarray
+        (n, 3) array of n positions.
     labels : ndarray
-        1-D array of labels.
-        The labels are sorted in ascending order.
+        (n,) array of labels for n positions.
+        The labels correspond to body part types (e.g., foot).
+        They are sorted in ascending order.
 
     Examples
     --------
@@ -154,9 +155,9 @@ def get_population(frame_series, part_labels):
     >>> frame_series = pd.Series({'L_FOOT': foot_points, 'HEAD': head_points})
     >>> part_labels = [5, 0]
 
-    >>> points, labels = get_population(frame_series, part_labels)
+    >>> population, labels = get_population(frame_series, part_labels)
 
-    >>> points
+    >>> population
     array([[-45.,  66., 238.],
            [-26., -57., 249.],
            [-74., -58., 260.]])
@@ -289,15 +290,16 @@ def get_score_matrix(population, labels, label_adj_list, score_func):
     Parameters
     ----------
     population : ndarray
-        (n, 3) array of n points.
-    labels : array_like
-        Label for each point.
+        (n, 3) array of n positions.
+    labels : ndarray
+        (n,) array of labels for n positions.
+        The labels correspond to body part types (e.g., foot).
     label_adj_list : dict
         Adjacency list for the labels.
         label_adj_list[A][B] is the expected distance between
         a point with label A and a point with label B.
     score_func : function
-        Function of form f(a, b) -> c
+        Function of form f(a, b) -> c.
         Outputs a score given a measured distance and an expected distance.
 
     Returns
@@ -340,8 +342,10 @@ def pop_shortest_paths(population, labels, label_adj_list, cost_func):
         [description]
     labels : {[type]}
         [description]
-    label_adj_list : {[type]}
-        [description]
+    label_adj_list : dict
+        Adjacency list for the labels.
+        label_adj_list[A][B] is the expected distance between
+        a point with label A and a point with label B.
     cost_func : {[type]}
         [description]
 
@@ -405,21 +409,23 @@ def inside_spheres(dist_matrix, point_nums, r):
     Parameters
     ----------
     dist_matrix : ndarray
-        | (n, n) distance matrix
-        | Element (i, j) is distance from point i to point j
+        :math:`(n, n)` distance matrix.
+        Element :math:`(i, j)` is distance from point :math:`i`
+        to point :math:`j`.
 
     point_nums : array_like
-        | (m, ) List of points that are the sphere centres
-        | Numbers between 1 and n
+        :math:`(m,)` list of points that are the sphere centres.
+        Numbers between 1 and :math:`n`.
 
     r : float
-        Radius of spheres
+        Radius of spheres.
 
     Returns
     -------
     in_spheres : array_like
-        (n,) array of bools
-        Element i is true if point i is in the set of spheres
+        :math:`(n,)` array of bools.
+        Element :math:`i` is true if point :math:`i` is in the set of spheres.
+
     """
     n_points = len(dist_matrix)
 
@@ -527,30 +533,33 @@ def select_best_feet(dist_matrix, score_matrix, path_matrix, radii):
     return foot_1, foot_2
 
 
-def foot_to_pop(population, path_matrix, path_dist, foot_1, foot_2):
+def foot_to_pop(population, path_matrix, path_dist, foot_num_1, foot_num_2):
     """
-    [description]
+    Return the positions comprising the shortest path to each chosen foot.
+
+    For consistency, the two paths receive the same head position,
+    which is the head along the minimum shortest path.
 
     Parameters
     ----------
-    population : {[type]}
-        [description]
-    path_matrix : {[type]}
-        [description]
-    path_dist : {[type]}
-        [description]
-    foot_1 : {[type]}
-        [description]
-    foot_2 : {[type]}
-        [description]
+    population : ndarray
+        (n, 3) array of n positions.
+    path_matrix : ndarray
+        One row for each foot position.
+        Each row is a shortest path from head to foot.
+    path_dist : ndarray
+        Total distance of the path to each foot.
+    foot_num_1, foot_num_2 : int
+        Numbers of foot 1 and 2 (out of all foot positions)
 
     Returns
     -------
-    [type]
-        [description]
-    """
+    pop_1, pop_2 : ndarray
+        (n_labels, 3) array of chosen points from the input population.
+        One point for each label (i.e., each body part type).
 
-    path_1, path_2 = path_matrix[foot_1, :], path_matrix[foot_2, :]
+    """
+    path_1, path_2 = path_matrix[foot_num_1, :], path_matrix[foot_num_2, :]
     pop_1, pop_2 = population[path_1, :], population[path_2, :]
 
     # Select the head along the minimum shortest path
@@ -565,30 +574,36 @@ def foot_to_pop(population, path_matrix, path_dist, foot_1, foot_2):
 def process_frame(population, labels, label_adj_list, radii, cost_func,
                   score_func):
     """
-    [description]
+    Return chosen body part positions from an input set of position hypotheses.
+
+    Use a score function to select the best foot positions,
+    and return the shortest paths to these feet in the body part graph.
 
     Parameters
     ----------
-    population : {[type]}
-        [description]
-    labels : {[type]}
-        [description]
-    label_adj_list : {[type]}
-        [description]
-    radii : {[type]}
-        [description]
-    cost_func : {[type]}
-        [description]
-    score_func : {[type]}
-        [description]
+    population : ndarray
+        (n, 3) array of n positions.
+    labels : ndarray
+        (n,) array of labels for n positions.
+        The labels correspond to body part types (e.g., foot).
+    label_adj_list : dict
+        Adjacency list for the labels.
+        label_adj_list[A][B] is the expected distance between
+        a point with label A and a point with label B.
+    radii : array_like
+        List of radii used to select the best feet.
+    cost_func : function
+        Cost function used to weight the body part graph.
+    score_func : function
+        Score function used to assign scores to connections between body parts.
 
     Returns
     -------
-    [type]
-        [description]
+    pop_1, pop_2 : ndarray
+        (n_labels, 3) array of chosen points from the input population.
+        One point for each label (i.e., each body part type)
 
     """
-
     cons_label_adj_list = only_consecutive_labels(label_adj_list)
 
     prev, dist = pop_shortest_paths(population, labels,
@@ -612,10 +627,11 @@ def process_frame(population, labels, label_adj_list, radii, cost_func,
     return pop_1, pop_2
 
 
-def assign_LR(foot_A, foot_B, direction):
+def assign_LR(foot_A, foot_B, forward):
     """
-    Assign two foot positions to respective sides (left / right)
+    Assign a foot position to left or right side
     using the direction of motion.
+    Uses the right hand rule for orientation.
 
     Parameters
     ----------
@@ -623,7 +639,7 @@ def assign_LR(foot_A, foot_B, direction):
         Position of foot A.
     foot_B : ndarray
         Position of foot B.
-    direction : ndarray
+    forward : ndarray
         Vector in the direction of motion.
 
     Returns
@@ -631,6 +647,16 @@ def assign_LR(foot_A, foot_B, direction):
     int
         Value is 1 if foot A is to the left,
         -1 if to the right, 0 if straight ahead.
+
+    Examples
+    --------
+    >>> foot_A = np.array([0, 0, 250])
+    >>> foot_B = np.array([0, 0, 200])
+    >>> direction = [1, 0, 0]
+
+    >>> assign_LR(foot_A, foot_B, direction)
+    -1
+
     """
 
     # Up direction defined as positive y
@@ -643,26 +669,30 @@ def assign_LR(foot_A, foot_B, direction):
     target_direction = foot_A - line_point_A
 
     # Check if point is left or right of the line
-    return lin.angle_direction(target_direction, direction, up)
+    return lin.angle_direction(target_direction, forward, up)
 
 
 def consistent_sides(df_head_feet, frame_labels):
     """
-    [description]
+    Use the direction of motion for a walking trial to assign
+    chosen positions to correct left/right sides.
 
     Parameters
     ----------
-    df_head_feet : {[type]}
-        [description]
-    frame_labels : {[type]}
-        [description]
+    df_head_feet : pandas DataFrame
+        Head and foot positions at each image frame.
+        Three columns: HEAD, L_FOOT, R_FOOT.
+    frame_labels : ndarray
+        Each element is a list of position labels.
 
     Returns
     -------
-    [type]
-        [description]
-    """
+    switch_sides : pandas Series
+        Series of booleans with frame numbers as the index.
+        If the value for frame f is True, the left and right
+        sides should be switched for frame f.
 
+    """
     frames = df_head_feet.index.values
 
     n_frames = len(frame_labels)
