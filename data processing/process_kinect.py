@@ -1,86 +1,79 @@
 import os
+import glob
+import copy
+
 import pandas as pd
 import numpy as np
 
-file_name = '2014-12-22_P007_Pre_004.txt'
-load_dir = '../../../MEGA/Data/Kinect Zeno/Kinect trials'
-save_dir = '../../../MEGA/Data/Kinect Zeno/Kinect processed'
 
-load_path = os.path.join(load_dir, file_name)
+file_paths = glob.glob('../../MEGA/Data/Kinect Zeno/Kinect trials/*.txt')
+
+load_dir = '../../MEGA/Data/Kinect Zeno/Kinect trials'
+save_dir = '../../MEGA/Data/Kinect Zeno/Kinect processed'
+
 
 # Number of columns for the position coordinates
 # Number should be sufficiently large and divisible by 3
 n_coord_cols = 90
 
-df = pd.read_csv(load_path, skiprows=range(22), header=None,
-                 names=[i for i in range(-2, n_coord_cols)],
-                 sep='\t', engine='python')
 
-# Change some column names
-df.rename(columns={-2: 'Frame', -1: 'Part'}, inplace=True)
+for file_path in file_paths[-1:]:
 
-# Replace any non-number strings with nan in the Frame column
-df['Frame'] = df['Frame'].replace(r'[^0-9]', np.nan, regex=True)
+    df = pd.read_csv(file_path, skiprows=range(22), header=None,
+                     names=[i for i in range(-2, n_coord_cols)],
+                     sep='\t', engine='python')
 
-# Convert the strings in the frame column to numbers
-df['Frame'] = pd.to_numeric(df['Frame'])
+    # Change some column names
+    df.rename(columns={-2: 'Frame', -1: 'Part'}, inplace=True)
 
-max_frame = max(df['Frame'])
-n_frames = int(max_frame) + 1
+    # Replace any non-number strings with nan in the Frame column
+    df.Frame = df.Frame.replace(r'[^0-9]', np.nan, regex=True)
 
-# Crop the dataframe at the max frame number
-last_index = df[df.Frame == max_frame].index[-1]
-df = df.loc[:last_index, :]
+    # Convert the strings in the frame column to numbers
+    df.Frame = pd.to_numeric(df.Frame)
 
-df.set_index('Frame', inplace=True)
+    max_frame = int(max(df.Frame))
 
-# Part names
-parts = df.groupby('Part').groups.keys()
+    # Crop the dataframe at the max frame number
+    last_index = df[df.Frame == max_frame].index[-1]
+    df = df.loc[:last_index, :]
 
-confidence_list, population_list = [], []
+    # Part names
+    parts = df.groupby('Part').groups.keys()
 
-for part in parts:
-    df_part = df[df.Part == part]
-    confidence_dict, population_dict = {}, {}
+    df_conf = df.iloc[:, range(5)]
+    df_hypo = pd.concat([df.loc[:, ['Frame', 'Part']], df.iloc[:, 5:]], axis=1)
 
-    for frame in range(n_frames):
+    has_data = df_hypo.loc[:, 3].notnull()
+    df_hypo = df_hypo[has_data]
 
-        # The first 3 coordinates are the highest confidence position,
-        # in camera coordinates
-        conf_vector = df_part.iloc[frame].iloc[1:4]
+    point_counts = np.sum(df_hypo.iloc[:, 2:].notnull(), axis=1)
 
-        # The remaining coordinates are the body part hypotheses
-        part_vector = df_part.iloc[frame][4:].dropna()
+    dict_hypo = {part: {f: np.nan for f in range(max_frame + 1)}
+                 for part in parts}
+    dict_conf = copy.deepcopy(dict_hypo)
 
-        # Reshape array into an n x 3 matrix. Each row is an x, y, z position
-        # The -1 means the row dimension is inferred
-        population = part_vector.values.reshape(-1, 3).astype(float)
-        conf_pos = conf_vector.values.reshape(-1, 3).astype(float)
+    for index, n_coords in point_counts.items():
 
-        population.round(2)  # Round to save space
+        row_hypo = df_hypo.loc[index]
+        row_conf = df_conf.loc[index]
 
-        confidence_dict[frame] = conf_pos if ~np.all(conf_pos == 0) else np.nan
-        population_dict[frame] = population if len(population) > 0 else np.nan
+        part = row_hypo.Part
+        frame = row_hypo.Frame
 
-    confidence_list.append(confidence_dict)
-    population_list.append(population_dict)
+        coordinates = row_hypo.iloc[2: 2 + n_coords].values
+        points = coordinates.reshape(-1, 3)
 
+        dict_hypo[part][frame] = points
+        dict_conf[part][frame] = row_conf[2:].values
 
-df_conf = pd.DataFrame(confidence_list).T
-df_conf.columns = parts
-df_conf.index.name = 'Frame'
+    df_hypo_final = pd.DataFrame(dict_hypo).rename_axis('Frame')
+    df_conf_final = pd.DataFrame(dict_conf).rename_axis('Frame')
 
-df_final = pd.DataFrame(population_list).T
-df_final.columns = parts
-df_final.index.name = 'Frame'
+    # %%  Save data to pickles
 
+    save_path_conf = file_path.replace(".txt", "_conf.pkl")
+    df_conf_final.to_pickle(save_path_conf)
 
-# %%  Save data to pickles
-
-conf_save_name = file_name.replace(".txt", "_conf.pkl")
-conf_save_path = os.path.join(save_dir, conf_save_name)
-df_conf.to_pickle(conf_save_path)
-
-save_name = file_name.replace(".txt", ".pkl")
-save_path = os.path.join(save_dir, save_name)
-df_final.to_pickle(save_path)
+    save_path_hypo = file_path.replace(".txt", ".pkl")
+    df_hypo_final.to_pickle(save_path_hypo)
