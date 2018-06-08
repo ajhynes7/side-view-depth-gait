@@ -233,22 +233,38 @@ def best_fit_line(points):
     Find the line of best fit for a set of multi-dimensional points.
     Uses singular value decomposition.
 
+    The direction of the line depends on the order of the points.
+
     Parameters
     ----------
     points : ndarray
-         Each row is a position vector..
+         (n, d) array of n points with dimension d.
 
     Returns
     -------
     centroid : ndarray
-        Centroid of all the points. Line of best fit passes through centroid..
+        Centroid of all the points. Line of best fit passes through centroid.
     direction : ndarray
-        Direction vector for line of best fit..
+        Unit direction vector for line of best fit.
         Right singular vector which corresponds to the largest
-        singular value of A..
+        singular value of A.
+
+    Examples
+    --------
+    >>> points = np.array([[1, 0], [2, 0], [3, 0]])
+    >>> centroid, direction = best_fit_line(points)
+
+    >>> centroid
+    array([2., 0.])
+
+    >>> direction
+    array([1., 0.])
+
+    >>> _, direction = best_fit_line(np.flip(points, axis=0))
+    >>> direction.astype(int)
+    array([-1,  0])
 
     """
-
     # Ensure that points have no nan values
     points = points[~np.isnan(points).any(axis=1)]
 

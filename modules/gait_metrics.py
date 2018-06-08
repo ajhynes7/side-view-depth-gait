@@ -45,6 +45,34 @@ def foot_dist_peaks(foot_dist, frame_labels, r=1):
     return peak_frames
 
 
+def assign_swing_stance(foot_points_i, foot_points_f):
+
+    max_range = 0
+
+    for a in range(2):
+        for b in range(2):
+
+            P_stance_i = foot_points_i[a, :]
+            P_stance_f = foot_points_f[b, :]
+
+            P_swing_i = foot_points_i[1 - a, :]
+            P_swing_f = foot_points_f[1 - b, :]
+
+            d_stance = norm(P_stance_f - P_stance_i)
+            d_swing = norm(P_swing_f - P_swing_i)
+
+            d_range = d_swing - d_stance
+
+            if d_range > max_range:
+
+                max_range = d_range
+
+                points_i = np.array([P_stance_i, P_swing_i])
+                points_f = np.array([P_stance_f, P_swing_f])
+
+    return points_i, points_f
+
+
 def get_gait_metrics(df, frame_i, frame_f):
     """
     Uses two consecutive peak frames to calculate gait metrics.
@@ -69,21 +97,15 @@ def get_gait_metrics(df, frame_i, frame_f):
     """
     Head_i, Head_f = df.loc[frame_i, 'HEAD'], df.loc[frame_f, 'HEAD']
 
-    L_foot_i, R_foot_i = df.loc[frame_i, 'L_FOOT'], df.loc[frame_i, 'R_FOOT']
-    L_foot_f, R_foot_f = df.loc[frame_f, 'L_FOOT'], df.loc[frame_f, 'R_FOOT']
+    foot_points_i = np.stack(df.loc[frame_i, ['L_FOOT', 'R_FOOT']])
+    foot_points_f = np.stack(df.loc[frame_f, ['L_FOOT', 'R_FOOT']])
 
-    dist_L, dist_R = norm(L_foot_f - L_foot_i), norm(R_foot_f - R_foot_i)
+    points_i, points_f = assign_swing_stance(foot_points_i, foot_points_f)
 
-    # The stance foot is the one that moved the smaller distance
-    swing_num = np.argmax([dist_L, dist_R])
-    stance_num = ~swing_num
+    P_stance_i, P_swing_i = points_i
+    P_stance_f, P_swing_f = points_f
 
-    points_i, points_f = [L_foot_i, R_foot_i], [L_foot_f, R_foot_f]
-
-    P_swing_i, P_swing_f = points_i[swing_num], points_f[swing_num]
-    P_stance_i, P_stance_f = points_i[stance_num], points_f[stance_num]
-
-    P_stance = np.mean(np.array([P_stance_f, P_stance_i]), axis=0)
+    P_stance = (P_stance_i + P_stance_f) / 2
 
     P_proj = lin.proj_point_line(P_stance, P_swing_i, P_swing_f)
 
