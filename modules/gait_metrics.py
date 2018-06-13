@@ -10,6 +10,23 @@ import modules.math_funcs as mf
 
 
 def foot_dist_peaks(foot_dist, frame_labels, r=1):
+    """
+    [description]
+
+    Parameters
+    ----------
+    foot_dist : {[type]}
+        [description]
+    frame_labels : {[type]}
+        [description]
+    r : {number}, optional
+        [description] (the default is 1, which [default_description])
+
+    Returns
+    -------
+    [type]
+        [description]
+    """
 
     frames = foot_dist.index.values.reshape(-1, 1)
 
@@ -42,10 +59,27 @@ def foot_dist_peaks(foot_dist, frame_labels, r=1):
     # Flatten list and sort to obtain peak frames from whole walking trial
     peak_frames = sorted([x for sublist in frame_list for x in sublist])
 
-    return peak_frames
+    # Duplicate frames may have occurred from finding the frames closest
+    # to the cluster centroids
+    return np.unique(peak_frames)
 
 
 def assign_swing_stance(foot_points_i, foot_points_f):
+    """
+    [description]
+
+    Parameters
+    ----------
+    foot_points_i : {[type]}
+        [description]
+    foot_points_f : {[type]}
+        [description]
+
+    Returns
+    -------
+    [type]
+        [description]
+    """
 
     max_range = 0
 
@@ -126,7 +160,7 @@ def get_gait_metrics(df, frame_i, frame_f):
     return metrics
 
 
-def gait_dataframe(df, peak_frames, label_dict):
+def gait_dataframe(df, peak_frames, peak_labels):
     """
     Produces a pandas DataFrame containing gait metrics from a walking trial.
 
@@ -138,7 +172,7 @@ def gait_dataframe(df, peak_frames, label_dict):
         | Each element is a position vector
     peak_frames : array_like
         Array of all frames with a detected peak in the foot distance data
-    label_dict : dict
+    peak_labels : dict
         | Label of each peak frame
         | The labels are determined by clustering the peak frames
 
@@ -152,7 +186,8 @@ def gait_dataframe(df, peak_frames, label_dict):
 
     for frame_i, frame_f in gen.pairwise(peak_frames):
 
-        if label_dict[frame_i] == label_dict[frame_f]:
+        if peak_labels[frame_i] == peak_labels[frame_f]:
+
             metrics = get_gait_metrics(df, frame_i, frame_f)
 
             gait_list.append(metrics)

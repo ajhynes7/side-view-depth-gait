@@ -168,6 +168,8 @@ def proj_point_line(P, A, B):
     """
     Project a point onto a line.
 
+    Fails if the two points defining the line are identical.
+
     Parameters
     ----------
     P : ndarray
@@ -190,11 +192,15 @@ def proj_point_line(P, A, B):
     array([0., 0.])
 
     """
+
     AP = P - A  # Vector from A to point
     AB = B - A  # Vector from A to B
 
+    d_AB = norm(AB)
+    assert d_AB > 0
+
     # Project point onto line
-    return A + np.dot(AP, AB) / norm(AB)**2 * AB
+    return A + np.dot(AP, AB) / d_AB**2 * AB
 
 
 def proj_point_plane(P, P_plane, normal):

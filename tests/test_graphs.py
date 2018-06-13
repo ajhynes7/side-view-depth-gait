@@ -16,8 +16,7 @@ def test_adj_list_conversion():
                   [np.nan, np.nan, -4],
                   [np.nan, 3, np.nan]])
 
-    n_nodes = len(G)
-    npt.assert_array_equal(gr.adj_list_to_matrix(G, n_nodes), M)
+    npt.assert_array_equal(gr.adj_list_to_matrix(G), M)
 
     G_converted = gr.adj_matrix_to_list(M)
     assert G == G_converted
