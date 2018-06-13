@@ -122,4 +122,25 @@ def test_angle_between(a, b, expected):
     npt.assert_allclose(angle, expected)
 
 
+def test_for_failure():
+    """
+    Test that functions fail when floating-point errors occur,
+    such as division by zero.
+
+    """
+    P = np.array([1, 2])
+    A, B = np.array([5, 5]), np.array([5, 5])
+
+    with pytest.raises(Exception):
+
+        lin.unit(np.zeros(3))
+
+        lin.dist_point_line(P, A, B)
+
+        lin.proj_point_line(P, A, B)
+
+        lin.angle_between(A, B)
+
+    
+
 points = [[1, 2, 3], [2, 2, 5], [-1, 10, 2], [2, 3, 5]]
