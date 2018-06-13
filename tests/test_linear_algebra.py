@@ -141,6 +141,5 @@ def test_for_failure():
 
         lin.angle_between(A, B)
 
-    
 
 points = [[1, 2, 3], [2, 2, 5], [-1, 10, 2], [2, 3, 5]]

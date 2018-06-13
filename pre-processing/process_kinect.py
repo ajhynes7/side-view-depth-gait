@@ -90,6 +90,6 @@ if __name__ == '__main__':
 
     # Number of columns for the position coordinates
     # Number should be sufficiently large and divisible by 3
-    n_coord_cols = 90
+    n_coord_cols = 99
 
     main()

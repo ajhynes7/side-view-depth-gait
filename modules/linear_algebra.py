@@ -361,6 +361,7 @@ def angle_between(x, y, degrees=False):
 
     return theta
 
+
 # Raise an exception for any floating-point errors
 np.seterr(all='raise')
 
@@ -368,5 +369,3 @@ if __name__ == "__main__":
 
     import doctest
     doctest.testmod()
-
-    

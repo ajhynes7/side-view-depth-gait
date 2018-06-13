@@ -6,6 +6,7 @@
 *.iml
 *.pyc
 *_old.*
+*.coverage
 docs/_build
 docs/stubs
 data/

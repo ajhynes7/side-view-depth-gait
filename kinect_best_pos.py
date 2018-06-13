@@ -16,6 +16,11 @@ def main():
 
         df = pd.read_pickle(file_path)
 
+        base_name = os.path.basename(file_path)     # File with extension
+        file_name = os.path.splitext(base_name)[0]  # File with no extension
+
+        lengths = df_length.loc[file_name]  # Read lengths
+
         # Select frames with data
         lower_parts, part_labels = gen.strings_with_any_substrings(
             df.columns, lower_part_types)
@@ -27,10 +32,6 @@ def main():
 
         label_series = df_lower.apply(
             lambda row: pe.get_population(row, part_labels)[1], axis=1)
-
-        # Estimate lengths between consecutive parts
-        lengths = pe.estimate_lengths(population_series, label_series,
-                                      cost_func, 60, eps=0.01)
 
         # Expected lengths for all part connections,
         # including non-adjacent (e.g., knee to foot)
@@ -80,8 +81,6 @@ def main():
         df_head_feet = df_head_feet[good_frame_L & good_frame_R]
 
         # Save data
-        base_name = os.path.basename(file_path)     # File with extension
-        file_name = os.path.splitext(base_name)[0]  # File with no extension
 
         save_path = os.path.join(save_dir, file_name) + '.pkl'
         df_head_feet.to_pickle(save_path)
@@ -111,8 +110,13 @@ if __name__ == '__main__':
     load_dir = os.path.join('data', 'kinect', 'processed', 'hypothesis')
     save_dir = os.path.join('data', 'kinect', 'best pos')
 
+    length_path = os.path.join('data', 'results', 'kinect_lengths.csv')
+
     # All files with .pkl extension
     file_paths = glob.glob(os.path.join(load_dir, '*.pkl'))
+
+    # DataFrame with lengths between body parts
+    df_length = pd.read_csv(length_path, index_col=0)
 
     # %% Run main script
 
