@@ -87,7 +87,8 @@ if __name__ == '__main__':
     save_dir_conf = os.path.join('..', 'data', 'kinect', 'processed',
                                  'confidence')
 
-    file_paths = glob.glob(load_dir + '/*.txt')
+    # All files with .txt extension
+    file_paths = glob.glob(os.path.join(load_dir, '*.txt'))
 
     # Number of columns for the position coordinates
     # Number should be sufficiently large and divisible by 3
