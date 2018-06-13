@@ -1,68 +1,62 @@
 import os
+import glob
+
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-
-from sklearn.cluster import KMeans
 
 import modules.gait_metrics as gm
 
-
-# %% Read DataFrame
-
-trial_id = '2014-12-22_P007_Pre_004'
-
-load_directory = '../../MEGA/Data/Kinect Zeno/Kinect best pos'
-load_path = os.path.join(load_directory, trial_id + '.pkl')
-
-df_head_feet = pd.read_pickle(load_path)
+from sklearn.cluster import KMeans
 
 
-# %% Peak detection
+def main():
 
-# Cluster frames with k means to locate the 4 walking passes
-frames = df_head_feet.index.values.reshape(-1, 1)
-k_means = KMeans(n_clusters=4, random_state=0).fit(frames)
+    for file_path in file_paths:
 
-foot_dist = df_head_feet.apply(lambda row: np.linalg.norm(
-                               row['L_FOOT'] - row['R_FOOT']), axis=1)
+        df_head_feet = pd.read_pickle(file_path)
 
-# Detect peaks in the foot distance data
-# Pass in the foot distance index so the peak x-values align with the frames
-peak_frames = gm.foot_dist_peaks(foot_dist, k_means.labels_, r=5)
+        # %% Peak detection
+
+        # Cluster frames with k means to locate the 4 walking passes
+        frames = df_head_feet.index.values.reshape(-1, 1)
+        k_means = KMeans(n_clusters=4, random_state=0).fit(frames)
+
+        foot_dist = df_head_feet.apply(lambda row: np.linalg.norm(
+                                       row['L_FOOT'] - row['R_FOOT']), axis=1)
+
+        # Detect peaks in the foot distance data
+        peak_frames = gm.foot_dist_peaks(foot_dist, k_means.labels_, r=5)
+
+        # %% Gait metrics
+
+        # Dictionary that maps image frames to cluster labels
+        label_dict = dict(zip(frames.flatten(), k_means.labels_))
+
+        gait_df = gm.gait_dataframe(df_head_feet, peak_frames, label_dict)
+
+        # %% Fill in row of results DataFrame
+
+        df_metrics = pd.read_csv(save_path, index_col=0)
+
+        base_name = os.path.basename(file_path)     # File with extension
+        file_name = os.path.splitext(base_name)[0]  # File with no extension
+
+        gait_results = gait_df.mean()
+        df_metrics.loc[file_name] = gait_results
+
+        df_metrics.to_csv(save_path)
 
 
-# %% Gait metrics
+if __name__ == '__main__':
 
-# Dictionary that maps image frames to cluster labels
-label_dict = dict(zip(frames.flatten(), k_means.labels_))
+    load_dir = os.path.join('data', 'kinect', 'best pos')
+    save_dir = os.path.join('data', 'results')
 
-gait_df = gm.gait_dataframe(df_head_feet, peak_frames, label_dict)
+    save_name = 'kinect_gait_metrics.csv'
 
+    # All files with .pkl extension
+    file_paths = glob.glob(os.path.join(load_dir, '*.pkl'))
 
-write_dir = '../../MEGA/Data/Kinect Zeno/Results'
-write_filename = 'kinect_gait_metrics.csv'
+    save_path = os.path.join(save_dir, save_name)
 
-write_path = os.path.join(write_dir, write_filename)
-
-write_df = pd.read_csv(write_path, index_col=0)
-
-# Fill in row of dataframe
-gait_results = gait_df.mean()
-write_df.loc[trial_id] = gait_results
-
-write_df.to_csv(write_path)
-
-
-# %% Visual results
-
-fig, ax = plt.subplots()
-
-plt.plot(foot_dist, color='k', linewidth=0.7)
-plt.xlabel('Frame number')
-plt.ylabel('Distance between feet [cm]')
-ax.vlines(x=peak_frames, ymin=0, ymax=50, colors='r')
-
-plt.show()
-
-print(gait_results)
+    main()

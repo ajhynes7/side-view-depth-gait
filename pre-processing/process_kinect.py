@@ -25,7 +25,7 @@ def main():
 
         max_frame = int(max(df.Frame))
 
-        # Crop the dataframe at the max frame number
+        # Crop the DataFrame at the max frame number
         last_index = df[df.Frame == max_frame].index[-1]
         df = df.loc[:last_index, :]
 
@@ -62,12 +62,10 @@ def main():
         df_final_hypo = pd.DataFrame(dict_hypo).rename_axis('Frame')
         df_final_conf = pd.DataFrame(dict_conf).rename_axis('Frame')
 
-        # %%  Save data to pickles
+        # Save data
 
-        base_name = os.path.basename(file_path)
-
-        # File with no extension
-        file_name = os.path.splitext(base_name)[0]
+        base_name = os.path.basename(file_path)     # File with extension
+        file_name = os.path.splitext(base_name)[0]  # File with no extension
 
         save_path_hypo = os.path.join(save_dir_hypo, file_name) + '.pkl'
         save_path_conf = os.path.join(save_dir_conf, file_name) + '.pkl'

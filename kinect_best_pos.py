@@ -1,5 +1,6 @@
 import os
 import glob
+
 import pandas as pd
 import numpy as np
 
@@ -15,8 +16,7 @@ def main():
 
         df = pd.read_pickle(file_path)
 
-        # %% Select frames with data
-
+        # Select frames with data
         lower_parts, part_labels = gen.strings_with_any_substrings(
             df.columns, lower_part_types)
 
@@ -28,8 +28,7 @@ def main():
         label_series = df_lower.apply(
             lambda row: pe.get_population(row, part_labels)[1], axis=1)
 
-        # %% Estimate lengths between consecutive parts
-
+        # Estimate lengths between consecutive parts
         lengths = pe.estimate_lengths(population_series, label_series,
                                       cost_func, 60, eps=0.01)
 
@@ -37,7 +36,7 @@ def main():
         # including non-adjacent (e.g., knee to foot)
         label_adj_list = pe.lengths_to_adj_list(part_connections, lengths)
 
-        # %% Select paths to feet on each frame
+        # Select paths to feet on each frame
 
         # List of image frames with data
         frames = population_series.index.values
@@ -65,12 +64,12 @@ def main():
         df_head_feet.columns = ['HEAD', 'L_FOOT', 'R_FOOT']
         df_head_feet.index.name = 'Frame'
 
-        # %% Remove outlier frames
+        # Remove outlier frames
+        y_foot_L = df_head_feet.apply(lambda row: row['L_FOOT'][1],
+                                      axis=1).values
 
-        y_foot_L = df_head_feet.apply(
-            lambda row: row['L_FOOT'][1], axis=1).values
-        y_foot_R = df_head_feet.apply(
-            lambda row: row['R_FOOT'][1], axis=1).values
+        y_foot_R = df_head_feet.apply(lambda row: row['R_FOOT'][1],
+                                      axis=1).values
 
         y_foot_L_filtered = st.mad_outliers(y_foot_L, 2)
         y_foot_R_filtered = st.mad_outliers(y_foot_R, 2)
@@ -80,12 +79,9 @@ def main():
 
         df_head_feet = df_head_feet[good_frame_L & good_frame_R]
 
-        # %% Save data
-
-        base_name = os.path.basename(file_path)
-
-        # File with no extension
-        file_name = os.path.splitext(base_name)[0]
+        # Save data
+        base_name = os.path.basename(file_path)     # File with extension
+        file_name = os.path.splitext(base_name)[0]  # File with no extension
 
         save_path = os.path.join(save_dir, file_name) + '.pkl'
         df_head_feet.to_pickle(save_path)
@@ -110,7 +106,7 @@ if __name__ == '__main__':
 
     part_connections = np.matrix('0 1; 1 2; 2 3; 3 4; 4 5; 3 5; 1 3')
 
-    # %% Read DataFrame
+    # %% Reading data
 
     load_dir = os.path.join('data', 'kinect', 'processed', 'hypothesis')
     save_dir = os.path.join('data', 'kinect', 'best pos')
