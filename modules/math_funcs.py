@@ -31,6 +31,7 @@ def gaussian(x, sigma=1, mu=0):
     >>> round(gaussian(-0.5, mu=1, sigma=0.5), 4)
     0.0089
     """
+    np.seterr(under='ignore')
 
     coeff = 1.0 / np.sqrt(2 * np.pi * sigma**2)
     exponent = np.exp(- (x - mu)**2 / (2 * sigma**2))
