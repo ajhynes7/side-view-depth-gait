@@ -1,6 +1,36 @@
 import numpy as np
 
 
+def divide_no_error(a, b):
+    """
+    Division that does not allow any floating-point errors
+    (e.g., division by zero).
+
+    Parameters
+    ----------
+    a, b : {int, float}
+        Input values
+
+    Returns
+    -------
+    float
+        Result of division
+
+    Examples
+    --------
+    >>> divide_no_error(10, 2)
+    5.0
+
+    >>> divide_no_error(10, 0)
+    Traceback (most recent call last):
+    ZeroDivisionError: division by zero
+
+    """
+    np.seterr(all='raise')
+
+    return a / b
+
+
 def pairwise(x):
     """
     Return a zip object that is used to iterate
@@ -32,12 +62,14 @@ def strings_with_any_substrings(strings, substrings):
     Given a list of strings and a list of substrings,
     yield each string that contains any of the substrings.
 
+    The function is case sensitive.
+
     Parameters
     ----------
     strings: iterable
         Iterable of strings.
     substrings : iterable
-        Iterable of substrings
+        Iterable of substrings.
 
     Returns
     -------

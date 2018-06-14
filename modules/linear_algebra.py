@@ -27,7 +27,7 @@ def unit(v):
     array([ 0., -1.])
 
     """
-    return v / norm(v)
+    return gen.divide_no_error(v, norm(v))
 
 
 def consecutive_dist(points):
@@ -130,7 +130,7 @@ def dist_point_line(P, A, B):
     num = norm(np.cross(P - A, P - B))
     denom = norm(A - B)
 
-    return num / denom
+    return gen.divide_no_error(num, denom)
 
 
 def dist_point_plane(P, P_plane, normal):
@@ -195,7 +195,7 @@ def proj_point_line(P, A, B):
     AB = B - A  # Vector from A to B
 
     # Project point onto line
-    return A + np.dot(AP, AB) / norm(AB)**2 * AB
+    return A + gen.divide_no_error(np.dot(AP, AB), norm(AB)**2) * AB
 
 
 def proj_point_plane(P, P_plane, normal):
@@ -205,11 +205,11 @@ def proj_point_plane(P, P_plane, normal):
     Parameters
     ----------
     P : ndarray
-        Point in space..
+        Point in space.
     P_plane : ndarray
-        Point on plane..
+        Point on plane.
     normal : ndarray
-        Normal vector of plane..
+        Normal vector of plane.
 
     Returns
     -------
@@ -352,7 +352,7 @@ def angle_between(x, y, degrees=False):
     """
     dot_product = np.dot(x, y)
 
-    cos_theta = dot_product / (norm(x) * norm(y))
+    cos_theta = gen.divide_no_error(dot_product, (norm(x) * norm(y)))
 
     theta = np.arccos(cos_theta)
 
@@ -361,9 +361,6 @@ def angle_between(x, y, degrees=False):
 
     return theta
 
-
-# Raise an exception for any floating-point errors
-np.seterr(all='raise')
 
 if __name__ == "__main__":
 
