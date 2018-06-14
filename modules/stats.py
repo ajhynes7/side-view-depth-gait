@@ -25,6 +25,7 @@ def mad_outliers(x, c):
 
     Examples
     --------
+    >>> import numpy.testing as npt
     >>> x_filtered = mad_outliers([2.0, 3.0, 100.0, 3.0], 2.5)
     >>> npt.assert_array_equal(x_filtered, [2, 3, np.nan, 3])
 
@@ -46,15 +47,15 @@ def mad_outliers(x, c):
 
 def relative_error(measured, actual, absolute=False):
     """
-    Return the relative error between a measured and actual value.
+    Return the relative errors between measured and actual values.
 
     Parameters
     ----------
-    measured : {int, float}
-        Measured value.
+    measured : {int, float, ndarray}
+        Measured value or array.
 
-    actual : {int, float}
-        Actual value.
+    actual : {int, float, ndarray}
+        Actual value or array.
 
     absolute : bool, optional
         If True, the absolute relative error is returned
@@ -62,7 +63,7 @@ def relative_error(measured, actual, absolute=False):
 
     Returns
     -------
-    error : float
+    error : {float, ndarray}
         Relative error.
 
     Examples
@@ -73,6 +74,11 @@ def relative_error(measured, actual, absolute=False):
     >>> relative_error(3, 5, absolute=True)
     0.4
 
+    >>> x = np.array([1, 2])
+    >>> y = np.array([2, 2])
+    >>> relative_error(x, y, absolute=True)
+    array([0.5, 0. ])
+
     """
     error = (measured - actual) / actual
 
@@ -80,6 +86,47 @@ def relative_error(measured, actual, absolute=False):
         error = abs(error)
 
     return error
+
+
+def percent_difference(x, y, absolute=False):
+    """
+    [description]
+
+    Parameters
+    ----------
+    x, y : {int, float, ndarray}
+        Input values or arrays.
+    absolute : bool, optional
+        If True, the absolute relative error is returned
+        (the default is False).
+
+    Returns
+    -------
+    {float, ndarray}
+        Percent difference.
+
+    Examples
+    --------
+    >>> x = np.array([3, 3, 4])
+    >>> y = np.array([1, 2, 4])
+
+    >>> percent_difference(x, y)
+    array([1. , 0.4, 0. ])
+
+    >>> percent_difference(2, 3)
+    -0.4
+
+    """
+    difference = x - y
+
+    average = np.mean([x, y], axis=0)
+
+    percent_difference = difference / average
+
+    if absolute:
+        percent_difference = abs(percent_difference)
+
+    return percent_difference
 
 
 if __name__ == "__main__":
