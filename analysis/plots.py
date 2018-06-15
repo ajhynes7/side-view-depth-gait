@@ -1,6 +1,6 @@
 import os
-import pandas as pd
 
+import pandas as pd
 import matplotlib.pyplot as plt
 
 results_dir = os.path.join('..', 'data', 'results')

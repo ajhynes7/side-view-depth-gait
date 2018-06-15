@@ -1,7 +1,7 @@
 import itertools
+
 import numpy as np
 import pandas as pd
-
 from scipy.spatial.distance import cdist
 
 import modules.graphs as gr

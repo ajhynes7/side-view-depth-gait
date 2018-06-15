@@ -1,5 +1,6 @@
-import numpy as np
 from functools import partial
+
+import numpy as np
 
 import modules.math_funcs as mf
 

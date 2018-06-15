@@ -1,9 +1,39 @@
 import numpy as np
 
 
+def limits(x, tolerance):
+    """
+    Return lower and upper limits (x ± tolerance).
+
+    Parameters
+    ----------
+    x : {int, float, ndarray}
+        Input value or array
+    tolerance : {int, float}
+        Tolerance that defines lower and upper limits.
+
+    Returns
+    -------
+    lower_lim, upper_lim : {int, float}
+        Lower and upper limits.
+
+    Examples
+    --------
+    >>> limits(10, 2)
+    (8, 12)
+
+    >>> limits(np.array([2, 3]), 5)
+    (array([-3, -2]), array([7, 8]))
+
+    """
+    lower_lim, upper_lim = x - tolerance, x + tolerance
+
+    return lower_lim, upper_lim
+
+
 def divide_no_error(a, b):
     """
-    Division that does not allow any floating-point errors
+    Divide without allowing any floating-point errors
     (e.g., division by zero).
 
     Parameters

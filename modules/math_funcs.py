@@ -1,4 +1,5 @@
 import math
+
 import numpy as np
 
 
@@ -30,6 +31,7 @@ def gaussian(x, sigma=1, mu=0):
 
     >>> round(gaussian(-0.5, mu=1, sigma=0.5), 4)
     0.0089
+    
     """
     np.seterr(under='ignore')
 

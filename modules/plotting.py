@@ -123,3 +123,23 @@ def plot_series(series):
         plt.scatter(point[0], point[1])
 
     plt.legend(series.index)
+
+
+def plot_bland_altman(means, diffs, bias, lower_lim, upper_lim, percent=True):
+
+    plt.scatter(means, diffs, c='black', s=5)
+
+    plt.axhline(y=bias, color='k', linestyle='-')
+    plt.axhline(y=upper_lim, color='k', linestyle='--')
+    plt.axhline(y=lower_lim, color='k', linestyle='--')
+
+    plt.xlabel('Mean of measurements')
+
+    if percent:
+        plt.ylabel('Percent difference between measurements')
+    else:
+        plt.ylabel('Difference between measurements')
+
+    plt.annotate('Bias', xy=(120, bias - 2))
+    plt.annotate('Upper limit', xy=(120, upper_lim - 2))
+    plt.annotate('Lower limit', xy=(120, lower_lim - 2))
