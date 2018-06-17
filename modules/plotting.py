@@ -125,8 +125,55 @@ def plot_series(series):
     plt.legend(series.index)
 
 
-def plot_bland_altman(means, diffs, bias, lower_lim, upper_lim, percent=True):
+def compare_measurements(x, y, **kwargs):
+    """
+    Scatter plot of measurements from two devices,
+    with line plot to show ideal results (when measurements are equal).
 
+    Parameters
+    ----------
+    x : array_like
+        Measurements of device A.
+    y : array_like
+        Measurements of device B.
+    **kwargs
+        Keyword arguments for scatter plot.
+
+    """
+    _, ax = plt.subplots()
+
+    ax.scatter(x, y, **kwargs)
+
+    lims = [
+        np.min([ax.get_xlim(), ax.get_ylim()]),
+        np.max([ax.get_xlim(), ax.get_ylim()]),
+    ]
+
+    # Plot both limits against each other
+    ax.plot(lims, lims, 'k-')
+
+
+def plot_bland_altman(means, diffs, bias, lower_lim, upper_lim, percent=True):
+    """
+    Produce a Bland-Altman plot.
+
+    Parameters
+    ----------
+    means : array_like
+        Means of measurements from devices A and B.
+    diffs : array_like
+        Differences of measurements.
+    bias : {int, float}
+            Mean of the differences.
+    lower_lim : {int, float}
+        Bias minus 1.96 standard deviations.
+    upper_lim : {int, float}
+        Bias plus 1.96 standard deviations.
+    percent : bool, optional
+            If True, the y label shows percent difference.
+            If False (default) the y label shows regular difference.
+
+    """
     plt.scatter(means, diffs, c='black', s=5)
 
     plt.axhline(y=bias, color='k', linestyle='-')

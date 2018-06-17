@@ -24,9 +24,9 @@ class BlandAltman:
         Returns
         -------
         means : ndarray
-            Mean of each measurement from devices A and B.
+            Means of measurements from devices A and B.
         diffs : ndarray
-            Differences between measurements from devices A and B.
+            Differences of measurements.
 
         Examples
         --------
