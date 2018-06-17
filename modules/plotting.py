@@ -5,17 +5,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 
 def scatter_colour(points, colours, labels):
-    """
 
-
-    Parameters
-    ----------
-
-
-    Returns
-    -------
-
-    """
     plt.figure()
 
     for i, c in enumerate(colours):
@@ -27,17 +17,6 @@ def scatter_colour(points, colours, labels):
 
 
 def scatter_pos(fig, point_list, colors='b'):
-    """
-
-
-    Parameters
-    ----------
-
-
-    Returns
-    -------
-
-    """
 
     ax = Axes3D(fig)
 
