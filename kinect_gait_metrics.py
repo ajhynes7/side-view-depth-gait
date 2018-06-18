@@ -26,7 +26,7 @@ def main():
                                        row['L_FOOT'] - row['R_FOOT']), axis=1)
 
         # Detect peaks in the foot distance data
-        peak_frames = gm.foot_dist_peaks(foot_dist, k_means.labels_, r=5)
+        peak_frames = gm.foot_dist_peaks(foot_dist, r=3)
 
         # %% Gait metrics
 

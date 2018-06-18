@@ -63,25 +63,27 @@ class Stride():
         return self.stride_length / self.stride_time
 
 
-def foot_dist_peaks(foot_dist, frame_labels, r=1):
+def foot_dist_peaks(foot_dist, r=1):
     """
-    [description]
+    Find peaks in the foot distance data.
+
+    Applies mean shift to the foot distance values
+    greater than the root mean square.
 
     Parameters
     ----------
-    foot_dist : {[type]}
-        [description]
-    frame_labels : {[type]}
-        [description]
-    r : {number}, optional
-        [description] (the default is 1, which [default_description])
+    foot_dist : pandas Series.
+        Distance between feet at each frame.
+        Index values are frame numbers.
+    r : {int, float}, optional
+        Radius for mean shift clustering (default is 1).
 
     Returns
     -------
-    [type]
-        [description]
-    """
+    peak_frames : list
+        List of frames where foot distance is at a peak.
 
+    """
     frames = foot_dist.index.values.reshape(-1, 1)
 
     # Upper foot distance values are those above
@@ -89,29 +91,14 @@ def foot_dist_peaks(foot_dist, frame_labels, r=1):
     rms = mf.root_mean_square(foot_dist.values)
     is_upper_value = foot_dist > rms
 
-    n_labels = frame_labels.max() + 1
-    frame_list = []
+    # Find centres of foot distance peaks with mean shift
+    upper_frames = frames[is_upper_value]
+    _, centroids, k = cl.mean_shift(upper_frames,
+                                    cl.gaussian_kernel_shift, radius=r)
 
-    # Each label represent one walking pass by the camera
-    for i in range(n_labels):
-
-        # Upper foot distance values of one walking pass
-        upper_of_pass = (frame_labels == i) & is_upper_value
-
-        # Find centres of foot distance peaks with mean shift
-        input_frames = frames[upper_of_pass]
-        _, centroids, k = cl.mean_shift(input_frames,
-                                        cl.gaussian_kernel_shift, radius=r)
-
-        # Find the frames closest to the mean shift centroids
-        upper_pass_frames = frames[upper_of_pass]
-        centroid_frames = [lin.closest_point(upper_pass_frames,
-                                             x)[0].item() for x in centroids]
-
-        frame_list.append(centroid_frames)
-
-    # Flatten list and sort to obtain peak frames from whole walking trial
-    peak_frames = sorted([x for sublist in frame_list for x in sublist])
+    # Find the frames closest to the mean shift centroids
+    peak_frames = [lin.closest_point(upper_frames, x)[0].item()
+                   for x in centroids]
 
     # Duplicate frames may have occurred from finding the frames closest
     # to the cluster centroids
