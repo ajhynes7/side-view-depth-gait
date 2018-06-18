@@ -31,7 +31,7 @@ def gaussian(x, sigma=1, mu=0):
 
     >>> round(gaussian(-0.5, mu=1, sigma=0.5), 4)
     0.0089
-    
+
     """
     np.seterr(under='ignore')
 
@@ -172,34 +172,34 @@ def centre_of_mass(points, masses):
     Parameters
     ----------
     points : ndarray
-        List of points in space
-    masses : array_like
-        Mass of each point
+        List of points in space.
+    masses : ndarray
+        Mass of each point.
 
     Returns
     -------
     ndarray
-        Centre of mass as a 1-D array
+        Centre of mass as a 1-D array.
 
     Examples
     --------
     >>> points = np.array([[1, 2, 3], [-1, 2, 5], [3, 5, 7]])
-    >>> masses = [1, 1, 1]
+    >>> masses = np.array([1, 1, 1])
+
     >>> centre_of_mass(points, masses)
     array([1., 3., 5.])
 
     >>> points = np.array([[-1, 10], [5, 2]])
-    >>> masses = [0, 1]
+    >>> masses = np.array([0, 1])
+
     >>> centre_of_mass(points, masses)
     array([5., 2.])
 
     """
-    total = 0
+    num = np.sum((points.T * masses).T, axis=0)
+    denom = masses.sum()
 
-    for point, mass in zip(points, masses):
-        total += mass * point
-
-    return total / sum(masses)
+    return num / denom
 
 
 if __name__ == "__main__":

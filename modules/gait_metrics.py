@@ -10,7 +10,7 @@ import modules.clustering as cl
 import modules.math_funcs as mf
 
 
-class Stride():
+class Stride:
 
     def __init__(self, state_i, state_f):
 
@@ -84,7 +84,7 @@ def foot_dist_peaks(foot_dist, r=1):
         List of frames where foot distance is at a peak.
 
     """
-    frames = foot_dist.index.values.reshape(-1, 1)
+    frames = foot_dist.index.values
 
     # Upper foot distance values are those above
     # the root mean square value
@@ -92,7 +92,7 @@ def foot_dist_peaks(foot_dist, r=1):
     is_upper_value = foot_dist > rms
 
     # Find centres of foot distance peaks with mean shift
-    upper_frames = frames[is_upper_value]
+    upper_frames = frames[is_upper_value].reshape(-1, 1)
     _, centroids, k = cl.mean_shift(upper_frames,
                                     cl.gaussian_kernel_shift, radius=r)
 
@@ -107,43 +107,46 @@ def foot_dist_peaks(foot_dist, r=1):
 
 def assign_swing_stance(foot_points_i, foot_points_f):
     """
-    [description]
+    Assign initial and final foot points to the stance and swing foot.
+
+    Returns the combination that minimizes
+    the distance travelled by the stance foot.
 
     Parameters
     ----------
-    foot_points_i : {[type]}
-        [description]
-    foot_points_f : {[type]}
-        [description]
+    foot_points_i : ndarray
+        The two initial foot points (at start of stride).
+    foot_points_f : ndarray
+        The two final foot points (at end of stride).
 
     Returns
     -------
-    [type]
-        [description]
-    """
+    points_i : ndarray
+        Initial foot points in order of (stance, swing).
+    points_f : ndarray
+        Final foot points in order of (stance, swing).
 
-    max_range = 0
+    """
+    min_dist = np.inf
+    points_i, points_f = [], []
 
     for a in range(2):
         for b in range(2):
 
-            P_stance_i = foot_points_i[a, :]
-            P_stance_f = foot_points_f[b, :]
+            stance_i = foot_points_i[a, :]
+            stance_f = foot_points_f[b, :]
 
-            P_swing_i = foot_points_i[1 - a, :]
-            P_swing_f = foot_points_f[1 - b, :]
+            swing_i = foot_points_i[1 - a, :]
+            swing_f = foot_points_f[1 - b, :]
 
-            d_stance = norm(P_stance_f - P_stance_i)
-            d_swing = norm(P_swing_f - P_swing_i)
+            d_stance = norm(stance_f - stance_i)
 
-            d_range = d_swing - d_stance
+            if d_stance < min_dist:
 
-            if d_range > max_range:
+                min_dist = d_stance
 
-                max_range = d_range
-
-                points_i = np.array([P_stance_i, P_swing_i])
-                points_f = np.array([P_stance_f, P_swing_f])
+                points_i = np.array([stance_i, swing_i])
+                points_f = np.array([stance_f, swing_f])
 
     return points_i, points_f
 

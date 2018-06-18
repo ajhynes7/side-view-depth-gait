@@ -59,18 +59,18 @@ def test_normalize_array():
 def test_centre_of_mass():
 
     points = np.array([[0, 1], [0, -1]])
-    masses = [10, 10]
+    masses = np.array([10, 10])
 
     centre = mf.centre_of_mass(points, masses)
 
     npt.assert_almost_equal(centre, [0, 0])
 
-    masses = [2, 1]
+    masses = np.array([2, 1])
     centre = mf.centre_of_mass(points, masses)
     npt.assert_almost_equal(centre, [0, 1/3])
 
     points = np.array([[1, 1], [0, 0]])
-    masses = [5, 10]
+    masses = np.array([5, 10])
     centre = mf.centre_of_mass(points, masses)
     npt.assert_almost_equal(centre, [1/3, 1/3])
 

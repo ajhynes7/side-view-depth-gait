@@ -83,7 +83,7 @@ def scatter_dataframe(df):
     plt.legend(df.columns)
 
 
-def plot_series(series):
+def scatter_series(series):
     """
     Plot a pandas series containing vectors.
 
@@ -102,6 +102,18 @@ def plot_series(series):
         plt.scatter(point[0], point[1])
 
     plt.legend(series.index)
+
+
+def plot_foot_peaks(foot_dist, peak_frames):
+
+    _, ax = plt.subplots()
+
+    ax.plot(foot_dist, color='k', linewidth=0.7)
+
+    ax.vlines(x=peak_frames, ymin=0, ymax=foot_dist.max(), colors='r')
+
+    plt.xlabel('Frame number')
+    plt.ylabel('Distance between feet [cm]')
 
 
 def compare_measurements(x, y, **kwargs):
