@@ -22,6 +22,7 @@
 .. autosummary::
    :toctree: stubs
 
+    assign_swing_stance
     foot_dist_peaks
     gait_dataframe
     get_gait_metrics

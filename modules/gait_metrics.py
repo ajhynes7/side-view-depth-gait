@@ -72,9 +72,9 @@ def foot_dist_peaks(foot_dist, r=1):
 
     Parameters
     ----------
-    foot_dist : pandas Series.
-        Distance between feet at each frame.
-        Index values are frame numbers.
+    foot_dist : pandas Series
+        | Distance between feet at each frame.
+        | Index values are frame numbers.
     r : {int, float}, optional
         Radius for mean shift clustering (default is 1).
 
@@ -159,7 +159,7 @@ def get_gait_metrics(df, frame_i, frame_f):
 
     Parameters
     ----------
-    df : pandas DataFrame.
+    df : pandas DataFrame
         | Index is the frame numbers.
         | Columns include 'HEAD', 'L_FOOT', 'R_FOOT'.
         | Each element is a position vector.
@@ -206,20 +206,20 @@ def gait_dataframe(df, peak_frames, peak_labels):
     Parameters
     ----------
     df : DataFrame
-        | Index is the frame numbers
-        | Columns include 'HEAD', 'L_FOOT', 'R_FOOT'
-        | Each element is a position vector
+        | Index is the frame numbers.
+        | Columns include 'HEAD', 'L_FOOT', 'R_FOOT'.
+        | Each element is a position vector.
     peak_frames : array_like
-        Array of all frames with a detected peak in the foot distance data
+        Array of all frames with a detected peak in the foot distance data.
     peak_labels : dict
-        | Label of each peak frame
-        | The labels are determined by clustering the peak frames
+        | Label of each peak frame.
+        | The labels are determined by clustering the peak frames.
 
     Returns
     -------
     gait_df : DataFrame
-        | Index is final peak frame used to calculate gait metrics
-        | Columns are gait metric names
+        | Index is final peak frame used to calculate gait metrics.
+        | Columns are gait metric names.
     """
     gait_list, frame_list = [], []
 

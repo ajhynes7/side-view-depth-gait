@@ -95,9 +95,9 @@ class BlandAltman:
 def mad_outliers(x, c):
     """
     Remove outliers from an array of data using the
-    Median Absolute Deviation (MAD).
+    median absolute deviation (MAD).
 
-    Values beyond the Median ± c(MAD) are set to NaN.
+    Values beyond the median ± c(MAD) are set to NaN.
 
     Parameters
     ----------
