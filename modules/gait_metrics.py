@@ -1,3 +1,5 @@
+from collections import namedtuple
+
 import numpy as np
 import pandas as pd
 from numpy.linalg import norm
@@ -6,6 +8,53 @@ import modules.general as gen
 import modules.linear_algebra as lin
 import modules.clustering as cl
 import modules.math_funcs as mf
+
+
+class Stride():
+
+    def __init__(self, state_i, state_f):
+
+        self.stance_i = state_i.stance
+        self.stance_f = state_f.stance
+
+        self.swing_i = state_i.swing
+        self.swing_f = state_f.swing
+
+        self.frame_i = state_i.frame
+        self.frame_f = state_f.frame
+
+        self.stance = (self.stance_i + self.stance_f) / 2
+
+        self.proj_stance = lin.proj_point_line(self.stance, self.swing_i,
+                                               self.swing_f)
+
+    @property
+    def stride_length(self):
+        return norm(self.swing_f - self.swing_i)
+
+    @property
+    def step_length(self):
+
+        return norm(self.proj_stance - self.swing_i)
+
+    @property
+    def stride_width(self):
+        return norm(self.proj_stance - self.stance)
+
+    @property
+    def absolute_step_length(self):
+
+        return norm(self.stance - self.swing_i)
+
+    @property
+    def stride_time(self):
+
+        return (self.frame_f - self.frame_i) / 30
+
+    @property
+    def stride_velocity(self):
+
+        return self.stride_length / self.stride_time
 
 
 def foot_dist_peaks(foot_dist, frame_labels, r=1):
@@ -114,47 +163,42 @@ def get_gait_metrics(df, frame_i, frame_f):
 
     Parameters
     ----------
-    df : DataFrame
-        | Index is the frame numbers
-        | Columns include 'HEAD', 'L_FOOT', 'R_FOOT'
-        | Each element is a position vector
+    df : pandas DataFrame.
+        | Index is the frame numbers.
+        | Columns include 'HEAD', 'L_FOOT', 'R_FOOT'.
+        | Each element is a position vector.
     frame_i : int
-        Initial peak frame
+        Initial peak frame.
     frame_f : int
-        Final peak frame
+        Final peak frame.
 
     Returns
     -------
     metrics : dict
-        Gait metrics
-    """
-    Head_i, Head_f = df.loc[frame_i, 'HEAD'], df.loc[frame_f, 'HEAD']
+        Gait metrics.
 
+    """
     foot_points_i = np.stack(df.loc[frame_i, ['L_FOOT', 'R_FOOT']])
     foot_points_f = np.stack(df.loc[frame_f, ['L_FOOT', 'R_FOOT']])
 
     points_i, points_f = assign_swing_stance(foot_points_i, foot_points_f)
 
-    P_stance_i, P_swing_i = points_i
-    P_stance_f, P_swing_f = points_f
+    stance_i, swing_i = points_i
+    stance_f, swing_f = points_f
 
-    P_stance = (P_stance_i + P_stance_f) / 2
+    State = namedtuple('State', 'frame, stance, swing')
+    state_i = State(frame_i, stance_i, swing_i)
+    state_f = State(frame_f, stance_f, swing_f)
 
-    P_proj = lin.proj_point_line(P_stance, P_swing_i, P_swing_f)
+    stride_obj = Stride(state_i, state_f)
 
-    step_length_i = norm(P_proj - P_swing_i)
-    step_length_f = norm(P_proj - P_swing_f)
+    metrics = {}
 
-    # Divide frame difference by 30, because frame rate is 30 fps
-    stride_time = (frame_f - frame_i) / 30
+    for x in vars(Stride):
 
-    metrics = {'Stride length': norm(P_swing_f - P_swing_i),
-               'Stride width':  norm(P_stance - P_proj),
+        if isinstance(getattr(Stride, x), property):
 
-               'Stride vel':    norm(Head_f - Head_i) / stride_time,
-
-               'Step length':   np.mean((step_length_i, step_length_f))
-               }
+            metrics[x] = getattr(stride_obj, x)
 
     return metrics
 

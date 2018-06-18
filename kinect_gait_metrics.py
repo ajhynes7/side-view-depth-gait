@@ -3,13 +3,14 @@ import glob
 
 import pandas as pd
 import numpy as np
+from sklearn.cluster import KMeans
 
 import modules.gait_metrics as gm
 
-from sklearn.cluster import KMeans
-
 
 def main():
+
+    df_metrics = pd.read_csv(save_path, index_col=0)
 
     for file_path in file_paths:
 
@@ -36,15 +37,13 @@ def main():
 
         # %% Fill in row of results DataFrame
 
-        df_metrics = pd.read_csv(save_path, index_col=0)
-
         base_name = os.path.basename(file_path)     # File with extension
         file_name = os.path.splitext(base_name)[0]  # File with no extension
 
         gait_results = gait_df.mean()
         df_metrics.loc[file_name] = gait_results
 
-        df_metrics.to_csv(save_path)
+    df_metrics.to_csv(save_path)
 
 
 if __name__ == '__main__':
