@@ -28,6 +28,12 @@ class Stride():
         self.proj_stance = lin.proj_point_line(self.stance, self.swing_i,
                                                self.swing_f)
 
+    def __str__(self):
+
+        string = "Stride(frame_i={self.frame_i}, frame_f={self.frame_f})"
+
+        return string.format(self=self)
+
     @property
     def stride_length(self):
         return norm(self.swing_f - self.swing_i)
