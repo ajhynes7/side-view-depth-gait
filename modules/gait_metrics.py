@@ -93,8 +93,8 @@ def foot_dist_peaks(foot_dist, r=1):
 
     # Find centres of foot distance peaks with mean shift
     upper_frames = frames[is_upper_value].reshape(-1, 1)
-    _, centroids, k = cl.mean_shift(upper_frames,
-                                    cl.gaussian_kernel_shift, radius=r)
+    _, centroids, k = cl.MeanShift.cluster(upper_frames,
+                                           kernel='gaussian', radius=r)
 
     # Find the frames closest to the mean shift centroids
     peak_frames = [lin.closest_point(upper_frames, x)[0].item()
@@ -220,6 +220,7 @@ def gait_dataframe(df, peak_frames, peak_labels):
     gait_df : DataFrame
         | Index is final peak frame used to calculate gait metrics.
         | Columns are gait metric names.
+
     """
     gait_list, frame_list = [], []
 
