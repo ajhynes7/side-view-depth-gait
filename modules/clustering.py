@@ -15,25 +15,21 @@ class MeanShift:
         points : ndarray
             (n, d) array of n points with dimension d.
         kernel : str, optional
-            | Kernel (default 'flat') used for weighting points when shifting
-            the mean position.
-            | Options are {'flat', 'gaussian'}.
+            Kernel (default 'flat') used for weighting points when shifting
+            the mean position. Options are {'flat', 'gaussian'}.
         radius : {int, float}, optional
             Radius for mean shift (default 1).
         eps : {int, float}, optional
-            | The convergence criterion epsilon (the default is 0.01).
-            | When the new mean position has moved by a distance less
-            than eps since the previous iteration, the shifting process
-            terminates.
+            The convergence criterion epsilon (default 0.01).
+            The shifting process terminates when the new mean position has
+            moved by a distance less than eps since the previous iteration.
 
         Returns
         -------
         labels : ndarray
-            (n, ) array of labels.
             Cluster label of each point.
         centroids : ndarray
             (k, d) array of k cluster centroids with dimension d.
-            Centroid of each cluster.
         k : int
             Number of clusters.
 
@@ -77,7 +73,7 @@ class MeanShift:
 
     def _shift_to_convergence(points, mean_pos, kernel, radius, eps):
         """
-        Shift a mean position until it converges onto a final position.
+        Shift a mean position until it converges to a final position.
 
         Parameters
         ----------
@@ -86,39 +82,30 @@ class MeanShift:
         mean_pos : ndarray
             Initial mean position that will be shifted.
         kernel : str, optional
-            | Kernel (default 'flat') used for weighting points when shifting
-            the mean position.
-            | Options are {'flat', 'gaussian'}.
+            Kernel (default 'flat') used for weighting points when shifting
+            the mean position. Options are {'flat', 'gaussian'}.
         radius : {int, float}, optional
             Radius for mean shift (default 1).
         eps : {int, float}, optional
-            | The convergence criterion epsilon (the default is 0.01).
-            | When the new mean position has moved by a distance less
-            than eps since the previous iteration, the shifting process
-            terminates.
+            The convergence criterion epsilon (default 0.01).
+            The shifting process terminates when the new mean position has
+            moved by a distance less than eps since the previous iteration.
 
         Returns
         -------
         mean_pos : ndarray
             Final mean position.
         in_radius : ndarray
-            | (n, ) array of booleans.
-            | Element i is true if point i is within the radius
-            of the final mean position.
+            (n, ) array of booleans. Element i is true if point i is within
+            the radius of the final mean position.
 
         Examples
         --------
         >>> points = np.array([[1, 2], [2, 3], [20, 3]])
         >>> mean_pos = np.array([2, 3])
 
-        >>> mean_pos, in_radius = MeanShift._shift_to_convergence(points, \
-                mean_pos, 'flat', 5, 0.01)
-
-        >>> mean_pos
-        array([1.5, 2.5])
-
-        >>> in_radius
-        array([ True,  True, False])
+        >>> MeanShift._shift_to_convergence(points, mean_pos, 'flat', 5, 0.01)
+        (array([1.5, 2.5]), array([ True,  True, False]))
 
         """
 
@@ -162,15 +149,13 @@ class MeanShift:
         radius : {int, float}, optional
             Radius for mean shift (default 1).
         kernel : str, optional
-            | Kernel (default 'flat') used for weighting points when shifting
-            the mean position.
-            | Options are {'flat', 'gaussian'}.
+            Kernel (default 'flat') used for weighting points when shifting
+            the mean position. Options are {'flat', 'gaussian'}.
 
         Returns
         -------
         masses : ndarray
-            | (n, ) array of masses.
-
+            (n, ) array of masses.
 
         Raises
         ------

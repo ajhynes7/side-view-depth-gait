@@ -8,10 +8,9 @@
 .. autosummary::
    :toctree: stubs
 
-    flat_kernel_shift
-    gaussian_kernel_shift
-    mean_shift
-    shift_to_convergence
+    MeanShift.cluster
+    MeanShift._kernel_function
+    MeanShift._shift_to_convergence
     
 
 :mod:`gait_metrics`
