@@ -37,7 +37,9 @@ def main():
     # Rename the columns so they match the Kinect columns
     df_final = df_final.rename(name_dict, axis='columns')
 
-    df_final.to_csv(save_path, index=False)
+    df_final = df_final.set_index('File')
+
+    df_final.to_csv(save_path, index=True)
 
 
 if __name__ == '__main__':
@@ -48,9 +50,12 @@ if __name__ == '__main__':
     save_name = 'zeno_gait_metrics.csv'
 
     column_names = ['Step Length (cm.)', 'Stride Length (cm.)',
-                    'Stride Width (cm.)', 'Stride Velocity (cm./sec.)']
+                    'Stride Width (cm.)', 'Stride Velocity (cm./sec.)',
+                    'Absolute Step Length (cm.)', 'Stride Time (sec.)']
 
-    new_names = ['Step length', 'Stride length', 'Stride width', 'Stride vel']
+    new_names = ['step_length', 'stride_length',
+                 'stride_width', 'stride_velocity',
+                 'absolute_step_length', 'stride_time']
 
     name_dict = {k: v for k, v in zip(column_names, new_names)}
 

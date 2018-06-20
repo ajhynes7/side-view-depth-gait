@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def real_to_proj(point_real, x_res, y_res, x_to_z, y_to_z):
+def real_to_proj(point_real, x_res, y_res, f_xz, f_yz):
     """
     Convert real world coordinates to projected coordinates.
 
@@ -11,7 +11,7 @@ def real_to_proj(point_real, x_res, y_res, x_to_z, y_to_z):
         Point in real world coordinates.
     x_res, y_res : int
         Resolution of image in x and y axes.
-    x_to_z, y_to_z : {float, int}
+    f_xz, f_yz : {float, int}
         Conversion factors for x and y.
 
     Returns
@@ -23,16 +23,16 @@ def real_to_proj(point_real, x_res, y_res, x_to_z, y_to_z):
     --------
     >>> point_real = np.array([10, 5, 3])
     >>> x_res, y_res = 640, 480
-    >>> x_to_z, y_to_z = 1.11146664619446, 0.833599984645844
+    >>> f_xz, f_yz = 1.11146664619446, 0.833599984645844
 
-    >>> point_proj = real_to_proj(point_real, x_res, y_res, x_to_z, y_to_z)
+    >>> point_proj = real_to_proj(point_real, x_res, y_res, f_xz, f_yz)
 
     >>> np.round(point_proj, 2)
     array([2239.39, -719.69,    3.  ])
 
     """
-    f_coeff_x = x_res / x_to_z
-    f_coeff_y = y_res / y_to_z
+    f_coeff_x = x_res / f_xz
+    f_coeff_y = y_res / f_yz
 
     x_real, y_real, z_real = point_real
 
@@ -47,7 +47,7 @@ def real_to_proj(point_real, x_res, y_res, x_to_z, y_to_z):
     return point_proj
 
 
-def proj_to_real(point_proj, x_res, y_res, x_to_z, y_to_z):
+def proj_to_real(point_proj, x_res, y_res, f_xz, f_yz):
     """
     Convert projected coordinates to real world coordinates.
 
@@ -57,7 +57,7 @@ def proj_to_real(point_proj, x_res, y_res, x_to_z, y_to_z):
         Point in projected coordinates.
     x_res, y_res : int
         Resolution of image in x and y axes.
-    x_to_z, y_to_z : {float, int}
+    f_xz, f_yz : {float, int}
         Conversion factors for x and y.
 
     Returns
@@ -69,9 +69,9 @@ def proj_to_real(point_proj, x_res, y_res, x_to_z, y_to_z):
     --------
     >>> point_proj = np.array([2239.39, -719.69, 3])
     >>> x_res, y_res = 640, 480
-    >>> x_to_z, y_to_z = 1.11146664619446, 0.833599984645844
+    >>> f_xz, f_yz = 1.11146664619446, 0.833599984645844
 
-    >>> point_real = proj_to_real(point_proj, x_res, y_res, x_to_z, y_to_z)
+    >>> point_real = proj_to_real(point_proj, x_res, y_res, f_xz, f_yz)
 
     >>> np.round(point_real)
     array([10.,  5.,  3.])
@@ -82,8 +82,8 @@ def proj_to_real(point_proj, x_res, y_res, x_to_z, y_to_z):
     f_normalized_x = x_proj / x_res - 0.5
     f_normalized_y = 0.5 - y_proj / y_res
 
-    x_real = f_normalized_x * z_proj * x_to_z
-    y_real = f_normalized_y * z_proj * y_to_z
+    x_real = f_normalized_x * z_proj * f_xz
+    y_real = f_normalized_y * z_proj * f_yz
 
     z_real = z_proj
 
