@@ -20,7 +20,7 @@ def test_coordinate_conversion():
     npt.assert_allclose(point_real, point_real_new)
 
     for _ in range(10):
-        x_res, y_res = np.random.randint(0, 1000), np.random.randint(0, 1000)
+        x_res, y_res = np.random.randint(1, 1000), np.random.randint(1, 1000)
         x_to_z, y_to_z = np.random.rand(), np.random.rand()
 
         point_real = np.random.randint(-100, 100, size=(3,))
