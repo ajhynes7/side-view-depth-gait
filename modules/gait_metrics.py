@@ -17,6 +17,9 @@ class Stride:
         self.stance_i = state_i.stance
         self.stance_f = state_f.stance
 
+        self.head_i = state_i.head
+        self.head_f = state_f.head
+
         self.swing_i = state_i.swing
         self.swing_f = state_f.swing
 
@@ -60,7 +63,9 @@ class Stride:
     @property
     def stride_velocity(self):
 
-        return self.stride_length / self.stride_time
+        d_head = norm(self.head_f - self.head_i)
+
+        return d_head / self.stride_time
 
 
 def foot_dist_peaks(foot_dist, r=1):
@@ -93,8 +98,13 @@ def foot_dist_peaks(foot_dist, r=1):
 
     # Find centres of foot distance peaks with mean shift
     upper_frames = frames[is_upper_value].reshape(-1, 1)
-    _, centroids, k = cl.MeanShift.cluster(upper_frames,
-                                           kernel='gaussian', radius=r)
+    labels, centroids, k = cl.MeanShift.cluster(upper_frames,
+                                                kernel='gaussian', radius=r)
+
+    # Find frames with highest foot distance in each mean shift cluster
+    upper_foot_dist = foot_dist[is_upper_value]
+    peak_frames = [upper_foot_dist[labels == label].idxmax() for label in
+                   range(k)]
 
     # Find the frames closest to the mean shift centroids
     peak_frames = [lin.closest_point(upper_frames, x)[0].item()

@@ -13,7 +13,6 @@ def scatter_colour(points, colours, labels):
                     label='{i}'.format(i=labels[i]))
 
     plt.legend(loc='best')
-    plt.show()
 
 
 def scatter_pos(fig, point_list, colors='b'):
@@ -34,7 +33,6 @@ def scatter_pos(fig, point_list, colors='b'):
     ax.set_xlabel('X')
     ax.set_ylabel('Z')
     ax.set_zlabel('Y')
-    plt.show()
 
 
 def scatter2(points):
@@ -48,7 +46,6 @@ def scatter2(points):
 
     """
     plt.scatter(points[:, 0], points[:, 1])
-    plt.show()
 
 
 def scatter_order(points, order):
@@ -64,7 +61,6 @@ def scatter_order(points, order):
 
     """
     plt.scatter(points[:, order[0]], points[:, order[1]])
-    plt.show()
 
 
 def scatter_dataframe(df):
@@ -84,7 +80,6 @@ def scatter_dataframe(df):
         scatter2(points)
 
     plt.legend(df.columns)
-    plt.show()
 
 
 def scatter_series(series):
@@ -106,7 +101,6 @@ def scatter_series(series):
         plt.scatter(point[0], point[1])
 
     plt.legend(series.index)
-    plt.show()
 
 
 def plot_foot_peaks(foot_dist, peak_frames):
@@ -119,7 +113,6 @@ def plot_foot_peaks(foot_dist, peak_frames):
 
     plt.xlabel('Frame number')
     plt.ylabel('Distance between feet [cm]')
-    plt.show()
 
 
 def compare_measurements(x, y, **kwargs):
@@ -148,7 +141,6 @@ def compare_measurements(x, y, **kwargs):
 
     # Plot both limits against each other
     ax.plot(lims, lims, 'k-')
-    plt.show()
 
 
 def plot_bland_altman(means, diffs, bias, lower_lim, upper_lim, percent=True):
@@ -188,4 +180,3 @@ def plot_bland_altman(means, diffs, bias, lower_lim, upper_lim, percent=True):
     plt.annotate('Bias', xy=(120, bias - 2))
     plt.annotate('Upper limit', xy=(120, upper_lim - 2))
     plt.annotate('Lower limit', xy=(120, lower_lim - 2))
-    plt.show()
