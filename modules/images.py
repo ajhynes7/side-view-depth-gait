@@ -21,7 +21,7 @@ def real_to_proj(point_real, x_res, y_res, f_xz, f_yz):
 
     Examples
     --------
-    >>> point_real = np.array([10, 5, 3])
+    >>> point_real = [10, 5, 3]
     >>> x_res, y_res = 640, 480
     >>> f_xz, f_yz = 1.11146664619446, 0.833599984645844
 
@@ -67,7 +67,7 @@ def proj_to_real(point_proj, x_res, y_res, f_xz, f_yz):
 
     Examples
     --------
-    >>> point_proj = np.array([2239.39, -719.69, 3])
+    >>> point_proj = [2239.39, -719.69, 3]
     >>> x_res, y_res = 640, 480
     >>> f_xz, f_yz = 1.11146664619446, 0.833599984645844
 
