@@ -124,7 +124,7 @@ def image_coords_to_real(img, x, y, x_res, y_res, f_xz, f_yz):
     array([-1.11,  0.83,  2.  ])
 
     """
-    z = img[x, y]
+    z = img[y, x]
     point_proj = [x, y, z]
 
     point_real = proj_to_real(point_proj, x_res, y_res, f_xz, f_yz)
