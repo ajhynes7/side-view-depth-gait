@@ -92,6 +92,46 @@ def proj_to_real(point_proj, x_res, y_res, f_xz, f_yz):
     return point_real
 
 
+def image_coords_to_real(img, x, y, x_res, y_res, f_xz, f_yz):
+    """
+    Return real world coordinates from a pixel position on a depth image.
+
+    Parameters
+    ----------
+    img : ndarray
+        Input image.
+    x, y : int
+        Coordinates of pixel on image.
+    x_res, y_res : int
+        Resolution of image in x and y axes.
+    f_xz, f_yz : {float, int}
+        Conversion factors for x and y.
+
+    Returns
+    -------
+    point_real : ndarray
+        Point in real world coordinates.
+
+    Examples
+    --------
+    >>> img = np.array([[10, 2], [3, 4]])
+    >>> x, y = 0, 1
+    >>> x_res, y_res = 640, 480
+    >>> f_xz, f_yz = 1.11146664619446, 0.833599984645844
+
+    >>> point_real = image_coords_to_real(img, x, y, x_res, y_res, f_xz, f_yz)
+    >>> np.round(point_real, 2)
+    array([-1.11,  0.83,  2.  ])
+
+    """
+    z = img[x, y]
+    point_proj = [x, y, z]
+
+    point_real = proj_to_real(point_proj, x_res, y_res, f_xz, f_yz)
+
+    return point_real
+
+
 def image_to_points(img):
     """
     Convert an image to a list of points.
