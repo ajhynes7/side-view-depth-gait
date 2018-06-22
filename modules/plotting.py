@@ -143,7 +143,7 @@ def compare_measurements(x, y, **kwargs):
     ax.plot(lims, lims, 'k-')
 
 
-def plot_bland_altman(means, diffs, bias, lower_lim, upper_lim, percent=True):
+def plot_bland_altman(means, diffs, bias, limits, percent=True):
     """
     Produce a Bland-Altman plot.
 
@@ -155,20 +155,21 @@ def plot_bland_altman(means, diffs, bias, lower_lim, upper_lim, percent=True):
         Differences of measurements.
     bias : {int, float}
             Mean of the differences.
-    lower_lim : {int, float}
-        Bias minus 1.96 standard deviations.
-    upper_lim : {int, float}
-        Bias plus 1.96 standard deviations.
+    limits : tuple
+        Tuple of form (lower_limit, upper_limit).
+        Bias minus/plus 1.96 standard deviations.
     percent : bool, optional
             If True, the y label shows percent difference.
             If False (default) the y label shows regular difference.
 
     """
+    lower_limit, upper_limit = limits
+
     plt.scatter(means, diffs, c='black', s=5)
 
     plt.axhline(y=bias, color='k', linestyle='-')
-    plt.axhline(y=upper_lim, color='k', linestyle='--')
-    plt.axhline(y=lower_lim, color='k', linestyle='--')
+    plt.axhline(y=lower_limit, color='k', linestyle='--')
+    plt.axhline(y=upper_limit, color='k', linestyle='--')
 
     plt.xlabel('Mean of measurements')
 
@@ -178,5 +179,5 @@ def plot_bland_altman(means, diffs, bias, lower_lim, upper_lim, percent=True):
         plt.ylabel('Difference between measurements')
 
     plt.annotate('Bias', xy=(120, bias - 2))
-    plt.annotate('Upper limit', xy=(120, upper_lim - 2))
-    plt.annotate('Lower limit', xy=(120, lower_lim - 2))
+    plt.annotate('Lower limit', xy=(120, lower_limit - 2))
+    plt.annotate('Upper limit', xy=(120, upper_limit - 2))

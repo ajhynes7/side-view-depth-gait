@@ -7,130 +7,101 @@ import modules.general as gen
 
 class BlandAltman:
 
-    def differences(x, y, percent=False):
+    def __init__(self, x, y, percent=False):
         """
-        Return means and differences of two sets of measurements.
+        [description]
 
         Parameters
         ----------
-        x : ndarray
-            Measurements from device A.
-        y : ndarray
-            Measurements from device B.
-        percent : bool, optional
-            If True, the percent difference is returned.
-            If False (default) the relative difference is returned.
-
-        Returns
-        -------
-        means : ndarray
-            Means of measurements from devices A and B.
-        diffs : ndarray
-            Differences of measurements.
-
-        Examples
-        --------
-        >>> x = np.array([1, 2, 3])
-        >>> y = np.array([2, 2, 3])
-
-        >>> means, diffs = BlandAltman.differences(x, y, percent=True)
-
-        >>> means
-        array([1.5, 2. , 3. ])
-
-        >>> np.round(diffs)
-        array([-67.,   0.,   0.])
-
+        x : {[type]}
+            [description]
+        y : {[type]}
+            [description]
+        percent : {bool}, optional
+            [description] (the default is False, which [default_description])
         """
-        means = (x + y) / 2
 
-        diffs = relative_difference(x, y)
+        self.x, self.y = x, y
+        self.percent = percent
 
-        if percent:
+    @property
+    def means(self):
+
+        return (self.x + self.y) / 2
+
+    @property
+    def differences(self):
+
+        diffs = relative_difference(self.x, self.y)
+
+        if self.percent:
             diffs *= 100
 
-        return means, diffs
+        return diffs
 
-    def limits_of_agreement(diffs):
-        """
-        Calculate bias and limits of agreement for Bland Altman analysis.
+    @property
+    def bias(self):
 
-        Parameters
-        ----------
-        diffs : ndarray
-            Differences between measurements from devices A and B.
+        return self.differences.mean()
 
-        Returns
-        -------
-        bias : float
-            Mean of the differences.
-        lower_lim : float
-            Bias minus 1.96 standard deviations.
-        upper_lim : float
-            Bias plus 1.96 standard deviations.
+    @property
+    def limits_of_agreement(self):
 
-        Examples
-        --------
-        >>> diffs = np.array([-67, 0, 0])
-        >>> bias, lower_lim, upper_lim = BlandAltman.limits_of_agreement(diffs)
+        standard_dev = self.differences.std()
 
-        >>> round(bias)
-        -22.0
+        lower_lim, upper_lim = gen.limits(self.bias, 1.96 * standard_dev)
 
-        >>> round(lower_lim)
-        -84.0
+        return lower_lim, upper_lim
 
-        >>> round(upper_lim)
-        40.0
+    @property
+    def range(self):
 
-        """
-        bias = diffs.mean()
-        standard_dev = diffs.std()
+        lower_lim, upper_lim = self.limits_of_agreement
 
-        lower_lim, upper_lim = gen.limits(bias, 1.96 * standard_dev)
-
-        return bias, lower_lim, upper_lim
+        return upper_lim - lower_lim
 
 
-def mad_outliers(x, c):
+def relative_difference(x, y, absolute=False):
     """
-    Remove outliers from an array of data using the
-    median absolute deviation (MAD).
+    Relative difference between two observations A and B.
 
-    Values beyond the median ± c(MAD) are set to NaN.
+    Calculated as (A - B) / mean(A, B).
 
     Parameters
     ----------
-    x : array_like
-        Input array.
-    c : {int, float}
-        Coefficient for MAD.
+    x, y : {int, float, ndarray}
+        Input values or arrays.
+    absolute : bool, optional
+        If True, the absolute relative error is returned
+        (the default is False).
 
     Returns
     -------
-    x_filtered : ndarray
-        Array with same shape as input x, but with outliers set to NaN
-        and all values as floats.
+    {float, ndarray}
+        Relative difference.
 
     Examples
     --------
-    >>> mad_outliers([2.0, 3.0, 100.0, 3.0], 2.5)
-    array([ 2.,  3., nan,  3.])
+    >>> x = np.array([3, 3, 4])
+    >>> y = np.array([1, 2, 4])
 
-    >>> mad_outliers([5, 6, 4, 20], 3)
-    array([ 5.,  6.,  4., nan])
+    >>> relative_difference(x, y)
+    array([1. , 0.4, 0. ])
+
+    >>> relative_difference(2, 3)
+    -0.4
 
     """
-    mad = robust.mad(x)
-    median = np.median(x)
+    difference = x - y
 
-    lower_bound = median - c * mad
-    upper_bound = median + c * mad
+    average = (x + y) / 2
 
-    x_filtered = np.array(x).astype(float)
-    x_filtered[np.logical_or(x < lower_bound, x > upper_bound)] = np.nan
+    rel_difference = difference / average
 
-    return x_filtered
+    if absolute:
+        rel_difference = abs(rel_difference)
+
+    return rel_difference
 
 
 def relative_error(measured, actual, absolute=False):
@@ -176,47 +147,45 @@ def relative_error(measured, actual, absolute=False):
     return error
 
 
-def relative_difference(x, y, absolute=False):
+def mad_outliers(x, c):
     """
-    Relative difference between two observations A and B.
+    Remove outliers from an array of data using the
+    median absolute deviation (MAD).
 
-    Calculated as (A - B) / mean(A, B).
+    Values beyond the median ± c(MAD) are set to NaN.
 
     Parameters
     ----------
-    x, y : {int, float, ndarray}
-        Input values or arrays.
-    absolute : bool, optional
-        If True, the absolute relative error is returned
-        (the default is False).
+    x : array_like
+        Input array.
+    c : {int, float}
+        Coefficient for MAD.
 
     Returns
     -------
-    {float, ndarray}
-        Relative difference.
+    x_filtered : ndarray
+        Array with same shape as input x, but with outliers set to NaN
+        and all values as floats.
 
     Examples
     --------
-    >>> x = np.array([3, 3, 4])
-    >>> y = np.array([1, 2, 4])
+    >>> mad_outliers([2.0, 3.0, 100.0, 3.0], 2.5)
+    array([ 2.,  3., nan,  3.])
 
-    >>> relative_difference(x, y)
-    array([1. , 0.4, 0. ])
-
-    >>> relative_difference(2, 3)
-    -0.4
+    >>> mad_outliers([5, 6, 4, 20], 3)
+    array([ 5.,  6.,  4., nan])
 
     """
-    difference = x - y
+    mad = robust.mad(x)
+    median = np.median(x)
 
-    average = (x + y) / 2
+    lower_bound = median - c * mad
+    upper_bound = median + c * mad
 
-    relative_difference = difference / average
+    x_filtered = np.array(x).astype(float)
+    x_filtered[np.logical_or(x < lower_bound, x > upper_bound)] = np.nan
 
-    if absolute:
-        relative_difference = abs(relative_difference)
-
-    return relative_difference
+    return x_filtered
 
 
 if __name__ == "__main__":
