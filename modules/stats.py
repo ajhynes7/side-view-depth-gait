@@ -6,33 +6,74 @@ import modules.general as gen
 
 
 class BlandAltman:
+    """
+    Bland-Altman analysis.
 
-    def __init__(self, x, y, percent=False):
-        """
-        [description]
+    Compare measurements of a new device to those of a validated device.
 
-        Parameters
-        ----------
-        x : {[type]}
-            [description]
-        y : {[type]}
-            [description]
-        percent : {bool}, optional
-            [description] (the default is False, which [default_description])
-        """
+    Parameters
+    ----------
+    x_new : ndarray
+        Measurements of new device.
+    x_valid : ndarray
+        Measurements of validate device.
+    percent : bool, optional
+        If True, the percent difference is used.
+        If False (default) the relative difference is used.
 
-        self.x, self.y = x, y
+    Attributes
+    ----------
+    means : ndarray
+        Means of corresponding measurements.
+    differences : ndarray
+        Differences between corresponding measurements.
+    bias : float
+        Mean of the differences.
+        Indicates the bias of the new device compared to the validated one.
+    limits_of_agreement : tuple
+        Tuple of form (lower_limit, upper_limit).
+        Bias minus/plus 1.96 standard deviations.
+    range : float
+        Range of the limits of agreement.
+        A low range indicates stronger agreement.
+
+    Examples
+    --------
+    >>> x_new = np.array([1, 2, 3])
+    >>> x_valid = np.array([2, 2, 3])
+
+    >>> results = BlandAltman(x_new, x_valid, percent=True)
+
+    >>> results.means
+    array([1.5, 2. , 3. ])
+
+    >>> np.round(results.differences)
+    array([-67.,   0.,   0.])
+
+    >>> round(results.bias)
+    -22.0
+
+    >>> np.round(results.limits_of_agreement)
+    array([-84.,  39.])
+
+    >>> round(results.range)
+    123.0
+
+    """
+    def __init__(self, x_new, x_valid, percent=False):
+
+        self.x_new, self.x_valid = x_new, x_valid
         self.percent = percent
 
     @property
     def means(self):
 
-        return (self.x + self.y) / 2
+        return (self.x_new + self.x_valid) / 2
 
     @property
     def differences(self):
 
-        diffs = relative_difference(self.x, self.y)
+        diffs = relative_difference(self.x_new, self.x_valid)
 
         if self.percent:
             diffs *= 100
@@ -63,9 +104,9 @@ class BlandAltman:
 
 def relative_difference(x, y, absolute=False):
     """
-    Relative difference between two observations A and B.
+    Relative difference between two observations x and y.
 
-    Calculated as (A - B) / mean(A, B).
+    Calculated as (x - y) / mean(x, y).
 
     Parameters
     ----------
