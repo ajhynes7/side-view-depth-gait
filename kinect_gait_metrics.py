@@ -35,21 +35,28 @@ def main():
         foot_dist = foot_diff.apply(np.linalg.norm)
 
         # Detect peaks in the foot distance data
-        peak_frames = gm.foot_dist_peaks(foot_dist, r=5)
+        peak_frames, mid_frames = gm.foot_dist_peaks(foot_dist, r=5)
 
         # %% Gait metrics
 
         # Dictionary that maps image frames to cluster labels
         label_dict = dict(zip(frames.flatten(), k_means.labels_))
 
-        gait_df = gm.gait_dataframe(df_head_feet, peak_frames, label_dict)
+        df_head_metrics = gm.gait_dataframe(df_head_feet, mid_frames,
+                                            label_dict, gm.head_metrics)
+
+        df_foot_metrics = gm.gait_dataframe(df_head_feet, peak_frames,
+                                            label_dict, gm.foot_metrics)
+
+        # Series with mean of each gait metric
+        gait_results = pd.concat([df_head_metrics.mean(),
+                                  df_foot_metrics.mean()])
 
         # %% Fill in row of results DataFrame
 
         base_name = os.path.basename(file_path)     # File with extension
         file_name = os.path.splitext(base_name)[0]  # File with no extension
 
-        gait_results = gait_df.mean()
         df_metrics.loc[file_name] = gait_results
 
     df_metrics.to_csv(save_path)

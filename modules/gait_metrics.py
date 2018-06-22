@@ -8,6 +8,36 @@ import modules.clustering as cl
 import modules.math_funcs as mf
 
 
+class HeadMetrics:
+
+    def __init__(self, head_points, frames):
+
+        self.head_i, self.head_f = head_points
+
+        self.frame_i, self.frame_f = frames
+
+    def __str__(self):
+
+        string = "HeadMetrics(frame_i={self.frame_i}, frame_f={self.frame_f})"
+
+        return string.format(self=self)
+
+    @property
+    def head_distance(self):
+
+        return norm(self.head_f - self.head_i)
+
+    @property
+    def stride_time(self):
+
+        return (self.frame_f - self.frame_i) / 30
+
+    @property
+    def stride_velocity(self):
+
+        return self.head_distance / self.stride_time
+
+
 class FootMetrics:
 
     def __init__(self, stance_feet, swing_feet, frames):
@@ -49,31 +79,34 @@ class FootMetrics:
         return norm(self.stance - self.swing_i)
 
 
-class HeadMetrics:
+def head_metrics(df, frame_i, frame_f):
 
-    def __init__(self, head_points, frames):
+    head_points = df.HEAD[[frame_i, frame_f]]
 
-        self.head_i, self.head_f = head_points
+    frames = frame_i, frame_f
 
-        self.frame_i, self.frame_f = frames
+    head_obj = HeadMetrics(head_points, frames)
 
-    def __str__(self):
+    return gen.get_properties(HeadMetrics, head_obj)
 
-        string = "HeadMetrics(frame_i={self.frame_i}, frame_f={self.frame_f})"
 
-        return string.format(self=self)
+def foot_metrics(df, frame_i, frame_f):
 
-    @property
-    def stride_time(self):
+    foot_points_i = np.stack(df.loc[frame_i, ['L_FOOT', 'R_FOOT']])
+    foot_points_f = np.stack(df.loc[frame_f, ['L_FOOT', 'R_FOOT']])
 
-        return (self.frame_f - self.frame_i) / 30
+    points_i, points_f = assign_swing_stance(foot_points_i, foot_points_f)
 
-    @property
-    def stride_velocity(self):
+    stance_i, swing_i = points_i
+    stance_f, swing_f = points_f
 
-        d_head = norm(self.head_f - self.head_i)
+    stance_feet = stance_i, stance_f
+    swing_feet = swing_i, swing_f
+    frames = frame_i, frame_f
 
-        return d_head / self.stride_time
+    foot_obj = FootMetrics(stance_feet, swing_feet, frames)
+
+    return gen.get_properties(FootMetrics, foot_obj)
 
 
 def foot_dist_peaks(foot_dist, r=1):
@@ -169,37 +202,7 @@ def assign_swing_stance(foot_points_i, foot_points_f):
     return points_i, points_f
 
 
-def foot_metrics(df, frame_i, frame_f):
-
-    foot_points_i = np.stack(df.loc[frame_i, ['L_FOOT', 'R_FOOT']])
-    foot_points_f = np.stack(df.loc[frame_f, ['L_FOOT', 'R_FOOT']])
-
-    points_i, points_f = assign_swing_stance(foot_points_i, foot_points_f)
-
-    stance_i, swing_i = points_i
-    stance_f, swing_f = points_f
-
-    stance_feet = stance_i, stance_f
-    swing_feet = swing_i, swing_f
-    frames = frame_i, frame_f
-
-    foot_obj = FootMetrics(stance_feet, swing_feet, frames)
-
-    return gen.get_properties(FootMetrics, foot_obj)
-
-
-def head_metrics(df, frame_i, frame_f):
-
-    head_points = df.HEAD[[frame_i, frame_f]]
-
-    frames = frame_i, frame_f
-
-    head_obj = HeadMetrics(head_points, frames)
-
-    return gen.get_properties(HeadMetrics, head_obj)
-
-
-def gait_dataframe(df, peak_frames, peak_labels):
+def gait_dataframe(df, peak_frames, peak_labels, metrics_func):
     """
     Produces a pandas DataFrame containing gait metrics from a walking trial.
 
@@ -228,10 +231,7 @@ def gait_dataframe(df, peak_frames, peak_labels):
 
         if peak_labels[frame_i] == peak_labels[frame_f]:
 
-            foot_measures = foot_metrics(df, frame_i, frame_f)
-            head_measures = head_metrics(df, frame_i, frame_f)
-
-            metrics = {**foot_measures, **head_measures}
+            metrics = metrics_func(df, frame_i, frame_f)
 
             gait_list.append(metrics)
             frame_list.append(frame_f)
