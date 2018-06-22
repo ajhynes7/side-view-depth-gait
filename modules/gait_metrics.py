@@ -9,51 +9,60 @@ import modules.linear_algebra as lin
 import modules.clustering as cl
 import modules.math_funcs as mf
 
+class FootMetrics:
 
-class Stride:
+    def __init__(self, stance_feet, swing_feet, frames):
+        
+        self.stance_i, self.stance_f = stance_feet
+        self.swing_i, self.swing_f = swing_feet
 
-    def __init__(self, state_i, state_f):
-
-        self.stance_i = state_i.stance
-        self.stance_f = state_f.stance
-
-        self.head_i = state_i.head
-        self.head_f = state_f.head
-
-        self.swing_i = state_i.swing
-        self.swing_f = state_f.swing
-
-        self.frame_i = state_i.frame
-        self.frame_f = state_f.frame
+        self.frame_i, self.frame_f = frames 
 
         self.stance = (self.stance_i + self.stance_f) / 2
 
-        self.proj_stance = lin.proj_point_line(self.stance, self.swing_i,
+        self.stance_proj = lin.proj_point_line(self.stance, self.swing_i,
                                                self.swing_f)
 
     def __str__(self):
 
-        string = "Stride(frame_i={self.frame_i}, frame_f={self.frame_f})"
+        string = "FootMetrics(frame_i={self.frame_i}, frame_f={self.frame_f})"
 
         return string.format(self=self)
-
+    
     @property
     def stride_length(self):
+    
         return norm(self.swing_f - self.swing_i)
 
     @property
     def step_length(self):
 
-        return norm(self.proj_stance - self.swing_i)
+        return norm(self.stance_proj - self.swing_i)
 
     @property
     def stride_width(self):
-        return norm(self.proj_stance - self.stance)
+    
+        return norm(self.stance_proj - self.stance)
 
     @property
     def absolute_step_length(self):
 
         return norm(self.stance - self.swing_i)
+
+
+class HeadMetrics:
+
+    def __init__(self, head_points, frames):
+
+        self.head_i, self.head_f = head_points
+        
+        self.frame_i, self.frame_f = frames 
+
+    def __str__(self):
+
+        string = "HeadMetrics(frame_i={self.frame_i}, frame_f={self.frame_f})"
+
+        return string.format(self=self)
 
     @property
     def stride_time(self):
@@ -78,16 +87,17 @@ def foot_dist_peaks(foot_dist, r=1):
     Parameters
     ----------
     foot_dist : pandas Series
-        | Distance between feet at each frame.
-        | Index values are frame numbers.
+        Distance between feet at each frame.
+        Index values are frame numbers.
     r : {int, float}, optional
         Radius for mean shift clustering (default is 1).
 
     Returns
     -------
-    peak_frames : list
-        List of frames where foot distance is at a peak.
-
+    peak_frames : ndarray
+        Frames where foot distance is at a peak.
+    mid_frames : ndarray
+        Frames closest to cluster centroids.
     """
     frames = foot_dist.index.values
 
@@ -107,12 +117,10 @@ def foot_dist_peaks(foot_dist, r=1):
                    range(k)]
 
     # Find the frames closest to the mean shift centroids
-    peak_frames = [lin.closest_point(upper_frames, x)[0].item()
-                   for x in centroids]
+    mid_frames = [lin.closest_point(upper_frames, x)[0].item()
+                  for x in centroids]
 
-    # Duplicate frames may have occurred from finding the frames closest
-    # to the cluster centroids
-    return np.unique(peak_frames)
+    return np.unique(peak_frames), np.unique(mid_frames),
 
 
 def assign_swing_stance(foot_points_i, foot_points_f):
