@@ -12,7 +12,39 @@ import modules.stats as st
 
 def main():
 
-    for file_path in file_paths[:3]:
+    # %% Parameters
+
+    def cost_func(a, b): return (a - b)**2
+
+    def score_func(a, b):
+
+        x = 1 / mf.norm_ratio(a, b)
+
+        return -(x - 1)**2 + 1
+
+    lower_part_types = ['HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG',
+                        'FOOT']
+
+    radii = [i for i in range(0, 30, 5)]
+
+    part_connections = np.matrix('0 1; 1 2; 2 3; 3 4; 4 5; 3 5; 1 3')
+
+    # %% Reading data
+
+    load_dir = os.path.join('data', 'kinect', 'processed', 'hypothesis')
+    save_dir = os.path.join('data', 'kinect', 'best pos')
+
+    length_path = os.path.join('data', 'results', 'kinect_lengths.csv')
+
+    # All files with .pkl extension
+    file_paths = glob.glob(os.path.join(load_dir, '*.pkl'))
+
+    # DataFrame with lengths between body parts
+    df_length = pd.read_csv(length_path, index_col=0)
+
+    # %% Select best positions from each Kinect data file
+    
+    for file_path in file_paths:
 
         df = pd.read_pickle(file_path)
 
@@ -81,43 +113,10 @@ def main():
         df_head_feet = df_head_feet[good_frame_L & good_frame_R]
 
         # Save data
-
         save_path = os.path.join(save_dir, file_name) + '.pkl'
         df_head_feet.to_pickle(save_path)
 
 
 if __name__ == '__main__':
-
-    # %% Parameters
-
-    def cost_func(a, b): return (a - b)**2
-
-    def score_func(a, b):
-
-        x = 1 / mf.norm_ratio(a, b)
-
-        return -(x - 1)**2 + 1
-
-    lower_part_types = ['HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG',
-                        'FOOT']
-
-    radii = [i for i in range(0, 30, 5)]
-
-    part_connections = np.matrix('0 1; 1 2; 2 3; 3 4; 4 5; 3 5; 1 3')
-
-    # %% Reading data
-
-    load_dir = os.path.join('data', 'kinect', 'processed', 'hypothesis')
-    save_dir = os.path.join('data', 'kinect', 'best pos')
-
-    length_path = os.path.join('data', 'results', 'kinect_lengths.csv')
-
-    # All files with .pkl extension
-    file_paths = glob.glob(os.path.join(load_dir, '*.pkl'))
-
-    # DataFrame with lengths between body parts
-    df_length = pd.read_csv(length_path, index_col=0)
-
-    # %% Run main script
 
     main()

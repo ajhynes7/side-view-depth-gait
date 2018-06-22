@@ -6,6 +6,28 @@ import pandas as pd
 
 def main():
 
+    load_dir = os.path.join('..', 'data', 'zeno', 'raw')
+    save_dir = os.path.join('..', 'data', 'results')
+
+    save_name = 'zeno_gait_metrics.csv'
+
+    column_names = ['Step Length (cm.)', 'Stride Length (cm.)',
+                    'Stride Width (cm.)', 'Stride Velocity (cm./sec.)',
+                    'Absolute Step Length (cm.)', 'Stride Time (sec.)']
+
+    new_names = ['step_length', 'stride_length',
+                 'stride_width', 'stride_velocity',
+                 'absolute_step_length', 'stride_time']
+
+    name_dict = {k: v for k, v in zip(column_names, new_names)}
+
+    # All files with .xlsx extension
+    file_paths = glob.glob(os.path.join(load_dir, '*.xlsx'))
+
+    save_path = os.path.join(save_dir, save_name)
+    
+    # %% Read gait metrics from each Zeno file
+
     gait_list = []
 
     for file_path in file_paths:
@@ -43,25 +65,5 @@ def main():
 
 
 if __name__ == '__main__':
-
-    load_dir = os.path.join('..', 'data', 'zeno', 'raw')
-    save_dir = os.path.join('..', 'data', 'results')
-
-    save_name = 'zeno_gait_metrics.csv'
-
-    column_names = ['Step Length (cm.)', 'Stride Length (cm.)',
-                    'Stride Width (cm.)', 'Stride Velocity (cm./sec.)',
-                    'Absolute Step Length (cm.)', 'Stride Time (sec.)']
-
-    new_names = ['step_length', 'stride_length',
-                 'stride_width', 'stride_velocity',
-                 'absolute_step_length', 'stride_time']
-
-    name_dict = {k: v for k, v in zip(column_names, new_names)}
-
-    # All files with .xlsx extension
-    file_paths = glob.glob(os.path.join(load_dir, '*.xlsx'))
-
-    save_path = os.path.join(save_dir, save_name)
 
     main()

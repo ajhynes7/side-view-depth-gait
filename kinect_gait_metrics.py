@@ -10,6 +10,15 @@ import modules.gait_metrics as gm
 
 def main():
 
+    load_dir = os.path.join('data', 'kinect', 'best pos')
+    save_dir = os.path.join('data', 'results')
+
+    save_name = 'kinect_gait_metrics.csv'
+
+    # All files with .pkl extension
+    file_paths = glob.glob(os.path.join(load_dir, '*.pkl'))
+    save_path = os.path.join(save_dir, save_name)
+
     df_metrics = pd.read_csv(save_path, index_col=0)
 
     for file_path in file_paths:
@@ -22,11 +31,11 @@ def main():
         frames = df_head_feet.index.values.reshape(-1, 1)
         k_means = KMeans(n_clusters=4, random_state=0).fit(frames)
 
-        foot_dist = df_head_feet.apply(lambda row: np.linalg.norm(
-                                       row['L_FOOT'] - row['R_FOOT']), axis=1)
+        foot_diff = df_head_feet.L_FOOT - df_head_feet.R_FOOT
+        foot_dist = foot_diff.apply(np.linalg.norm)
 
         # Detect peaks in the foot distance data
-        peak_frames = gm.foot_dist_peaks(foot_dist, r=3)
+        peak_frames = gm.foot_dist_peaks(foot_dist, r=5)
 
         # %% Gait metrics
 
@@ -47,15 +56,5 @@ def main():
 
 
 if __name__ == '__main__':
-
-    load_dir = os.path.join('data', 'kinect', 'best pos')
-    save_dir = os.path.join('data', 'results')
-
-    save_name = 'kinect_gait_metrics.csv'
-
-    # All files with .pkl extension
-    file_paths = glob.glob(os.path.join(load_dir, '*.pkl'))
-
-    save_path = os.path.join(save_dir, save_name)
 
     main()

@@ -8,6 +8,22 @@ import numpy as np
 
 def main():
 
+    load_dir = os.path.join('..', 'data', 'kinect', 'raw')
+
+    # Directories for all hypothetical points and highest confidence points
+    save_dir_hypo = os.path.join('..', 'data', 'kinect', 'processed',
+                                 'hypothesis')
+
+    save_dir_conf = os.path.join('..', 'data', 'kinect', 'processed',
+                                 'confidence')
+
+    # All files with .txt extension
+    file_paths = glob.glob(os.path.join(load_dir, '*.txt'))
+
+    # Number of columns for the position coordinates
+    # Number should be sufficiently large and divisible by 3
+    n_coord_cols = 99
+
     for file_path in file_paths[10:30]:
 
         df = pd.read_csv(file_path, skiprows=range(22), header=None,
@@ -75,21 +91,5 @@ def main():
 
 
 if __name__ == '__main__':
-
-    load_dir = os.path.join('..', 'data', 'kinect', 'raw')
-
-    # Directories for all hypothetical points and highest confidence points
-    save_dir_hypo = os.path.join('..', 'data', 'kinect', 'processed',
-                                 'hypothesis')
-
-    save_dir_conf = os.path.join('..', 'data', 'kinect', 'processed',
-                                 'confidence')
-
-    # All files with .txt extension
-    file_paths = glob.glob(os.path.join(load_dir, '*.txt'))
-
-    # Number of columns for the position coordinates
-    # Number should be sufficiently large and divisible by 3
-    n_coord_cols = 99
 
     main()

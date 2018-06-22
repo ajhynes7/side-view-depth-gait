@@ -9,7 +9,28 @@ import modules.pose_estimation as pe
 
 def main():
 
-    for file_path in file_paths[50:]:
+    # %% Parameters
+
+    def cost_func(a, b): return (a - b)**2
+
+    lower_part_types = ['HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG',
+                        'FOOT']
+
+    # %% Reading data
+
+    save_name = 'kinect_lengths.csv'
+
+    load_dir = os.path.join('data', 'kinect', 'processed', 'hypothesis')
+    save_dir = os.path.join('data', 'results')
+
+    # All files with .pkl extension
+    file_paths = glob.glob(os.path.join(load_dir, '*.pkl'))
+
+    save_path = os.path.join(save_dir, save_name)
+
+    # %% Calculate lengths for each file
+
+    for file_path in file_paths:
 
         df = pd.read_pickle(file_path)
 
@@ -42,26 +63,5 @@ def main():
 
 
 if __name__ == '__main__':
-
-    # %% Parameters
-
-    def cost_func(a, b): return (a - b)**2
-
-    lower_part_types = ['HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG',
-                        'FOOT']
-
-    # %% Reading data
-
-    save_name = 'kinect_lengths.csv'
-
-    load_dir = os.path.join('data', 'kinect', 'processed', 'hypothesis')
-    save_dir = os.path.join('data', 'results')
-
-    # All files with .pkl extension
-    file_paths = glob.glob(os.path.join(load_dir, '*.pkl'))
-
-    save_path = os.path.join(save_dir, save_name)
-
-    # %% Run main script
 
     main()
