@@ -1,5 +1,3 @@
-from collections import namedtuple
-
 import numpy as np
 import pandas as pd
 from numpy.linalg import norm
@@ -9,14 +7,15 @@ import modules.linear_algebra as lin
 import modules.clustering as cl
 import modules.math_funcs as mf
 
+
 class FootMetrics:
 
     def __init__(self, stance_feet, swing_feet, frames):
-        
+
         self.stance_i, self.stance_f = stance_feet
         self.swing_i, self.swing_f = swing_feet
 
-        self.frame_i, self.frame_f = frames 
+        self.frame_i, self.frame_f = frames
 
         self.stance = (self.stance_i + self.stance_f) / 2
 
@@ -28,10 +27,10 @@ class FootMetrics:
         string = "FootMetrics(frame_i={self.frame_i}, frame_f={self.frame_f})"
 
         return string.format(self=self)
-    
+
     @property
     def stride_length(self):
-    
+
         return norm(self.swing_f - self.swing_i)
 
     @property
@@ -41,7 +40,7 @@ class FootMetrics:
 
     @property
     def stride_width(self):
-    
+
         return norm(self.stance_proj - self.stance)
 
     @property
@@ -55,8 +54,8 @@ class HeadMetrics:
     def __init__(self, head_points, frames):
 
         self.head_i, self.head_f = head_points
-        
-        self.frame_i, self.frame_f = frames 
+
+        self.frame_i, self.frame_f = frames
 
     def __str__(self):
 
@@ -98,6 +97,7 @@ def foot_dist_peaks(foot_dist, r=1):
         Frames where foot distance is at a peak.
     mid_frames : ndarray
         Frames closest to cluster centroids.
+
     """
     frames = foot_dist.index.values
 
@@ -169,29 +169,8 @@ def assign_swing_stance(foot_points_i, foot_points_f):
     return points_i, points_f
 
 
-def get_gait_metrics(df, frame_i, frame_f):
-    """
-    Uses two consecutive peak frames to calculate gait metrics.
-    The peak frames are from the foot-to-foot distance data.
-    Two consecutive peaks indicate a full walking stride.
+def foot_metrics(df, frame_i, frame_f):
 
-    Parameters
-    ----------
-    df : pandas DataFrame
-        | Index is the frame numbers.
-        | Columns include 'HEAD', 'L_FOOT', 'R_FOOT'.
-        | Each element is a position vector.
-    frame_i : int
-        Initial peak frame.
-    frame_f : int
-        Final peak frame.
-
-    Returns
-    -------
-    metrics : dict
-        Gait metrics.
-
-    """
     foot_points_i = np.stack(df.loc[frame_i, ['L_FOOT', 'R_FOOT']])
     foot_points_f = np.stack(df.loc[frame_f, ['L_FOOT', 'R_FOOT']])
 
@@ -200,21 +179,24 @@ def get_gait_metrics(df, frame_i, frame_f):
     stance_i, swing_i = points_i
     stance_f, swing_f = points_f
 
-    State = namedtuple('State', 'frame, stance, swing')
-    state_i = State(frame_i, stance_i, swing_i)
-    state_f = State(frame_f, stance_f, swing_f)
+    stance_feet = stance_i, stance_f
+    swing_feet = swing_i, swing_f
+    frames = frame_i, frame_f
 
-    stride_obj = Stride(state_i, state_f)
+    foot_obj = FootMetrics(stance_feet, swing_feet, frames)
 
-    metrics = {}
+    return gen.get_properties(FootMetrics, foot_obj)
 
-    for x in vars(Stride):
 
-        if isinstance(getattr(Stride, x), property):
+def head_metrics(df, frame_i, frame_f):
 
-            metrics[x] = getattr(stride_obj, x)
+    head_points = df.HEAD[[frame_i, frame_f]]
 
-    return metrics
+    frames = frame_i, frame_f
+
+    head_obj = HeadMetrics(head_points, frames)
+
+    return gen.get_properties(HeadMetrics, head_obj)
 
 
 def gait_dataframe(df, peak_frames, peak_labels):
@@ -224,20 +206,20 @@ def gait_dataframe(df, peak_frames, peak_labels):
     Parameters
     ----------
     df : DataFrame
-        | Index is the frame numbers.
-        | Columns include 'HEAD', 'L_FOOT', 'R_FOOT'.
-        | Each element is a position vector.
+        Index is the frame numbers.
+        Columns include 'HEAD', 'L_FOOT', 'R_FOOT'.
+        Each element is a position vector.
     peak_frames : array_like
         Array of all frames with a detected peak in the foot distance data.
     peak_labels : dict
-        | Label of each peak frame.
-        | The labels are determined by clustering the peak frames.
+        Label of each peak frame.
+        The labels are determined by clustering the peak frames.
 
     Returns
     -------
     gait_df : DataFrame
-        | Index is final peak frame used to calculate gait metrics.
-        | Columns are gait metric names.
+        Index is final peak frame used to calculate gait metrics.
+        Columns are gait metric names.
 
     """
     gait_list, frame_list = [], []
@@ -246,7 +228,10 @@ def gait_dataframe(df, peak_frames, peak_labels):
 
         if peak_labels[frame_i] == peak_labels[frame_f]:
 
-            metrics = get_gait_metrics(df, frame_i, frame_f)
+            foot_measures = foot_metrics(df, frame_i, frame_f)
+            head_measures = head_metrics(df, frame_i, frame_f)
+
+            metrics = {**foot_measures, **head_measures}
 
             gait_list.append(metrics)
             frame_list.append(frame_f)

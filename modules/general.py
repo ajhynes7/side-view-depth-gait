@@ -1,6 +1,19 @@
 import numpy as np
 
 
+def get_properties(class_name, class_object):
+
+    property_dict = {}
+
+    for var in vars(class_name):
+
+        if isinstance(getattr(class_name, var), property):
+
+            property_dict[var] = getattr(class_object, var)
+
+    return property_dict
+
+
 def limits(x, tolerance):
     """
     Return lower and upper limits (x ± tolerance).
