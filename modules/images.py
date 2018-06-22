@@ -92,7 +92,7 @@ def proj_to_real(point_proj, x_res, y_res, f_xz, f_yz):
     return point_real
 
 
-def image_coords_to_real(img, x, y, x_res, y_res, f_xz, f_yz):
+def image_coords_to_real(x_res, y_res, f_xz, f_yz, img, x, y):
     """
     Return real world coordinates from a pixel position on a depth image.
 
@@ -100,12 +100,12 @@ def image_coords_to_real(img, x, y, x_res, y_res, f_xz, f_yz):
     ----------
     img : ndarray
         Input image.
-    x, y : int
-        Coordinates of pixel on image.
     x_res, y_res : int
         Resolution of image in x and y axes.
     f_xz, f_yz : {float, int}
         Conversion factors for x and y.
+    x, y : int
+        Coordinates of pixel on image.
 
     Returns
     -------
@@ -119,9 +119,9 @@ def image_coords_to_real(img, x, y, x_res, y_res, f_xz, f_yz):
     >>> x_res, y_res = 640, 480
     >>> f_xz, f_yz = 1.11146664619446, 0.833599984645844
 
-    >>> point_real = image_coords_to_real(img, x, y, x_res, y_res, f_xz, f_yz)
+    >>> point_real = image_coords_to_real(x_res, y_res, f_xz, f_yz, img, x, y)
     >>> np.round(point_real, 2)
-    array([-1.11,  0.83,  2.  ])
+    array([-1.67,  1.25,  3.  ])
 
     """
     z = img[y, x]
