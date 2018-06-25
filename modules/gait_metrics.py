@@ -125,8 +125,10 @@ def foot_contacts(df_pass, direction_pass):
 
     Returns
     -------
-    contacts_l, contacts_r : ndarray
-        Arrays of frames where floor contact occurs.
+    df_pass_contact : pandas DataFrame
+        Columns are 'L_FOOT', 'R_FOOT'.
+        Index is step number (0, 1, 2, ...).
+        Elements are frames where contact occurs.
 
     """
     right_to_left = df_pass.L_FOOT - df_pass.R_FOOT
@@ -137,7 +139,12 @@ def foot_contacts(df_pass, direction_pass):
     contacts_l, _ = mean_shift_peaks(root_mean_filter(projections_l), r=10)
     contacts_r, _ = mean_shift_peaks(root_mean_filter(projections_r), r=10)
 
-    return contacts_l, contacts_r
+    df_peaks_l = pd.DataFrame(contacts_l, columns=['L_FOOT'])
+    df_peaks_r = pd.DataFrame(contacts_r, columns=['R_FOOT'])
+
+    df_pass_contact = df_peaks_l.join(df_peaks_r, how='outer')
+
+    return df_pass_contact
 
 
 def assign_swing_stance(foot_points_i, foot_points_f):
