@@ -4,7 +4,7 @@ from numpy.linalg import norm
 
 import modules.general as gen
 import modules.linear_algebra as lin
-import modules.clustering as cl
+import modules.mean_shift as ms
 import modules.math_funcs as mf
 
 
@@ -141,8 +141,8 @@ def foot_dist_peaks(foot_dist, r=1):
 
     # Find centres of foot distance peaks with mean shift
     upper_frames = frames[is_upper_value].reshape(-1, 1)
-    labels, centroids, k = cl.MeanShift.cluster(upper_frames,
-                                                kernel='gaussian', radius=r)
+    labels, centroids, k = ms.cluster(upper_frames, kernel='gaussian', 
+                                      radius=r)
 
     # Find frames with highest foot distance in each mean shift cluster
     upper_foot_dist = foot_dist[is_upper_value]
