@@ -2,7 +2,30 @@ import numpy as np
 
 
 def get_properties(class_name, class_object):
+    """
+    Calculate all properties of a class instance.
 
+    Parameters
+    ----------
+    class_name : class
+        Name of class.
+    class_object : object
+        Instance of class.
+
+    Returns
+    -------
+    property_dict : dict
+        Dictionary containing all properties of class instance.
+        Dict keys are property names, dict values are property values.
+
+    Notes
+    -----
+    Example usage:
+
+    get_properties(Dog, steve)
+    {'name': 'Steve', 'age': 8, 'weight': 30}
+
+    """
     property_dict = {}
 
     for var in vars(class_name):
