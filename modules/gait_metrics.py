@@ -4,8 +4,7 @@ from numpy.linalg import norm
 
 import modules.general as gen
 import modules.linear_algebra as lin
-import modules.mean_shift as ms
-import modules.math_funcs as mf
+from modules.signals import mean_shift_peaks, root_mean_filter
 
 
 class HeadMetrics:
@@ -109,51 +108,36 @@ def foot_metrics(df, frame_i, frame_f):
     return gen.get_properties(FootMetrics, foot_obj)
 
 
-def foot_dist_peaks(foot_dist, r=1):
+def foot_contacts(df_pass, direction_pass):
     """
-    Find peaks in the foot distance data.
+    Estimate the frames where foot makes contact with floor.
 
-    Applies mean shift to the foot distance values
-    greater than the root mean square.
+    Separate arrays are returned for left and right feet.
 
     Parameters
     ----------
-    foot_dist : pandas Series
-        Distance between feet at each frame.
-        Index values are frame numbers.
-    r : {int, float}, optional
-        Radius for mean shift clustering (default is 1).
+    df_pass : pandas DataFrame
+        DataFrame for walking pass.
+        Columns must include 'L_FOOT', 'R_FOOT'.
+
+    direction_pass : ndarray
+        Direction of motion for walking pass.
 
     Returns
     -------
-    peak_frames : ndarray
-        Frames where foot distance is at a peak.
-    mid_frames : ndarray
-        Frames closest to cluster centroids.
+    contacts_l, contacts_r : ndarray
+        Arrays of frames where floor contact occurs.
 
     """
-    frames = foot_dist.index.values
+    right_to_left = df_pass.L_FOOT - df_pass.R_FOOT
 
-    # Upper foot distance values are those above
-    # the root mean square value
-    rms = mf.root_mean_square(foot_dist.values)
-    is_upper_value = foot_dist > rms
+    projections_l = right_to_left.apply(np.dot, args=(direction_pass,))
+    projections_r = -projections_l
 
-    # Find centres of foot distance peaks with mean shift
-    upper_frames = frames[is_upper_value].reshape(-1, 1)
-    labels, centroids, k = ms.cluster(upper_frames, kernel='gaussian', 
-                                      radius=r)
+    contacts_l, _ = mean_shift_peaks(root_mean_filter(projections_l), r=10)
+    contacts_r, _ = mean_shift_peaks(root_mean_filter(projections_r), r=10)
 
-    # Find frames with highest foot distance in each mean shift cluster
-    upper_foot_dist = foot_dist[is_upper_value]
-    peak_frames = [upper_foot_dist[labels == label].idxmax() for label in
-                   range(k)]
-
-    # Find the frames closest to the mean shift centroids
-    mid_frames = [lin.closest_point(upper_frames, x)[0].item()
-                  for x in centroids]
-
-    return np.unique(peak_frames), np.unique(mid_frames),
+    return contacts_l, contacts_r
 
 
 def assign_swing_stance(foot_points_i, foot_points_f):

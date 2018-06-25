@@ -71,30 +71,6 @@ def sigmoid(x, a=1):
     return 1 / (1 + math.exp(-a * x))
 
 
-def root_mean_square(x):
-    """
-    Return the root mean square of an array.
-
-    Parameters
-    ----------
-    x : ndarray
-        Input numpy array.
-
-    Returns
-    -------
-    float
-        Root mean square.
-
-    Examples
-    --------
-    >>> x = np.array([0, 1])
-    >>> root_mean_square(x) == np.sqrt(2) / 2
-    True
-
-    """
-    return np.sqrt(sum(x**2) / x.size)
-
-
 def norm_ratio(a, b):
     """
     Normalized ratio between two positive inputs.

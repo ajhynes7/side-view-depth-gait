@@ -107,7 +107,6 @@ def _shift_to_convergence(points, mean_pos, kernel, radius, eps):
     (array([1.5, 2.5]), array([ True,  True, False]))
 
     """
-
     # Create function with specified kernel type
     kernel_func = functools.partial(_kernel_function,
                                     kernel=kernel)
