@@ -164,6 +164,36 @@ def dist_point_plane(P, P_plane, normal):
     return abs(np.dot(n_hat, P - P_plane))
 
 
+def project_vector(u, v):
+    """
+    Project vector u onto vector v.
+
+    Parameters
+    ----------
+    u, v : array_like
+        Input vectors.
+
+    Returns
+    -------
+    ndarray
+        Projection of vector x onto vector y.
+
+    Examples
+    --------
+    >>> u, v = [10, 5], [0, 1]
+
+    >>> project_vector(u, v)
+    array([0., 5.])
+
+    >>> project_vector(u, [0, 8])
+    array([0., 5.])
+
+    """
+    unit_v = unit(v)
+
+    return np.dot(u, unit_v) * unit_v
+
+
 def proj_point_line(P, A, B):
     """
     Project a point onto a line.
@@ -190,7 +220,6 @@ def proj_point_line(P, A, B):
     array([0., 0.])
 
     """
-
     AP = P - A  # Vector from A to point
     AB = B - A  # Vector from A to B
 
