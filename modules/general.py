@@ -207,6 +207,69 @@ def dict_to_array(d):
     return x
 
 
+def unique_no_sort(x):
+    """
+    Return array of unique elements with order preserved (The original numpy
+    unique() returns a sorted list).
+
+    The order is determined by the first appearance of each unique element.
+
+    Parameters
+    ----------
+    x : array_like
+        Input array.
+
+    Returns
+    -------
+    ndarray
+        Unique elements of x with original order preserved.
+
+    Examples
+    --------
+    >>> unique_no_sort([1, 1, 1, 0, 0, 3, 3, 5, 5])
+    array([1, 0, 3, 5])
+
+    >>> unique_no_sort([1, 1, 1, 0, 0, 5, 3, 3, 5])
+    array([1, 0, 5, 3])
+
+    """
+    unique, return_ind = np.unique(x, return_index=True)
+
+    return unique[np.argsort(return_ind)]
+
+
+def map_sort(x):
+    """
+    Map elements in an array to whole numbers in order (0, 1, 2, ...).
+
+    Parameters
+    ----------
+    x : array_like
+        Input array.
+
+    Returns
+    -------
+    list
+        List of sorted labels.
+
+    Examples
+    --------
+    >>> map_sort([1, 1, 1, 0, 0, 2, 2, 3, 3, 3])
+    [0, 0, 0, 1, 1, 2, 2, 3, 3, 3]
+
+    >>> map_sort([3, 3, 5, 5, 5, 10, 2])
+    [0, 0, 1, 1, 1, 2, 3]
+
+    """
+    unique = unique_no_sort(x)
+
+    output_values = [i for i, _ in enumerate(unique)]
+
+    d = {k: v for k, v in zip(unique, output_values)}
+
+    return list(map(d.get, x))
+
+
 if __name__ == "__main__":
 
     import doctest

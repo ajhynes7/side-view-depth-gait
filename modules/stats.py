@@ -104,7 +104,7 @@ class BlandAltman:
 
 def relative_difference(x, y, absolute=False):
     """
-    Relative difference between two observations x and y.
+    Relative difference between values x and y.
 
     Calculated as (x - y) / mean(x, y).
 

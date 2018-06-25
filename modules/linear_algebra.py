@@ -288,7 +288,7 @@ def angle_direction(target_direction, forward, up):
 
     Parameters
     ----------
-    target : array_like
+    target_direction : array_like
         Vector in direction of a target point.
     forward : array_like
         Vector for forward direction.
@@ -335,6 +335,8 @@ def angle_between(x, y, degrees=False):
 
     Returns
     -------
+    theta : float
+        Angle between vectors.
 
     Examples
     --------
