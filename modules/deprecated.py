@@ -2,6 +2,141 @@ import numpy as np
 from numpy.linalg import norm
 
 
+class HeadMetrics:
+
+    def __init__(self, head_points, frames):
+
+        self.head_i, self.head_f = head_points
+
+        self.frame_i, self.frame_f = frames
+
+    def __str__(self):
+
+        string = "HeadMetrics(frame_i={self.frame_i}, frame_f={self.frame_f})"
+
+        return string.format(self=self)
+
+    @property
+    def head_distance(self):
+
+        return norm(self.head_f - self.head_i)
+
+    @property
+    def stride_time(self):
+
+        return (self.frame_f - self.frame_i) / 30
+
+    @property
+    def stride_velocity(self):
+
+        return self.head_distance / self.stride_time
+
+
+class FootMetrics:
+
+    def __init__(self, stance_feet, swing_feet, frames):
+
+        self.stance_i, self.stance_f = stance_feet
+        self.swing_i, self.swing_f = swing_feet
+
+        self.frame_i, self.frame_f = frames
+
+        self.stance = (self.stance_i + self.stance_f) / 2
+
+        self.stance_proj = lin.proj_point_line(self.stance, self.swing_i,
+                                               self.swing_f)
+
+    def __str__(self):
+
+        string = "FootMetrics(frame_i={self.frame_i}, frame_f={self.frame_f})"
+
+        return string.format(self=self)
+
+    @property
+    def stride_length(self):
+
+        return norm(self.swing_f - self.swing_i)
+
+    @property
+    def step_length(self):
+
+        return norm(self.stance_proj - self.swing_i)
+
+    @property
+    def stride_width(self):
+
+        return norm(self.stance_proj - self.stance)
+
+    @property
+    def absolute_step_length(self):
+
+        return norm(self.stance - self.swing_i)
+
+
+class Stride:
+
+    def __init__(self, df, frames, side):
+
+        self.frame_i, self.frame_f = frames
+
+        self.foot_i = df.loc[self.frame_i, side]
+        self.foot_f = df.loc[self.frame_f, side]
+
+        self.side = side
+
+    def __str__(self):
+
+        string = "Stride(frame_i={self.frame_i}, frame_f={self.frame_f}, " \
+                 "side={self.side})"
+
+        return string.format(self=self)
+
+    @property
+    def stride_length(self):
+
+        return norm(self.foot_f - self.foot_i)
+
+    @property
+    def stride_time(self):
+
+        return (self.frame_f - self.frame_i) / 30
+
+    @property
+    def stride_velocity(self):
+
+        return self.stride_length / self.stride_time
+
+
+def head_metrics(df, frame_i, frame_f):
+
+    head_points = df.HEAD[[frame_i, frame_f]]
+
+    frames = frame_i, frame_f
+
+    head_obj = HeadMetrics(head_points, frames)
+
+    return gen.get_properties(HeadMetrics, head_obj)
+
+
+def foot_metrics(df, frame_i, frame_f):
+
+    foot_points_i = np.stack(df.loc[frame_i, ['L_FOOT', 'R_FOOT']])
+    foot_points_f = np.stack(df.loc[frame_f, ['L_FOOT', 'R_FOOT']])
+
+    points_i, points_f = assign_swing_stance(foot_points_i, foot_points_f)
+
+    stance_i, swing_i = points_i
+    stance_f, swing_f = points_f
+
+    stance_feet = stance_i, stance_f
+    swing_feet = swing_i, swing_f
+    frames = frame_i, frame_f
+
+    foot_obj = FootMetrics(stance_feet, swing_feet, frames)
+
+    return gen.get_properties(FootMetrics, foot_obj)
+
+
 def assign_swing_stance(foot_points_i, foot_points_f):
     """
     Assign initial and final foot points to the stance and swing foot.

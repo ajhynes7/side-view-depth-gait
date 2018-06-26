@@ -12,24 +12,44 @@ import modules.linear_algebra as lin
 from modules.signals import mean_shift_peaks, root_mean_filter
 
 
-class HeadMetrics:
+class Stride:
 
-    def __init__(self, head_points, frames):
+    def __init__(self, stance, swing_i, swing_f):
 
-        self.head_i, self.head_f = head_points
+        self.swing_i, self.swing_f = swing_i, swing_f
+        self.stance = stance
 
-        self.frame_i, self.frame_f = frames
+        self.stance_proj = lin.proj_point_line(self.stance, self.swing_i,
+                                               self.swing_f)
+
+        assert Stride.is_stride(stance, swing_i, swing_f)
 
     def __str__(self):
 
-        string = "HeadMetrics(frame_i={self.frame_i}, frame_f={self.frame_f})"
+        string = "Stride(frame_i={self.frame_i}, frame_f={self.frame_f})"
 
         return string.format(self=self)
 
-    @property
-    def head_distance(self):
+    @staticmethod
+    def is_stride(stance, swing_i, swing_f):
 
-        return norm(self.head_f - self.head_i)
+        swing_same_side = swing_i.side == swing_f.side
+
+        swing_consec = swing_i.contact_number == swing_f.contact_number - 1
+
+        same_contact = swing_i.contact_number == stance.contact_number
+
+        swing_stance_diff_side = swing_i.side != stance.side
+
+        tests = [swing_same_side, swing_consec, same_contact,
+                 swing_stance_diff_side]
+
+        return np.all(tests)
+
+    @property
+    def stride_length(self):
+
+        return norm(self.swing_f - self.swing_i)
 
     @property
     def stride_time(self):
@@ -39,33 +59,7 @@ class HeadMetrics:
     @property
     def stride_velocity(self):
 
-        return self.head_distance / self.stride_time
-
-
-class FootMetrics:
-
-    def __init__(self, stance_feet, swing_feet, frames):
-
-        self.stance_i, self.stance_f = stance_feet
-        self.swing_i, self.swing_f = swing_feet
-
-        self.frame_i, self.frame_f = frames
-
-        self.stance = (self.stance_i + self.stance_f) / 2
-
-        self.stance_proj = lin.proj_point_line(self.stance, self.swing_i,
-                                               self.swing_f)
-
-    def __str__(self):
-
-        string = "FootMetrics(frame_i={self.frame_i}, frame_f={self.frame_f})"
-
-        return string.format(self=self)
-
-    @property
-    def stride_length(self):
-
-        return norm(self.swing_f - self.swing_i)
+        return self.stride_length / self.stride_time
 
     @property
     def step_length(self):
@@ -81,36 +75,6 @@ class FootMetrics:
     def absolute_step_length(self):
 
         return norm(self.stance - self.swing_i)
-
-
-def head_metrics(df, frame_i, frame_f):
-
-    head_points = df.HEAD[[frame_i, frame_f]]
-
-    frames = frame_i, frame_f
-
-    head_obj = HeadMetrics(head_points, frames)
-
-    return gen.get_properties(HeadMetrics, head_obj)
-
-
-def foot_metrics(df, frame_i, frame_f):
-
-    foot_points_i = np.stack(df.loc[frame_i, ['L_FOOT', 'R_FOOT']])
-    foot_points_f = np.stack(df.loc[frame_f, ['L_FOOT', 'R_FOOT']])
-
-    points_i, points_f = assign_swing_stance(foot_points_i, foot_points_f)
-
-    stance_i, swing_i = points_i
-    stance_f, swing_f = points_f
-
-    stance_feet = stance_i, stance_f
-    swing_feet = swing_i, swing_f
-    frames = frame_i, frame_f
-
-    foot_obj = FootMetrics(stance_feet, swing_feet, frames)
-
-    return gen.get_properties(FootMetrics, foot_obj)
 
 
 def split_by_pass(df, frame_labels):
