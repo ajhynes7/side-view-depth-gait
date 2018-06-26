@@ -1,5 +1,6 @@
 """
 Functions for mean shift clustering.
+
 """
 import functools
 import numpy as np

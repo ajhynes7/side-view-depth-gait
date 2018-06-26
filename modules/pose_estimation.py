@@ -1,7 +1,6 @@
 import itertools
 
 import numpy as np
-import pandas as pd
 from scipy.spatial.distance import cdist
 
 import modules.graphs as gr
@@ -636,7 +635,7 @@ def assign_LR(foot_A, foot_B, forward):
         Position of foot A.
     foot_B : ndarray
         Position of foot B.
-    forward : ndarray
+    forward : array_like
         Vector in the direction of motion.
 
     Returns
@@ -649,9 +648,9 @@ def assign_LR(foot_A, foot_B, forward):
     --------
     >>> foot_A = np.array([0, 0, 250])
     >>> foot_B = np.array([0, 0, 200])
-    >>> direction = [1, 0, 0]
+    >>> forward = [1, 0, 0]
 
-    >>> assign_LR(foot_A, foot_B, direction)
+    >>> assign_LR(foot_A, foot_B, forward)
     -1
 
     """
@@ -659,7 +658,7 @@ def assign_LR(foot_A, foot_B, forward):
     # Up direction defined as positive y
     up = np.array([0, 1, 0])
 
-    # Points on line
+    # Point on line is mean position of feet
     line_point_A = (foot_A + foot_B) / 2
 
     # Vector from mean foot position to current foot
@@ -669,61 +668,51 @@ def assign_LR(foot_A, foot_B, forward):
     return lin.angle_direction(target_direction, forward, up)
 
 
-def consistent_sides(df_head_feet, frame_labels):
+def consistent_sides(df_pass):
     """
-    Use the direction of motion for a walking trial to assign
+    Use the direction of motion for a walking pass to assign
     chosen positions to correct left/right sides.
 
     Parameters
     ----------
-    df_head_feet : pandas DataFrame
-        Head and foot positions at each image frame.
+    df_pass : pandas DataFrame
+        Head and foot positions at each frame in a walking pass.
         Three columns: HEAD, L_FOOT, R_FOOT.
-    frame_labels : ndarray
-        Each element is a list of position labels.
 
     Returns
     -------
-    switch_sides : pandas Series
-        Series of booleans with frame numbers as the index.
-        If the value for frame f is True, the left and right
-        sides should be switched for frame f.
+    df_consistent : pandas DataFrame
+        DataFrame with feet on consistent sides.
+    direction : ndarray
+        Direction vector of line of best fit to all head points.
+        Points in general direction of motion over the walking pass.
 
     """
-    frames = df_head_feet.index.values
+    # All head positions on one walking pass
+    head_points = np.stack(tuple(df_pass.HEAD))
 
-    n_frames = len(frame_labels)
-    n_labels = frame_labels.max() + 1
+    # Convert array to floats so it can be input to best fit line function
+    head_points = head_points
 
-    switch_sides = pd.Series(np.full(n_frames, False), index=frames)
+    # Line of best fit for head positions
+    _, direction = lin.best_fit_line(head_points)
 
-    # Loop through each main cluster, i.e., each walking pass
-    for i in range(n_labels):
+    df_consistent = df_pass.copy()
 
-        cluster_i = frame_labels == i
+    for frame, row in df_pass.iterrows():
 
-        # All head positions on one walking pass
-        head_points = np.stack(tuple(df_head_feet['HEAD'][cluster_i]))
+        foot_A, foot_B = row.L_FOOT, row.R_FOOT
 
-        # Line of best fit for head positions
-        _, direction = lin.best_fit_line(head_points)
+        side_of_A = assign_LR(foot_A, foot_B, direction)
 
-        cluster_frames = frames[frame_labels == i]
+        if side_of_A == 1:
+            # A value of 1 indicates that foot A is on the right of the line of
+            # best fit. Thus, the sides should be switched.
 
-        for frame in cluster_frames:
+            row.L_FOOT, row.R_FOOT = row.R_FOOT, row.L_FOOT
+            df_consistent.loc[frame] = row
 
-            foot_A = df_head_feet.loc[frame, 'L_FOOT']
-            foot_B = df_head_feet.loc[frame, 'R_FOOT']
-
-            side_of_A = assign_LR(foot_A, foot_B, direction)
-
-            if side_of_A == 1:
-                # A value of 1 indicates that foot A is on the right
-                # of the line of best fit
-                # Thus, the sides should be switched
-                switch_sides.loc[frame] = True
-
-    return switch_sides
+    return df_consistent, direction
 
 
 if __name__ == "__main__":

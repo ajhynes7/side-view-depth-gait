@@ -1,6 +1,11 @@
+"""
+Module for calculating gait metrics from 3D body part positions
+of a walking person.
+
+"""
 import numpy as np
-import pandas as pd
 from numpy.linalg import norm
+import pandas as pd
 
 import modules.general as gen
 import modules.linear_algebra as lin
@@ -106,6 +111,34 @@ def foot_metrics(df, frame_i, frame_f):
     foot_obj = FootMetrics(stance_feet, swing_feet, frames)
 
     return gen.get_properties(FootMetrics, foot_obj)
+
+
+def split_by_pass(df, frame_labels):
+    """
+    Split a DataFrame into separate DataFrames for each walking pass.
+    The new DataFrames are ordered by image frame number.
+
+    Parameters
+    ----------
+    df : pandas DataFrame
+        Index contains image frames.
+    frame_labels : ndarray
+        Label of each image frame.
+        Label indicates the walking pass.
+
+    Returns
+    -------
+    pass_dfs : list
+        List containing DataFrame for each walking pass.
+
+    """
+    # Put labels in order so that walking pass
+    # DataFrames will be ordered by frame.
+    frame_labels = np.array(gen.map_sort(frame_labels))
+
+    pass_dfs = [df[frame_labels == i] for i in np.unique(frame_labels)]
+
+    return pass_dfs
 
 
 def foot_contacts(df_pass, direction_pass):
