@@ -9,72 +9,99 @@ import pandas as pd
 
 import modules.general as gen
 import modules.linear_algebra as lin
+import modules.pose_estimation as pe
+import modules.pandas_funcs as pf
 from modules.signals import mean_shift_peaks, root_mean_filter
 
 
 class Stride:
 
-    def __init__(self, stance, swing_i, swing_f):
+    def __init__(self, swing_i, stance, swing_f):
 
         self.swing_i, self.swing_f = swing_i, swing_f
         self.stance = stance
 
-        self.stance_proj = lin.proj_point_line(self.stance, self.swing_i,
-                                               self.swing_f)
+        pos_p = stance.position
+        pos_a, pos_b = swing_i.position, swing_f.position
 
-        assert Stride.is_stride(stance, swing_i, swing_f)
+        self.stance_proj = lin.proj_point_line(pos_p, pos_a, pos_b)
 
     def __str__(self):
 
-        string = "Stride(frame_i={self.frame_i}, frame_f={self.frame_f})"
+        string = "Stride(side={self.side}, number={self.number})"
 
         return string.format(self=self)
 
-    @staticmethod
-    def is_stride(stance, swing_i, swing_f):
+    @property
+    def side(self):
 
-        swing_same_side = swing_i.side == swing_f.side
+        return self.swing_i.side
 
-        swing_consec = swing_i.contact_number == swing_f.contact_number - 1
+    @property
+    def number(self):
 
-        same_contact = swing_i.contact_number == stance.contact_number
+        return self.swing_i.number
 
-        swing_stance_diff_side = swing_i.side != stance.side
+    @property
+    def step_length(self):
 
-        tests = [swing_same_side, swing_consec, same_contact,
-                 swing_stance_diff_side]
+        return norm(self.stance_proj - self.swing_f.position)
 
-        return np.all(tests)
+    @property
+    def step_time(self):
+
+        return (self.swing_f.frame - self.stance.frame) / 30
+
+    @property
+    def stride_width(self):
+
+        return norm(self.stance.position - self.stance_proj)
 
     @property
     def stride_length(self):
 
-        return norm(self.swing_f - self.swing_i)
+        return norm(self.swing_f.position - self.swing_i.position)
 
     @property
     def stride_time(self):
 
-        return (self.frame_f - self.frame_i) / 30
+        return (self.swing_f.frame - self.swing_i.frame) / 30
 
     @property
     def stride_velocity(self):
 
         return self.stride_length / self.stride_time
 
-    @property
-    def step_length(self):
 
-        return norm(self.stance_proj - self.swing_i)
+def foot_contacts_to_gait(df_foot):
+    """
 
-    @property
-    def stride_width(self):
 
-        return norm(self.stance_proj - self.stance)
+    Parameters
+    ----------
+    df_foot :  DataFrame
+        [description]
 
-    @property
-    def absolute_step_length(self):
+    Returns
+    -------
+    df_gait : DataFrame
+        [description]
 
-        return norm(self.stance - self.swing_i)
+    """
+    foot_tuples = df_foot.itertuples(index=False)
+
+    property_dict = {}
+
+    for i, foot_tuple in enumerate(gen.window(foot_tuples, n=3)):
+
+        stride_instance = Stride(*foot_tuple)
+
+        property_dict[i] = gen.get_properties(stride_instance)
+
+    # By setting the orient, the keys of the dictionary become the index
+    df_gait = pd.DataFrame.from_dict(property_dict, orient='index')
+
+    return df_gait
 
 
 def split_by_pass(df, frame_labels):
@@ -116,16 +143,14 @@ def foot_contacts(df_pass, direction_pass):
     df_pass : pandas DataFrame
         DataFrame for walking pass.
         Columns must include 'L_FOOT', 'R_FOOT'.
-
     direction_pass : ndarray
         Direction of motion for walking pass.
 
     Returns
     -------
-    df_pass_contact : pandas DataFrame
-        Columns are 'L_FOOT', 'R_FOOT'.
-        Index is step number (0, 1, 2, ...).
-        Elements are frames where contact occurs.
+    df_contact : pandas DataFrame
+        Columns are 'number', 'part', 'frame'.
+        Each row represents a frame when a foot contacts the floor.
 
     """
     right_to_left = df_pass.L_FOOT - df_pass.R_FOOT
@@ -139,9 +164,54 @@ def foot_contacts(df_pass, direction_pass):
     df_peaks_l = pd.DataFrame(contacts_l, columns=['L_FOOT'])
     df_peaks_r = pd.DataFrame(contacts_r, columns=['R_FOOT'])
 
-    df_pass_contact = df_peaks_l.join(df_peaks_r, how='outer')
+    df_joined = df_peaks_l.join(df_peaks_r, how='outer')
 
-    return df_pass_contact
+    # Reshape data to have one frame per row
+    series_contact = df_joined.stack().sort_values().astype(int)
+
+    df_contact = series_contact.reset_index()
+
+    df_contact.columns = ['number', 'part', 'frame']
+
+    return df_contact
+
+
+def walking_pass_metrics(df_pass):
+    """
+    Calculate gait metrics from a single walking pass in front of the camera.
+
+    Parameters
+    ----------
+    df_pass : DataFrame
+        Index is the frame numbers.
+        Columns must include L_FOOT', 'R_FOOT'.
+        Elements are position vectors.
+
+    Returns
+    -------
+    df_gait : DataFrame
+        Columns include gait metrics, e.g. 'stride_length', and the side and
+        stride number.
+
+    """
+    # Enforce consistent sides for the feet on all walking passes.
+    # Also calculate the general direction of motion for each pass.
+    df_pass, direction = pe.consistent_sides(df_pass)
+
+    # Estimate frames where foot contacts floor
+    df_contact = foot_contacts(df_pass, direction)
+
+    # Add column with corresponding foot positions
+    df_contact = pf.column_from_lookup(df_contact, df_pass, column='position',
+                                       lookup_cols=('frame', 'part'))
+
+    # For simplicity, substitute the part 'R_FOOT' with a side 'R'
+    df_contact['side'] = df_contact.part.str[0]
+    df_contact = df_contact.drop('part', axis=1)
+
+    df_gait = foot_contacts_to_gait(df_contact)
+
+    return df_gait
 
 
 def gait_dataframe(df, peak_frames, peak_labels, metrics_func):
