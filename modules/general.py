@@ -2,14 +2,12 @@ import numpy as np
 import itertools
 
 
-def get_properties(class_name, class_object):
+def get_properties(class_object):
     """
     Calculate all properties of a class instance.
 
     Parameters
     ----------
-    class_name : class
-        Name of class.
     class_object : object
         Instance of class.
 
@@ -23,11 +21,13 @@ def get_properties(class_name, class_object):
     -----
     Example usage:
 
-    get_properties(Dog, steve)
+    get_properties(steve)
     {'name': 'Steve', 'age': 8, 'weight': 30}
 
     """
     property_dict = {}
+
+    class_name = class_object.__class__
 
     for var in vars(class_name):
 
