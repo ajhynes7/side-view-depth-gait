@@ -1,4 +1,5 @@
 import numpy as np
+import itertools
 
 
 def get_properties(class_name, class_object):
@@ -291,6 +292,38 @@ def map_sort(x):
     d = {k: v for k, v in zip(unique, output_values)}
 
     return list(map(d.get, x))
+
+
+def window(sequence, n=2):
+    """
+    Generate a sliding window of width n from an iterable.
+    Adapted from an itertools recipe.
+
+    Parameters
+    ----------
+    sequence : iterable
+        Input sequence.
+    n : int, optional
+        Width of sliding window (default 2)
+
+    Yields
+    ------
+    result : tuple
+        Tuple containing n elements from input sequence.
+
+    """
+    iterator = iter(sequence)
+
+    result = tuple(itertools.islice(iterator, n))
+
+    if len(result) == n:
+        yield result
+
+    for elem in iterator:
+
+        result = result[1:] + (elem, )
+
+        yield result
 
 
 if __name__ == "__main__":
