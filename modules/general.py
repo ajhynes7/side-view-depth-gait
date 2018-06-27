@@ -173,6 +173,36 @@ def strings_with_any_substrings(strings, substrings):
     return matched_strings, substring_index
 
 
+def any_in_string(string, substrings):
+    """
+    Check if any substrings are in a string.
+
+    Parameters
+    ----------
+    string : str
+        Input string.
+    substrings : iterable
+        Sequence of substrings.
+
+    Returns
+    -------
+    bool
+        True if at least one of the substrings is contained in the string.
+
+    Examples
+    --------
+    >>> any_in_string('Hoover dam', ['dog', 'cat', 'dam'])
+    True
+
+    >>> any_in_string('Hoover dam', ['dog', 'cat'])
+    False
+
+    """
+    matched, _ = strings_with_any_substrings([string], substrings)
+
+    return len(matched) > 0
+
+
 def iterable_to_dict(x):
     """
     Converts an iterable to a dictionary.
