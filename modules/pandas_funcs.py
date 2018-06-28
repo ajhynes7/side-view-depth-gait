@@ -1,15 +1,50 @@
 import pandas as pd
 
+import modules.general as gen
+
 
 def apply_to_columns(df_1, df_2, func):
+    """
+    Apply a function on each pair of matching columns from two DataFrames.
 
+    Parameters
+    ----------
+    df_1, df_2 : DataFrame
+        Input DataFrames.
+    func : function
+        Function that takes two numerical series as inputs.
+
+    Returns
+    -------
+    dict
+        Each key is a column label.
+        Each value is the output of the given function.
+
+    Examples
+    --------
+    >>> df_1 = pd.DataFrame({'A': [5, 3], 'B': [2, 10]})
+    >>> df_2 = pd.DataFrame({'A': [6, 4], 'B': [3, 2]})
+
+    >>> dict_ = apply_to_columns(df_1, df_2, lambda a, b: a + b)
+
+    >>> dict_['A']
+    0    11
+    1     7
+    Name: A, dtype: int64
+
+    >>> dict_['B']
+    0     5
+    1    12
+    Name: B, dtype: int64
+
+    """
     # Columns with numerical data
     numeric_columns_1 = df_1.select_dtypes(include='number').columns
     numeric_columns_2 = df_2.select_dtypes(include='number').columns
 
     shared_columns = set(numeric_columns_1) & set(numeric_columns_2)
 
-    return {k: func(df_1[k], df_2[k]) for k in shared_columns}
+    return {col: func(df_1[col], df_2[col]) for col in shared_columns}
 
 
 def lookup_values(df, df_lookup):
@@ -40,7 +75,7 @@ def lookup_values(df, df_lookup):
     2  5  10
     3  7  -1
 
-    >>> lookup_data = {'R': [10, 11, 12], 'G': [10, 13, np.nan]}
+    >>> lookup_data = {'R': [10, 11, 12], 'G': [10, 13, None]}
     >>> df_lookup = pd.DataFrame(lookup_data, index=[1, 5, 7])
 
     >>> df_lookup
@@ -71,33 +106,45 @@ def lookup_values(df, df_lookup):
     return df_final
 
 
-def column_from_lookup(df, df_lookup, column='new', lookup_cols=(0, 1)):
+def column_from_lookup(df, df_lookup, *, column='new', lookup_cols=(0, 1)):
     """
-    Add a new column to a dataframe and populate it with values from a
+    Add a new column to a DataFrame and populate it with values from a
     lookup table.
 
-    For each row in the input dataframe, the values at two specified columns
-    are used to retrieve a new value in the lookup table.
-    This value is inserted into the new column.
+    For each row in the input DataFrame, the values at two specified columns
+    are used as a (row, col) pair to retrieve a new value in the lookup table.
+
+    The retrieved value is inserted into the new column.
 
     Parameters
     ----------
     df : DataFrame
-        Input dataframe.
+        Input DataFrame.
     df_lookup : DataFrame
         Dataframe for looking up values.
     column : str, optional
         Name of new column (default 'new').
     lookup_cols : tuple, optional
-        The two column fields in input dataframe used to look up a value in
-        the lookup dataframe (default (0, 1)).
+        The two column fields in the input DataFrame used to look up a value in
+        the lookup DataFrame (default (0, 1)).
 
     Returns
     -------
     df : DataFrame
-        Original dataframe with an added column.
+        Original DataFrame with an added column.
+
+    Examples
+    --------
+    >>> df = pd.DataFrame({'type': ['x', 'x'], 'make': ['A', 'B']})
+    >>> df_lookup = pd.DataFrame({'A': [5, 3], 'B': [2, 10]}, index=['x', 'y'])
+
+    >>> column_from_lookup(df, df_lookup, lookup_cols=('type', 'make'))
+      type make  new
+    0    x    A    5
+    1    x    B    2
 
     """
+    df_copy = df.copy()
     dict_ = {}
 
     col_1, col_2 = lookup_cols
@@ -111,6 +158,55 @@ def column_from_lookup(df, df_lookup, column='new', lookup_cols=(0, 1)):
 
         dict_[tup.Index] = value
 
-    df[column] = pd.Series(dict_)
+    df_copy[column] = pd.Series(dict_)
+
+    return df_copy
+
+
+def drop_any_like(df, strings_to_drop, axis=0):
+    """
+    Drop labels that contain any of the input strings (case sensitive).
+    Rows or columns can be dropped.
+
+    Parameters
+    ----------
+    df : DataFrame
+        Input DataFrame.
+    strings_to_drop : iterable
+        Sequence of strings to drop from the axis labels.
+        A label that contains any of these strings will be dropped.
+    axis : int, optional
+        {index (0), columns (1)} (default 0).
+
+    Returns
+    -------
+    DataFrame
+        DataFrame with dropped rows or columns.
+
+    Examples
+    --------
+    >>> df = pd.DataFrame({'Canada': [5, 3], 'UK': [2, 10]}, index=['A', 'B'])
+
+    >>> drop_any_like(df, ['Can'], axis=1)
+       UK
+    A   2
+    B  10
+
+    >>> drop_any_like(df, ['B'], axis=0)
+       Canada  UK
+    A       5   2
+
+    """
+    labels = getattr(df, df._get_axis_name(axis))
+
+    to_drop = [gen.any_in_string(x, strings_to_drop) for x in labels]
+
+    df = df.drop(labels[to_drop], axis=axis)
 
     return df
+
+
+if __name__ == "__main__":
+
+    import doctest
+    doctest.testmod()
