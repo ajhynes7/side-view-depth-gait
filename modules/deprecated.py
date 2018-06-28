@@ -181,3 +181,48 @@ def assign_swing_stance(foot_points_i, foot_points_f):
                 points_f = np.array([stance_f, swing_f])
 
     return points_i, points_f
+
+
+@staticmethod
+def is_stride(stance, swing_i, swing_f):
+
+    swing_same_side = swing_i.side == swing_f.side
+
+    swing_consec = swing_i.contact_number == swing_f.contact_number - 1
+
+    same_contact = swing_i.contact_number == stance.contact_number
+
+    swing_stance_diff_side = swing_i.side != stance.side
+
+    tests = [swing_same_side, swing_consec, same_contact,
+                swing_stance_diff_side]
+
+    return np.all(tests)
+
+
+def is_stride(foot_a0, foot_b0, foot_a1):
+
+    a_a_same_side = foot_a0.side == foot_a1.side
+
+    a_a_consecutive_contacts = foot_a0.contact_number == foot_a1.contact_number - 1
+
+    a_b_same_contacts = foot_a0.contact_number == foot_b0.contact_number
+
+    # Verify that foot A and B are on different sides.
+    a_b_different_side = foot_a0.side != foot_b0.side
+
+    tests = [a_a_same_side, a_a_consecutive_contacts,
+             a_b_same_contacts, a_b_different_side]
+
+    return np.all(tests)
+
+
+def is_step(foot_a0, foot_b0, foot_a1):
+
+    # Verify that the A feet compose a stride
+    a_is_stride = is_stride(foot_a0, foot_a1)
+
+    # Verify that foot A and B are on different sides.
+    a_b_different = foot_a0.side != foot_b0.side
+
+    return a_is_stride and a_b_different

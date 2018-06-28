@@ -190,6 +190,7 @@ def walking_pass_metrics(df_pass):
     Returns
     -------
     df_gait : DataFrame
+        Each row represents a stride.
         Columns include gait metrics, e.g. 'stride_length', and the side and
         stride number.
 
@@ -212,6 +213,33 @@ def walking_pass_metrics(df_pass):
     df_gait = foot_contacts_to_gait(df_contact)
 
     return df_gait
+
+
+def combine_walking_passes(pass_dfs):
+
+    list_ = []
+    for i, df_pass in enumerate(pass_dfs):
+
+        df_gait = walking_pass_metrics(df_pass)
+        df_gait['pass'] = i  # Add column to record the walking pass
+
+        list_.append(df_gait)
+
+    df_combined = pd.concat(list_)
+
+    # Reset the index because there are repeated index elements
+    df_combined = df_combined.reset_index(drop=True)
+
+    # Split DataFrame by side (right and left)
+    df_l, df_r = [x for _, x in df_combined.groupby('side')]
+
+    df_final = pd.merge(df_l, df_r, how='outer', left_on='pass',
+                        right_on='pass', suffixes=['_L', '_R'])
+
+    strings_to_drop = ['side', 'pass', 'number']
+    df_final = pf.drop_any_like(df_final, strings_to_drop, axis=1)
+
+    return df_final
 
 
 def gait_dataframe(df, peak_frames, peak_labels, metrics_func):

@@ -194,7 +194,7 @@ def any_in_string(string, substrings):
     >>> any_in_string('Hoover dam', ['dog', 'cat', 'dam'])
     True
 
-    >>> any_in_string('Hoover dam', ['dog', 'cat'])
+    >>> any_in_string('Hoover dam', ('dog', 'cat'))
     False
 
     """
