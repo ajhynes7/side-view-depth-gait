@@ -20,7 +20,7 @@ def main():
 
     df_metrics = pd.read_csv(save_path, index_col=0)
 
-    for file_path in file_paths[:10]:
+    for file_path in file_paths:
 
         df_head_feet = pd.read_pickle(file_path)
 
@@ -43,7 +43,7 @@ def main():
 
         df_metrics.loc[file_name] = df_gait.mean()
 
-    df_metrics.to_csv(save_path)
+    df_metrics.to_csv(save_path, na_rep='NaN')
 
 
 if __name__ == '__main__':
