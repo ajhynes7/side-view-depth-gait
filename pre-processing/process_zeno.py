@@ -1,6 +1,7 @@
 import glob
 import os
 
+import numpy as np
 import pandas as pd
 
 
@@ -11,55 +12,68 @@ def main():
 
     save_name = 'zeno_gait_metrics.csv'
 
-    column_names = ['Step Length (cm.)', 'Stride Length (cm.)',
-                    'Stride Width (cm.)', 'Stride Velocity (cm./sec.)',
-                    'Absolute Step Length (cm.)', 'Stride Time (sec.)']
+    labels = ['Step Length (cm.)', 'Stride Length (cm.)',
+              'Stride Width (cm.)', 'Stride Velocity (cm./sec.)',
+              'Absolute Step Length (cm.)', 'Stride Time (sec.)']
 
-    new_names = ['step_length', 'stride_length',
-                 'stride_width', 'stride_velocity',
-                 'absolute_step_length', 'stride_time']
+    new_labels = ['step_length', 'stride_length',
+                  'stride_width', 'stride_velocity',
+                  'absolute_step_length', 'stride_time']
 
-    name_dict = {k: v for k, v in zip(column_names, new_names)}
+    label_dict = {k: v for k, v in zip(labels, new_labels)}
 
     # All files with .xlsx extension
     file_paths = glob.glob(os.path.join(load_dir, '*.xlsx'))
 
     save_path = os.path.join(save_dir, save_name)
-    
+
     # %% Read gait metrics from each Zeno file
 
-    gait_list = []
+    list_l, list_r = [], []
 
     for file_path in file_paths:
 
         base_name = os.path.basename(file_path)     # File with extension
         file_name = os.path.splitext(base_name)[0]  # File with no extension
 
-        # Two Excel sheet formats were used when collecting the data,
-        # so the number of skipped rows changes
-        n_to_skip = 5 if file_name[0] == 'A' else 11
+        df = pd.read_excel(file_path)
 
-        df = pd.read_excel(file_path, skiprows=n_to_skip)
+        # Locate the gait metric labels in the Excel file
+        bool_array = df.applymap(lambda x: 'Step Time' in x if
+                                 isinstance(x, str) else False).values
 
-        # Extract relevant gait metrics from spreadsheet
-        df = df.rename(columns={'Unnamed: 0': 'Measurement',
-                                'Unnamed: 1': 'Type'})
+        row_gait, col_gait = np.argwhere(bool_array)[0]
+        df.columns = df.iloc[row_gait, :]
 
-        is_mean_val = (df.Measurement == 'Mean') & (df.Type.isnull())
+        df_gait = df.iloc[row_gait + 1:]
 
-        # Create dictionary from the slice of the DataFrame
-        gait_dict = df[column_names][is_mean_val].to_dict('records')[0]
-        gait_dict['File'] = file_name
+        df_gait.columns.values[0] = 'Type'
+        df_gait.columns.values[1] = 'Side'
+        df_gait = df_gait.set_index(['Type', 'Side'])
 
-        gait_list.append(gait_dict)
+        series_l = df_gait.loc['Mean'].loc['Left'][labels]
+        series_r = df_gait.loc['Mean'].loc['Right'][labels]
 
-    # The list of dicts is converted into a final DataFrame
-    df_final = pd.DataFrame(gait_list)
+        series_l['File'], series_r['File'] = file_name, file_name
 
-    # Rename the columns so they match the Kinect columns
-    df_final = df_final.rename(name_dict, axis='columns')
+        list_l.append(series_l)
+        list_r.append(series_r)
+
+    df_l = pd.DataFrame(list_l)
+    df_r = pd.DataFrame(list_r)
+
+    # Change column labels to new labels
+    df_l = df_l.rename(label_dict, axis='columns')
+    df_r = df_r.rename(label_dict, axis='columns')
+
+    # Merge left and right DataFrames by matching filenames
+    df_final = pd.merge(df_l, df_r, left_on='File', right_on='File',
+                        suffixes=('_L', '_R'))
 
     df_final = df_final.set_index('File')
+
+    # Order columns alphabetically
+    df_final = df_final.reindex(sorted(df_final.columns), axis=1)
 
     df_final.to_csv(save_path, index=True)
 
