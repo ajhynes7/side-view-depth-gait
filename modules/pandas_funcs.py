@@ -10,6 +10,7 @@ import modules.general as gen
 def apply_to_columns(df_1, df_2, func):
     """
     Apply a function on each pair of matching columns from two DataFrames.
+    Rows with NaN are removed before applying the function.
 
     Parameters
     ----------
@@ -20,7 +21,7 @@ def apply_to_columns(df_1, df_2, func):
 
     Returns
     -------
-    dict
+    dict_ : dict
         Each key is a column label.
         Each value is the output of the given function.
 
@@ -48,7 +49,14 @@ def apply_to_columns(df_1, df_2, func):
 
     shared_columns = set(numeric_columns_1) & set(numeric_columns_2)
 
-    return {col: func(df_1[col], df_2[col]) for col in shared_columns}
+    dict_ = {}
+    for col in shared_columns:
+
+        df_concat = pd.concat([df_1[col], df_2[col]], axis=1).dropna(axis=0)
+
+        dict_[col] = func(df_concat.iloc[:, 0], df_concat.iloc[:, 1])
+
+    return dict_
 
 
 def lookup_values(df, df_lookup):
