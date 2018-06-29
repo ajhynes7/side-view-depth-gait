@@ -43,7 +43,7 @@ def main():
     df_length = pd.read_csv(length_path, index_col=0)
 
     # %% Select best positions from each Kinect data file
-    
+
     for file_path in file_paths:
 
         df = pd.read_pickle(file_path)
@@ -54,8 +54,10 @@ def main():
         lengths = df_length.loc[file_name]  # Read lengths
 
         # Select frames with data
-        lower_parts, part_labels = gen.strings_with_any_substrings(
+        string_index, part_labels = gen.strings_with_any_substrings(
             df.columns, lower_part_types)
+
+        lower_parts = df.columns[string_index]
 
         df_lower = df[lower_parts].dropna(axis=0)
 

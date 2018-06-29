@@ -140,11 +140,11 @@ def strings_with_any_substrings(strings, substrings):
 
     Returns
     -------
-    matched_strings : list
-        List of strings that contain one of the substrings.
+    string_index : list
+        Index to the matched strings.
 
-    substring_indices : list
-        Index to the substring contained by each string.
+    substring_index : list
+        Index to the matched substrings.
 
     Examples
     --------
@@ -154,23 +154,24 @@ def strings_with_any_substrings(strings, substrings):
     >>> x, y = strings_with_any_substrings(strings, substrings)
 
     >>> x
-    ['Wildcat', 'Sheepdog', 'Tomcat']
+    [0, 1, 3]
 
     >>> y
     [0, 1, 0]
 
     """
-    matched_strings, substring_index = [], []
+    string_index, substring_index = [], []
 
-    for string in strings:
-        for i, substring in enumerate(substrings):
+    for i, string in enumerate(strings):
+        for j, substring in enumerate(substrings):
 
             if substring in string:
-                substring_index.append(i)
-                matched_strings.append(string)
+
+                string_index.append(i)
+                substring_index.append(j)
                 break
 
-    return matched_strings, substring_index
+    return string_index, substring_index
 
 
 def any_in_string(string, substrings):

@@ -3,5 +3,6 @@
     "python.linting.pylintEnabled": false,
     "python.linting.pep8Enabled": false,
     "python.linting.flake8Enabled": true,
-    "git.ignoreLimitWarning": true
+    "git.ignoreLimitWarning": true,
+    "python.linting.pydocstyleEnabled": false
 }
