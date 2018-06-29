@@ -1,7 +1,4 @@
-"""
-Functions for assisting with the pandas library.
-
-"""
+"""Functions for assisting with the pandas library."""
 import pandas as pd
 
 import modules.general as gen
@@ -10,6 +7,7 @@ import modules.general as gen
 def apply_to_columns(df_1, df_2, func):
     """
     Apply a function on each pair of matching columns from two DataFrames.
+
     Rows with NaN are removed before applying the function.
 
     Parameters
@@ -62,6 +60,7 @@ def apply_to_columns(df_1, df_2, func):
 def lookup_values(df, df_lookup):
     """
     Use values of a DataFrame as the index to a lookup DataFrame.
+
     The columns of the two tables must match.
 
     Parameters
@@ -120,8 +119,7 @@ def lookup_values(df, df_lookup):
 
 def column_from_lookup(df, df_lookup, *, column='new', lookup_cols=(0, 1)):
     """
-    Add a new column to a DataFrame and populate it with values from a
-    lookup table.
+    Add a column to a DataFrame and fill it with values from a lookup table.
 
     For each row in the input DataFrame, the values at two specified columns
     are used as a (row, col) pair to retrieve a new value in the lookup table.
@@ -178,6 +176,7 @@ def column_from_lookup(df, df_lookup, *, column='new', lookup_cols=(0, 1)):
 def drop_any_like(df, strings_to_drop, axis=0):
     """
     Drop labels that contain any of the input strings (case sensitive).
+
     Rows or columns can be dropped.
 
     Parameters
