@@ -225,13 +225,13 @@ def combine_walking_passes(pass_dfs):
 
         list_.append(df_gait)
 
-    df_combined = pd.concat(list_)
+    df_combined = pd.concat(list_, sort=True)
 
     # Reset the index because there are repeated index elements
     df_combined = df_combined.reset_index(drop=True)
 
-    # Split DataFrame by side (right and left)
-    df_l, df_r = [x for _, x in df_combined.groupby('side')]
+    df_l = df_combined[df_combined['side'] == 'L']
+    df_r = df_combined[df_combined['side'] == 'R']
 
     df_final = pd.merge(df_l, df_r, how='outer', left_on='pass',
                         right_on='pass', suffixes=['_L', '_R'])
