@@ -24,6 +24,9 @@ def main():
     # Number should be sufficiently large and divisible by 3
     n_coord_cols = 99
 
+    # Useful for catching errors with relative file paths
+    assert len(file_paths) > 0
+
     for file_path in file_paths[10:30]:
 
         df = pd.read_csv(file_path, skiprows=range(22), header=None,

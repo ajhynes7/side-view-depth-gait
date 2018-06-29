@@ -31,6 +31,9 @@ def main():
 
     list_l, list_r = [], []
 
+    # Useful for catching errors with relative file paths
+    assert len(file_paths) > 0
+
     for file_path in file_paths:
 
         base_name = os.path.basename(file_path)     # File with extension
