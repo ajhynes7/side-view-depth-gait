@@ -1,3 +1,5 @@
+"""General functions."""
+
 import numpy as np
 import itertools
 
@@ -40,7 +42,7 @@ def get_properties(class_object):
 
 def limits(x, tolerance):
     """
-    Return lower and upper limits (x ± tolerance).
+    Return lower and upper bounds (x ± tolerance).
 
     Parameters
     ----------
@@ -70,8 +72,7 @@ def limits(x, tolerance):
 
 def divide_no_error(a, b):
     """
-    Divide without allowing any floating-point errors
-    (e.g., division by zero).
+    Divide without allowing any floating-point errors.
 
     Parameters
     ----------
@@ -100,8 +101,7 @@ def divide_no_error(a, b):
 
 def pairwise(x):
     """
-    Return a zip object that is used to iterate
-    through consecutive pairs in an iterable.
+    Return a zip object that contains consecutive pairs in an iterable.
 
     Parameters
     ----------
@@ -126,8 +126,7 @@ def pairwise(x):
 
 def strings_with_any_substrings(strings, substrings):
     """
-    Given a list of strings and a list of substrings,
-    yield each string that contains any of the substrings.
+    Yield each string that contains any of the substrings.
 
     The function is case sensitive.
 
@@ -206,7 +205,7 @@ def any_in_string(string, substrings):
 
 def iterable_to_dict(x):
     """
-    Converts an iterable to a dictionary.
+    Convert an iterable to a dictionary.
 
     Parameters
     ----------
@@ -232,6 +231,7 @@ def iterable_to_dict(x):
 def dict_to_array(d):
     """
     Convert a dictionary to a numpy array.
+
     Each dictionary key is an index to the array.
 
     Parameters
@@ -264,9 +264,9 @@ def dict_to_array(d):
 
 def unique_no_sort(x):
     """
-    Return array of unique elements with order preserved (The original numpy
-    unique() returns a sorted list).
+    Return array of unique elements with order preserved.
 
+    The original numpy unique() returns a sorted list.
     The order is determined by the first appearance of each unique element.
 
     Parameters
@@ -328,6 +328,7 @@ def map_sort(x):
 def window(sequence, n=2):
     """
     Generate a sliding window of width n from an iterable.
+
     Adapted from an itertools recipe.
 
     Parameters

@@ -60,6 +60,7 @@ class BlandAltman:
     123.0
 
     """
+
     def __init__(self, x_new, x_valid, percent=False):
 
         self.x_new, self.x_valid = x_new, x_valid
@@ -190,8 +191,7 @@ def relative_error(measured, actual, absolute=False):
 
 def mad_outliers(x, c):
     """
-    Remove outliers from an array of data using the
-    median absolute deviation (MAD).
+    Remove outliers from an array using the median absolute deviation (MAD).
 
     Values beyond the median ± c(MAD) are set to NaN.
 

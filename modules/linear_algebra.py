@@ -1,3 +1,5 @@
+"""Operations dealing with linear algebra, such as projection and distances."""
+
 import numpy as np
 from numpy.linalg import norm
 
@@ -261,7 +263,6 @@ def proj_point_plane(P, P_plane, normal):
 def best_fit_line(points):
     """
     Find the line of best fit for a set of multi-dimensional points.
-    Uses singular value decomposition.
 
     The direction of the line depends on the order of the points.
 
@@ -310,10 +311,9 @@ def best_fit_line(points):
 
 def angle_direction(target_direction, forward, up):
     """
-    Find the direction (right or left) of a target,
-    given an orientation specifying the forward and up directions.
+    Find the direction (right or left) of a target.
 
-    All input arrays have shape (3,).
+    An orientation is defined by specifying the forward and up directions.
 
     Parameters
     ----------

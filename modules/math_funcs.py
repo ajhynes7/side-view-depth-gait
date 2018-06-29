@@ -1,3 +1,4 @@
+"""Math functions."""
 import math
 
 import numpy as np
@@ -5,7 +6,7 @@ import numpy as np
 
 def gaussian(x, sigma=1, mu=0):
     """
-    Function that defines the Gaussian (normal) distribution.
+    Return a value from a Gaussian (normal) distribution.
 
     Parameters
     ----------
@@ -73,7 +74,8 @@ def sigmoid(x, a=1):
 
 def norm_ratio(a, b):
     """
-    Normalized ratio between two positive inputs.
+    Return a normalized ratio between two positive inputs.
+
     If ratio a / b is greater than one, the reciprocal is returned instead.
     Returns nan if either input is zero.
 

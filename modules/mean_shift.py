@@ -1,7 +1,5 @@
-"""
-Functions for mean shift clustering.
+"""Functions for mean shift clustering."""
 
-"""
 import functools
 import numpy as np
 
@@ -140,8 +138,8 @@ def _shift_to_convergence(points, mean_pos, kernel, radius, eps):
 def _kernel_function(distances, radius, kernel):
     """
     Return the mass of each point.
-    Used for calculating a new mean position by finding the centre of mass.
 
+    Used for calculating a new mean position by finding the centre of mass.
     The mass of each point depends on the type of kernel used.
 
     Parameters

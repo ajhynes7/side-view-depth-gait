@@ -1,3 +1,5 @@
+"""Functions for manipulating graphs."""
+
 import numpy as np
 import pandas as pd
 from scipy.spatial.distance import cdist
@@ -261,6 +263,7 @@ def weight_along_path(G, path):
 def labelled_nodes_to_graph(node_labels, label_adj_list):
     """
     Create an adjacency list from a set of labelled nodes.
+
     The weight between pairs of labels is specified.
 
     If nodes u and v have labels A and B,

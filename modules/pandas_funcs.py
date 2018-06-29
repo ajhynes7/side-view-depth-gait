@@ -1,4 +1,5 @@
 """Functions for assisting with the pandas library."""
+
 import pandas as pd
 
 import modules.general as gen

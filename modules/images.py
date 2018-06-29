@@ -1,3 +1,4 @@
+"""Module for working with images."""
 import numpy as np
 
 
@@ -205,7 +206,6 @@ def points_to_image(points):
            [ 3.,  4.]])
 
     """
-
     # Number of rows and columns in the output image.
     img_shape = np.max(points[:, [1, 0]], axis=0) + 1
 
