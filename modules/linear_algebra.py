@@ -100,17 +100,17 @@ def closest_point(candidate_points, target_point):
     return close_point, close_index
 
 
-def dist_point_line(P, A, B):
+def dist_point_line(point, line_point_1, line_point_2):
     """
     Distance from a point to a line.
 
     Parameters
     ----------
-    P : ndarray
+    point : ndarray
         Point in space.
-    A : ndarray
+    line_point_1 : ndarray
         Point A on line.
-    B : ndarray
+    line_point_2 : ndarray
         Point B on line.
 
     Returns
@@ -120,33 +120,33 @@ def dist_point_line(P, A, B):
 
     Examples
     --------
-    >>> A, B = np.array([0, 0]), np.array([1, 0])
+    >>> line_point_1, line_point_2 = np.array([0, 0]), np.array([1, 0])
 
-    >>> dist_point_line(np.array([0, 5]), A, B)
+    >>> dist_point_line(np.array([0, 5]), line_point_1, line_point_2)
     5.0
 
-    >>> dist_point_line(np.array([10, 0]), A, B)
+    >>> dist_point_line(np.array([10, 0]), line_point_1, line_point_2)
     0.0
 
     """
-    num = norm(np.cross(P - A, P - B))
-    denom = norm(A - B)
+    num = norm(np.cross(point - line_point_1, point - line_point_2))
+    denom = norm(line_point_1 - line_point_2)
 
     return gen.divide_no_error(num, denom)
 
 
-def dist_point_plane(P, P_plane, normal):
+def dist_point_plane(point, plane_point, normal):
     """
     Distance from a point to a plane.
 
     Parameters
     ----------
-    P : ndarray
+    point : ndarray
         Point in space.
+    plane_point : ndarray
+        Point on plane.
     normal : ndarray
         Normal of plane.
-    plane_pt : ndarray
-        Point on plane.
 
     Returns
     -------
@@ -155,15 +155,15 @@ def dist_point_plane(P, P_plane, normal):
 
     Examples
     --------
-    >>> P_plane, normal = np.array([0, 0, 0]), np.array([0, 0, 1])
+    >>> plane_point, normal = np.array([0, 0, 0]), np.array([0, 0, 1])
 
-    >>> dist_point_plane(np.array([10, 2, 5]), P_plane, normal)
+    >>> dist_point_plane(np.array([10, 2, 5]), plane_point, normal)
     5.0
 
     """
     n_hat = unit(normal)
 
-    return abs(np.dot(n_hat, P - P_plane))
+    return abs(np.dot(n_hat, point - plane_point))
 
 
 def project_vector(u, v):
@@ -196,17 +196,17 @@ def project_vector(u, v):
     return np.dot(u, unit_v) * unit_v
 
 
-def proj_point_line(P, A, B):
+def project_point_line(point, line_point_1, line_point_2):
     """
     Project a point onto a line.
 
     Parameters
     ----------
-    P : ndarray
+    point : ndarray
         Point in space.
-    A : ndarray
+    line_point_1 : ndarray
         Point A on line.
-    B : ndarray
+    line_point_2 : ndarray
         Point B on line.
 
     Returns
@@ -216,28 +216,29 @@ def proj_point_line(P, A, B):
 
     Examples
     --------
-    >>> A, B = np.array([0, 0]), np.array([1, 0])
+    >>> line_point_1, line_point_2 = np.array([0, 0]), np.array([1, 0])
 
-    >>> proj_point_line(np.array([0, 5]), A, B)
+    >>> project_point_line(np.array([0, 5]), line_point_1, line_point_2)
     array([0., 0.])
 
     """
-    AP = P - A  # Vector from A to point
-    AB = B - A  # Vector from A to B
+    vec_1 = point - line_point_1  # Vector from A to point
+    vec_1_2 = line_point_2 - line_point_1  # Vector from A to B
 
     # Project point onto line
-    return A + gen.divide_no_error(np.dot(AP, AB), norm(AB)**2) * AB
+    return line_point_1 + gen.divide_no_error(np.dot(vec_1, vec_1_2),
+                                              norm(vec_1_2)**2) * vec_1_2
 
 
-def proj_point_plane(P, P_plane, normal):
+def project_point_plane(point, plane_point, normal):
     """
     Project a point onto a plane.
 
     Parameters
     ----------
-    P : ndarray
+    point : ndarray
         Point in space.
-    P_plane : ndarray
+    plane_point : ndarray
         Point on plane.
     normal : ndarray
         Normal vector of plane.
@@ -249,15 +250,15 @@ def proj_point_plane(P, P_plane, normal):
 
     Examples
     --------
-    >>> P_plane, normal = np.array([0, 0, 0]), np.array([0, 0, 1])
+    >>> plane_point, normal = np.array([0, 0, 0]), np.array([0, 0, 1])
 
-    >>> proj_point_plane(np.array([10, 2, 5]), P_plane, normal)
+    >>> project_point_plane(np.array([10, 2, 5]), plane_point, normal)
     array([10.,  2.,  0.])
 
     """
     unit_normal = unit(normal)
 
-    return P - np.dot(P - P_plane, unit_normal) * unit_normal
+    return point - np.dot(point - plane_point, unit_normal) * unit_normal
 
 
 def best_fit_line(points):
@@ -300,9 +301,8 @@ def best_fit_line(points):
     points = points[~np.isnan(points).any(axis=1)]
 
     centroid = np.mean(points, axis=0)
-    A = points - centroid
 
-    _, _, vh = np.linalg.svd(A)
+    _, _, vh = np.linalg.svd(points - centroid)
 
     direction = vh[0, :]
 
@@ -321,7 +321,7 @@ def angle_direction(target_direction, forward, up):
         Vector in direction of a target point.
     forward : array_like
         Vector for forward direction.
-     up : array_like
+    up : array_like
         Vector for up direction.
 
     Returns
