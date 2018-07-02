@@ -1,13 +1,23 @@
+"""Functions for plotting points and visualizing results."""
 import numpy as np
-
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 
 def scatter_colour(points, colours, labels):
+    """
+    Scatter points with specified colours.
 
-    plt.figure()
+    Parameters
+    ----------
+    points : ndarray
+        (n, 2) array of n points.
+    colours : iterable
+        Colour of each point.
+    labels : iterable
+        Label of each point.
 
+    """
     for i, c in enumerate(colours):
         plt.scatter(points[i, 0], points[i, 1], color=c,
                     label='{i}'.format(i=labels[i]))
@@ -15,16 +25,29 @@ def scatter_colour(points, colours, labels):
     plt.legend(loc='best')
 
 
-def scatter_pos(fig, point_list, colors='b'):
+def scatter_pos(points, color='b'):
+    """
+    Plot 3D positions.
+
+    Parameters
+    ----------
+    points : ndarray
+        (n, 3) array of n points.
+    color : str, optional
+        Colour of all points (default 'b')
+
+    """
+    fig, ax = plt.subplots()
 
     ax = Axes3D(fig)
 
     # The z values of the points represent depth values,
     # while y values represent height
     # Thus, y and z are switched for plotting
-    for i, points in enumerate(point_list):
+    for i, points in enumerate(points):
+
         ax.scatter(points[:, 0], points[:, 2], points[:, 1],
-                   c=colors[i], depthshade=False)
+                   c=color, depthshade=False)
 
     ax.set_xlim3d(-100, 100)
     ax.set_ylim3d(100, 300)
@@ -42,7 +65,7 @@ def scatter2(points):
     Parameters
     ----------
     points : ndarray
-        (n, d) array of n points in d dimensions.
+        (n, 2) array of n points in two dimensions.
 
     """
     plt.scatter(points[:, 0], points[:, 1])
@@ -104,7 +127,17 @@ def scatter_series(series):
 
 
 def plot_foot_peaks(foot_dist, peak_frames):
+    """
+    Plot the peaks in the foot distance signal.
 
+    Parameters
+    ----------
+    foot_dist : ndarray
+        Foot distance signal.
+    peak_frames : iterable
+        Sequence of frames where a peak occurs.
+
+    """
     _, ax = plt.subplots()
 
     ax.plot(foot_dist, color='k', linewidth=0.7)
@@ -117,8 +150,9 @@ def plot_foot_peaks(foot_dist, peak_frames):
 
 def compare_measurements(x, y, **kwargs):
     """
-    Scatter plot of measurements from two devices,
-    with line plot to show ideal results (when measurements are equal).
+    Scatter plot of measurements from two devices.
+
+    Straight line shows ideal results (when measurements are equal).
 
     Parameters
     ----------
