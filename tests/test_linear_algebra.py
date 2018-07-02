@@ -38,7 +38,7 @@ def test_line_distance():
     A = np.array([1, 5, 4])
     B = np.array([2, 10, 8])
 
-    P_proj = lin.proj_point_line(P, A, B)
+    P_proj = lin.project_point_line(P, A, B)
     d = lin.dist_point_line(P, A, B)
 
     npt.assert_allclose(d, 1.752549)
@@ -54,7 +54,7 @@ def test_line_distance():
         P, A, B = [np.random.uniform(low, high, dim)
                    for _ in range(3)]
 
-        P_proj = lin.proj_point_line(P, A, B)
+        P_proj = lin.project_point_line(P, A, B)
         d = lin.dist_point_line(P, A, B)
 
         npt.assert_allclose(d, np.linalg.norm(P_proj - P))
@@ -72,7 +72,7 @@ def test_plane_distance():
         P, P_plane, normal = [np.random.uniform(low, high, dim)
                               for _ in range(3)]
 
-        P_proj = lin.proj_point_plane(P, P_plane, normal)
+        P_proj = lin.project_point_plane(P, P_plane, normal)
         d = lin.dist_point_plane(P, P_plane, normal)
 
         npt.assert_allclose(d, np.linalg.norm(P_proj - P))
@@ -137,7 +137,7 @@ def test_for_failure():
 
         lin.dist_point_line(P, A, B)
 
-        lin.proj_point_line(P, A, B)
+        lin.project_point_line(P, A, B)
 
         lin.angle_between(A, B)
 

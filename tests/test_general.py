@@ -29,16 +29,16 @@ def test_strings_with_any_substrings():
     strings = ['Oatmeal', 'Bobcat', 'Lightbulb', 'Strikeout']
 
     substrings = ['oat', 'out']
-    matched, index = gen.strings_with_any_substrings(strings, substrings)
+    str_idx, sub_idx = gen.strings_with_any_substrings(strings, substrings)
 
-    assert matched == ['Strikeout']
-    assert index == [1]
+    assert str_idx == [3]
+    assert sub_idx == [1]
 
     substrings = ['Oat', 'out']
-    matched, index = gen.strings_with_any_substrings(strings, substrings)
+    str_idx, sub_idx = gen.strings_with_any_substrings(strings, substrings)
 
-    assert matched == ['Oatmeal', 'Strikeout']
-    assert index == [0, 1]
+    assert str_idx == [0, 3]
+    assert sub_idx == [0, 1]
 
 
 def test_iterable_to_dict():

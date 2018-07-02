@@ -18,15 +18,6 @@ def test_sigmoid():
     assert mf.sigmoid(0, 10) == 0.5
 
 
-def test_root_mean_square():
-
-    x = np.array([0, 1, 2])
-    assert np.isclose(mf.root_mean_square(x), np.sqrt(5 / 3))
-
-    x = np.array([0, 1, 2, 3])
-    assert np.isclose(mf.root_mean_square(x), np.sqrt(14 / 4))
-
-
 def test_norm_ratio():
 
     for i in range(10):
