@@ -24,7 +24,7 @@ class Stride:
         pos_p = stance.position
         pos_a, pos_b = swing_i.position, swing_f.position
 
-        self.stance_proj = lin.proj_point_line(pos_p, pos_a, pos_b)
+        self.stance_proj = lin.project_point_line(pos_p, pos_a, pos_b)
 
     def __str__(self):
 

@@ -91,28 +91,28 @@ def main():
 
         # Head and foot positions
         head_pos = df_best_pos['Side A'].apply(lambda row: row[0, :])
-        L_foot_pos = df_best_pos['Side A'].apply(lambda row: row[-1, :])
-        R_foot_pos = df_best_pos['Side B'].apply(lambda row: row[-1, :])
+        foot_pos_1 = df_best_pos['Side A'].apply(lambda row: row[-1, :])
+        foot_pos_2 = df_best_pos['Side B'].apply(lambda row: row[-1, :])
 
         # Combine into new DataFrame
-        df_head_feet = pd.concat([head_pos, L_foot_pos, R_foot_pos], axis=1)
+        df_head_feet = pd.concat([head_pos, foot_pos_1, foot_pos_2], axis=1)
         df_head_feet.columns = ['HEAD', 'L_FOOT', 'R_FOOT']
         df_head_feet.index.name = 'Frame'
 
         # Remove outlier frames
-        y_foot_L = df_head_feet.apply(lambda row: row['L_FOOT'][1],
+        y_foot_1 = df_head_feet.apply(lambda row: row['L_FOOT'][1],
                                       axis=1).values
 
-        y_foot_R = df_head_feet.apply(lambda row: row['R_FOOT'][1],
+        y_foot_2 = df_head_feet.apply(lambda row: row['R_FOOT'][1],
                                       axis=1).values
 
-        y_foot_L_filtered = st.mad_outliers(y_foot_L, 2)
-        y_foot_R_filtered = st.mad_outliers(y_foot_R, 2)
+        y_foot_filtered_1 = st.mad_outliers(y_foot_1, 2)
+        y_foot_filtered_2 = st.mad_outliers(y_foot_2, 2)
 
-        good_frame_L = ~np.isnan(y_foot_L_filtered)
-        good_frame_R = ~np.isnan(y_foot_R_filtered)
+        good_frame_1 = ~np.isnan(y_foot_filtered_1)
+        good_frame_2 = ~np.isnan(y_foot_filtered_2)
 
-        df_head_feet = df_head_feet[good_frame_L & good_frame_R]
+        df_head_feet = df_head_feet[good_frame_1 & good_frame_2]
 
         # Save data
         save_path = os.path.join(save_dir, file_name) + '.pkl'

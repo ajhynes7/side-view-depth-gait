@@ -145,6 +145,7 @@ def get_population(frame_series, part_labels):
 
     Examples
     --------
+    >>> import pandas as pd
     >>> head_points = np.array([-45, 66, 238]).reshape(-1, 3)
     >>> foot_points = np.array([[-26., -57, 249], [-74, -58, 260]])
 
@@ -391,8 +392,8 @@ def filter_by_path(input_matrix, path_matrix, part_connections):
                 if k in part_connections[j]:
                     # These nodes in the path are connected
                     # in the body part graph
-                    A, B = path_matrix[i, j], path_matrix[i, k]
-                    filtered_matrix[A, B] = input_matrix[A, B]
+                    a, b = path_matrix[i, j], path_matrix[i, k]
+                    filtered_matrix[a, b] = input_matrix[a, b]
 
     return filtered_matrix
 
@@ -623,7 +624,7 @@ def process_frame(population, labels, label_adj_list, radii, cost_func,
     return pop_1, pop_2
 
 
-def assign_LR(foot_A, foot_B, forward):
+def assign_sides(foot_1, foot_2, forward):
     """
     Assign a foot position to left or right side
     using the direction of motion.
@@ -631,10 +632,8 @@ def assign_LR(foot_A, foot_B, forward):
 
     Parameters
     ----------
-    foot_A : ndarray
-        Position of foot A.
-    foot_B : ndarray
-        Position of foot B.
+    foot_1, foot_2 : ndarray
+        Positions of feet.
     forward : array_like
         Vector in the direction of motion.
 
@@ -646,11 +645,11 @@ def assign_LR(foot_A, foot_B, forward):
 
     Examples
     --------
-    >>> foot_A = np.array([0, 0, 250])
-    >>> foot_B = np.array([0, 0, 200])
+    >>> foot_1 = np.array([0, 0, 250])
+    >>> foot_2 = np.array([0, 0, 200])
     >>> forward = [1, 0, 0]
 
-    >>> assign_LR(foot_A, foot_B, forward)
+    >>> assign_sides(foot_1, foot_2, forward)
     -1
 
     """
@@ -659,10 +658,10 @@ def assign_LR(foot_A, foot_B, forward):
     up = np.array([0, 1, 0])
 
     # Point on line is mean position of feet
-    line_point_A = (foot_A + foot_B) / 2
+    line_point = (foot_1 + foot_2) / 2
 
     # Vector from mean foot position to current foot
-    target_direction = foot_A - line_point_A
+    target_direction = foot_1 - line_point
 
     # Check if point is left or right of the line
     return lin.angle_direction(target_direction, forward, up)
@@ -701,11 +700,11 @@ def consistent_sides(df_pass):
 
     for frame, row in df_pass.iterrows():
 
-        foot_A, foot_B = row.L_FOOT, row.R_FOOT
+        foot_1, foot_2 = row.L_FOOT, row.R_FOOT
 
-        side_of_A = assign_LR(foot_A, foot_B, direction)
+        side_of_1 = assign_sides(foot_1, foot_2, direction)
 
-        if side_of_A == 1:
+        if side_of_1 == 1:
             # A value of 1 indicates that foot A is on the right of the line of
             # best fit. Thus, the sides should be switched.
 

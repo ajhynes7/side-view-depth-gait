@@ -7,90 +7,90 @@ from scipy.spatial.distance import cdist
 import modules.general as gen
 
 
-def adj_list_to_matrix(G):
+def adj_list_to_matrix(graph):
     """
     Convert an adjacency list to an adjacency matrix.
 
     Parameters
     ----------
-    G : dict
+    graph : dict
         Adjacency list.
-        G[u][v] is the weight from node u to node v.
-        There must be a key in G for each node u in the graph.
+        graph[u][v] is the weight from node u to node v.
+        There must be a key for each node u in the graph.
 
     Returns
     -------
-    M : ndarray
+    adj_matrix : ndarray
         Adjacency matrix.
 
     Examples
     --------
-    >>> G = {0: {}, 1: {}, 2: {1: 10}}
+    >>> graph = {0: {}, 1: {}, 2: {1: 10}}
 
-    >>> adj_list_to_matrix(G)
+    >>> adj_list_to_matrix(graph)
     array([[nan, nan, nan],
            [nan, nan, nan],
            [nan, 10., nan]])
 
     """
-    n_nodes = len(G)
+    n_nodes = len(graph)
 
-    M = np.full((n_nodes, n_nodes), np.nan)
+    adj_matrix = np.full((n_nodes, n_nodes), np.nan)
 
-    for u in G:
-        for v in G[u]:
-            M[u, v] = G[u][v]
+    for u in graph:
+        for v in graph[u]:
+            adj_matrix[u, v] = graph[u][v]
 
-    return M
+    return adj_matrix
 
 
-def adj_matrix_to_list(M):
+def adj_matrix_to_list(adj_matrix):
     """
     Convert an adjacency matrix to an adjacency list.
 
     Parameters
     ----------
-    M : array_like
+    adj_matrix : array_like
         (n, n) adjacency matrix of n nodes.
 
     Returns
     -------
-    G : dict
+    graph : dict
         Adjacency list.
-        G[u][v] is the weight from node u to node v.
+        graph[u][v] is the weight from node u to node v.
 
     Examples
     --------
-    >>> M = [[np.nan, 3, 10], [np.nan, np.nan, 5], [np.nan, np.nan, np.nan]]
+    >>> mat = [[np.nan, 3, 10], [np.nan, np.nan, 5], [np.nan, np.nan, np.nan]]
 
-    >>> adj_matrix_to_list(M)
+    >>> adj_matrix_to_list(mat)
     {0: {1: 3, 2: 10}, 1: {2: 5}, 2: {}}
 
     """
-    n_nodes = len(M)
-    G = {i: {} for i in range(n_nodes)}
+    n_nodes = len(adj_matrix)
+    graph = {i: {} for i in range(n_nodes)}
 
     for u in range(n_nodes):
         for v in range(n_nodes):
-            element = M[u][v]
+            element = adj_matrix[u][v]
 
             if ~np.isnan(element):
-                G[u][v] = element
+                graph[u][v] = element
 
-    return G
+    return graph
 
 
-def dag_shortest_paths(G, order, source_nodes):
+def dag_shortest_paths(graph, order, source_nodes):
     """
     Compute shortest path to each node on a directed acyclic graph.
 
     Parameters
     ----------
-    G : dict
+    graph : dict
         Adjacency list.
-        G[u][v] is the weight from node u to node v.
-        There must be a key in G for each node u in the graph.
-    order : list
+        graph[u][v] is the weight from node u to node v.
+        There must be a key for each node u in the graph.
+    order : iterable
         Topological ordering of the nodes.
         For each edge u to v, u comes before v in the ordering.
     source_nodes : set
@@ -108,11 +108,11 @@ def dag_shortest_paths(G, order, source_nodes):
 
     Examples
     --------
-    >>> G = {0: {1: 10, 2: 20}, 1: {3: 5}, 2: {3: 8, 8: 15}, 3: {8: 6}, 8: {}}
-    >>> order = G.keys()
+    >>> g = {0: {1: 10, 2: 20}, 1: {3: 5}, 2: {3: 8, 8: 15}, 3: {8: 6}, 8: {}}
+    >>> order = g.keys()
     >>> source_nodes = {0, 1}
 
-    >>> prev, dist = dag_shortest_paths(G, order, source_nodes)
+    >>> prev, dist = dag_shortest_paths(g, order, source_nodes)
 
     >>> prev
     {0: nan, 1: nan, 2: 0, 3: 1, 8: 3}
@@ -121,15 +121,15 @@ def dag_shortest_paths(G, order, source_nodes):
     {0: 0, 1: 0, 2: 20, 3: 5, 8: 11}
 
     """
-    dist = {v: np.inf for v in G}
-    prev = {v: np.nan for v in G}
+    dist = {v: np.inf for v in graph}
+    prev = {v: np.nan for v in graph}
 
     for v in source_nodes:
         dist[v] = 0
 
     for u in order:
-        for v in G[u]:
-            weight = G[u][v]
+        for v in graph[u]:
+            weight = graph[u][v]
 
             if dist[v] > dist[u] + weight:
                 # Relax the edge
@@ -225,18 +225,18 @@ def trace_path(prev, target_node):
     return path[::-1]
 
 
-def weight_along_path(G, path):
+def weight_along_path(graph, path):
     """
     Compute the total weight of a path in a graph.
 
     Parameters
     ----------
-    G : dict
+    graph : dict
         Adjacency list.
-        G[u][v] is the weight from node u to node v.
-        There must be a key in G for each node u in the graph.
+        graph[u][v] is the weight from node u to node v.
+        There must be a key for each node u in the graph.
     path : array_like
-        List of nodes comprising a path on graph G.
+        List of nodes comprising a path on the graph.
 
     Returns
     -------
@@ -245,17 +245,17 @@ def weight_along_path(G, path):
 
     Examples
     --------
-    >>> G = {0: {1: 10, 2: 20}, 1: {3: 5}, 2: {3: 8}, 3: {8: 6}, 8: {}}
+    >>> graph = {0: {1: 10, 2: 20}, 1: {3: 5}, 2: {3: 8}, 3: {8: 6}, 8: {}}
     >>> path = [0, 1, 3, 8]
 
-    >>> weight_along_path(G, path)
+    >>> weight_along_path(graph, path)
     21
 
     """
     total_weight = 0
 
     for a, b in gen.pairwise(path):
-        total_weight += G[a][b]
+        total_weight += graph[a][b]
 
     return total_weight
 
@@ -281,7 +281,7 @@ def labelled_nodes_to_graph(node_labels, label_adj_list):
 
     Returns
     -------
-    G : dict
+    graph : dict
         Adjacency list.
 
     Examples
@@ -296,7 +296,7 @@ def labelled_nodes_to_graph(node_labels, label_adj_list):
     """
     nodes = node_labels.keys()
 
-    G = {v: {} for v in nodes}
+    graph = {v: {} for v in nodes}
 
     for u in nodes:
         label_u = node_labels[u]
@@ -306,9 +306,9 @@ def labelled_nodes_to_graph(node_labels, label_adj_list):
 
             if label_v in label_adj_list[label_u]:
 
-                G[u][v] = label_adj_list[label_u][label_v]
+                graph[u][v] = label_adj_list[label_u][label_v]
 
-    return G
+    return graph
 
 
 def points_to_graph(points, labels, expected_dists, weight_func):
@@ -325,7 +325,7 @@ def points_to_graph(points, labels, expected_dists, weight_func):
         The expected distance between pairs of labels.
         expected_dists[A][B] is the expected distance from a
         point with label A to a point with label B.
-    cost_func : function
+    weight_func : function
         Cost function that takes two arrays as input.
 
     Returns
