@@ -1,3 +1,4 @@
+"""Module for signal processing."""
 import numpy as np
 
 import modules.mean_shift as ms
@@ -11,7 +12,7 @@ def root_mean_square(x):
     Parameters
     ----------
     x : ndarray
-        Input numpy array.
+        Input array.
 
     Returns
     -------
@@ -29,7 +30,20 @@ def root_mean_square(x):
 
 
 def root_mean_filter(x):
+    """
+    Return values greater than the root mean square of the original array.
 
+    Parameters
+    ----------
+    x : ndarray
+        Input array.
+
+    Returns
+    -------
+    ndarray
+        Values greater than the root mean square.
+
+    """
     rms = root_mean_square(x)
 
     return x[x > rms]
