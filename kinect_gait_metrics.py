@@ -1,10 +1,12 @@
 import os
 import glob
 
+import numpy as np
 import pandas as pd
 from sklearn.cluster import KMeans
 
 import modules.gait_metrics as gm
+import modules.linear_algebra as lin
 
 
 def main():
@@ -20,6 +22,13 @@ def main():
 
     df_metrics = pd.read_csv(save_path, index_col=0)
 
+    # Define function to project each body part position onto a plane
+    plane_point = np.array([0, 0, 0])
+    normal = np.array([0, 1, 0])
+
+    def project_point(x):
+        return lin.project_point_plane(x, plane_point, normal)
+
     for file_path in file_paths:
 
         df_head_feet = pd.read_pickle(file_path)
@@ -27,6 +36,9 @@ def main():
         # Convert all position vectors to float type
         # so they can be easily input to linear algebra functions
         df_head_feet = df_head_feet.applymap(pd.to_numeric)
+
+        # Project all points onto same plane
+        df_head_feet = df_head_feet.applymap(project_point)
 
         # Cluster frames with k means to locate the 4 walking passes
         frames = df_head_feet.index.values.reshape(-1, 1)
