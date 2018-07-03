@@ -1,8 +1,5 @@
-"""
-Module for calculating gait metrics from 3D body part positions
-of a walking person.
+"""Module for calculating gait metrics from 3D body part positions."""
 
-"""
 import numpy as np
 from numpy.linalg import norm
 import pandas as pd

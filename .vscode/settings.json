@@ -1,9 +1,12 @@
 {
     "python.linting.enabled": true,
-    "python.linting.pylintEnabled": false,
+
     "python.linting.pep8Enabled": false,
-    "python.linting.flake8Enabled": false,
-    "git.ignoreLimitWarning": true,
+
+    "python.linting.pylintEnabled": true,
+    "python.linting.flake8Enabled": true,
     "python.linting.pydocstyleEnabled": true,
-    "python.linting.pylamaEnabled": false
+    "python.linting.mypyEnabled": false,
+
+    "git.ignoreLimitWarning": true,
 }

@@ -1,4 +1,5 @@
 """Module for signal processing."""
+
 import numpy as np
 
 import modules.mean_shift as ms

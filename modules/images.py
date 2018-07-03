@@ -1,4 +1,5 @@
 """Module for working with images."""
+
 import numpy as np
 
 

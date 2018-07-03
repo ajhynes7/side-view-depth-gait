@@ -1,3 +1,9 @@
+"""
+Module for estimating the pose of a walking person.
+
+The pose is estimated by selecting body parts from a set of hypotheses.
+
+"""
 import itertools
 
 import numpy as np
@@ -183,7 +189,7 @@ def get_population(frame_series, part_labels):
 
 def lengths_to_adj_list(label_connections, lengths):
     """
-    [description]
+    Convert a sequence of lengths between body parts to an adjacency list.
 
     Parameters
     ----------
@@ -281,8 +287,9 @@ def paths_to_foot(prev, dist, labels):
 
 def get_score_matrix(population, labels, label_adj_list, score_func):
     """
-    Compute a score matrix by comparing measured distance
-    between points to the expected distances.
+    Compute a score matrix from a set of body part positions.
+
+    Compares measured distance between points to the expected distances.
 
     Parameters
     ----------
@@ -329,32 +336,37 @@ def get_score_matrix(population, labels, label_adj_list, score_func):
     return score_matrix, dist_matrix
 
 
-def pop_shortest_paths(population, labels, label_adj_list, cost_func):
+def pop_shortest_paths(population, labels, label_adj_list, weight_func):
     """
-    [description]
+    Calculate shortest paths on the population of body parts.
 
     Parameters
     ----------
-    population : {[type]}
-        [description]
-    labels : {[type]}
-        [description]
+    population : ndarray
+        (n, 3) array of n positions.
+    labels : ndarray
+        (n,) array of labels for n positions.
+        The labels correspond to body part types (e.g., foot).
     label_adj_list : dict
         Adjacency list for the labels.
         label_adj_list[A][B] is the expected distance between
         a point with label A and a point with label B.
-    cost_func : {[type]}
-        [description]
+    weight_func : function
+        Function used to weight edges of the graph.
 
     Returns
     -------
-    [type]
-        [description]
-    """
+    prev : dict
+        For each node u in the graph, prev[u] is the previous node
+        on the shortest path to u.
+    dist : dict
+        For each node u in the graph, dist[u] is the total distance (weight)
+        of the shortest path to u.
 
+    """
     # Represent population as a weighted directed acyclic graph
-    pop_graph = gr.points_to_graph(population, labels,
-                                   label_adj_list, cost_func)
+    pop_graph = gr.points_to_graph(population, labels, label_adj_list,
+                                   weight_func)
 
     # Run shortest path algorithm
     head_nodes = np.where(labels == 0)[0]  # Source nodes
@@ -381,6 +393,7 @@ def filter_by_path(input_matrix, path_matrix, part_connections):
     -------
     [type]
         [description]
+
     """
     filtered_matrix = np.zeros(input_matrix.shape)
     n_paths, n_path_nodes = path_matrix.shape
@@ -400,19 +413,17 @@ def filter_by_path(input_matrix, path_matrix, part_connections):
 
 def inside_spheres(dist_matrix, point_nums, r):
     """
-    Given n points, m of these points are centres of spheres.
-    Calculate which of the n points are contained inside these m spheres.
+    Calculate which of n points are contained inside m spheres.
 
     Parameters
     ----------
     dist_matrix : ndarray
-        :math:`(n, n)` distance matrix.
-        Element :math:`(i, j)` is distance from point :math:`i`
-        to point :math:`j`.
+        (n, n) distance matrix.
+        Element (i, j) is distance from point i to point j.
 
     point_nums : array_like
-        :math:`(m,)` list of points that are the sphere centres.
-        Numbers between 1 and :math:`n`.
+        (m, ) list of points that are the sphere centres.
+        Numbers are between 1 and n.
 
     r : float
         Radius of spheres.
@@ -420,8 +431,8 @@ def inside_spheres(dist_matrix, point_nums, r):
     Returns
     -------
     in_spheres : array_like
-        :math:`(n,)` array of bools.
-        Element :math:`i` is true if point :math:`i` is in the set of spheres.
+        (n, ) array of bools.
+        Element i is true if point i is in the set of spheres.
 
     """
     n_points = len(dist_matrix)
@@ -455,6 +466,7 @@ def inside_radii(dist_matrix, path_matrix, radii):
     -------
     [type]
         [description]
+
     """
     in_spheres_list = []
 
@@ -489,6 +501,7 @@ def select_best_feet(dist_matrix, score_matrix, path_matrix, radii):
     -------
     [type]
         [description]
+
     """
     n_paths = len(path_matrix)
     n_radii = len(radii)
@@ -624,11 +637,11 @@ def process_frame(population, labels, label_adj_list, radii, cost_func,
     return pop_1, pop_2
 
 
-def assign_sides(foot_1, foot_2, forward):
+def assign_side(foot_1, foot_2, forward):
     """
-    Assign a foot position to left or right side
-    using the direction of motion.
-    Uses the right hand rule for orientation.
+    Assign a foot position to the left or right side on a single frame.
+
+    Uses the direction of motion for a walking pass.
 
     Parameters
     ----------
@@ -649,11 +662,10 @@ def assign_sides(foot_1, foot_2, forward):
     >>> foot_2 = np.array([0, 0, 200])
     >>> forward = [1, 0, 0]
 
-    >>> assign_sides(foot_1, foot_2, forward)
+    >>> assign_side(foot_1, foot_2, forward)
     -1
 
     """
-
     # Up direction defined as positive y
     up = np.array([0, 1, 0])
 
@@ -669,8 +681,9 @@ def assign_sides(foot_1, foot_2, forward):
 
 def consistent_sides(df_pass):
     """
-    Use the direction of motion for a walking pass to assign
-    chosen positions to correct left/right sides.
+    Assign foot positions to correct left/right sides.
+
+    Uses the direction of motion for a walking pass.
 
     Parameters
     ----------
@@ -702,7 +715,7 @@ def consistent_sides(df_pass):
 
         foot_1, foot_2 = row.L_FOOT, row.R_FOOT
 
-        side_of_1 = assign_sides(foot_1, foot_2, direction)
+        side_of_1 = assign_side(foot_1, foot_2, direction)
 
         if side_of_1 == 1:
             # A value of 1 indicates that foot A is on the right of the line of
