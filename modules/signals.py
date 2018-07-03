@@ -39,6 +39,8 @@ def filter_by_function(signal, func):
     """
     value = func(signal)
 
+    assert ~np.isnan(value)
+
     signal_lower = signal[signal < value]
     signal_upper = signal[signal > value]
 
@@ -80,6 +82,9 @@ def mean_shift_peaks(signal, **kwargs):
     ----------
     signal : pandas Series
         Index values are frames.
+
+    **kwargs : keyword arguments
+        Keyword arguments for mean shift cluster function.
 
     Returns
     -------
