@@ -5,25 +5,23 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 
-def scatter_colour(points, colours, labels):
+def scatter_labels(points, labels):
     """
-    Scatter points with specified colours.
+    Scatter points that are coloured by label.
 
     Parameters
     ----------
     points : ndarray
-        (n, 2) array of n points.
-    colours : iterable
-        Colour of each point.
-    labels : iterable
-        Label of each point.
+        (n, d) array of n points with dimension d.
+    labels : ndarray
+        (n, ) array of point labels.
 
     """
-    for i, c in enumerate(colours):
-        plt.scatter(points[i, 0], points[i, 1], color=c,
-                    label='{i}'.format(i=labels[i]))
+    for label in np.unique(labels):
 
-    plt.legend(loc='best')
+        points_label = points[labels == label]
+
+        plt.scatter(points_label[:, 0], points_label[:, 1])
 
 
 def scatter_pos(points, color='b'):
@@ -45,10 +43,8 @@ def scatter_pos(points, color='b'):
     # The z values of the points represent depth values,
     # while y values represent height
     # Thus, y and z are switched for plotting
-    for i, points in enumerate(points):
-
-        ax.scatter(points[:, 0], points[:, 2], points[:, 1],
-                   c=color, depthshade=False)
+    for point in points:
+        ax.scatter(point[0], point[2], point[1], c=color, depthshade=False)
 
     ax.set_xlim3d(-100, 100)
     ax.set_ylim3d(100, 300)
