@@ -1,14 +1,14 @@
 """Module for calculating gait metrics from 3D body part positions."""
 
 import numpy as np
-from numpy.linalg import norm
 import pandas as pd
+from numpy.linalg import norm
+from scipy.stats import linregress
 
 import modules.general as gen
 import modules.linear_algebra as lin
 import modules.pose_estimation as pe
 import modules.pandas_funcs as pf
-from modules.signals import mean_shift_peaks, root_mean_filter
 
 
 class Stride:
@@ -161,7 +161,7 @@ def foot_contacts(df_pass, direction_pass):
     df_peaks_l = pd.DataFrame(contacts_l, columns=['L_FOOT'])
     df_peaks_r = pd.DataFrame(contacts_r, columns=['R_FOOT'])
 
-    df_joined = df_peaks_l.join(df_peaks_r, how='outer')
+    df_joined = df_peaks_l.join(df_pfeaks_r, how='outer')
 
     # Reshape data to have one frame per row
     series_contact = df_joined.stack().sort_values().astype(int)
@@ -171,6 +171,49 @@ def foot_contacts(df_pass, direction_pass):
     df_contact.columns = ['number', 'part', 'frame']
 
     return df_contact
+
+
+def foot_signal(foot_series, *, r_window=5):
+    """
+    Return a signal from foot data.
+
+    Uses a sliding window of frames to compute a clean signal.
+    The signal can be used to detect stance and swing phases of a walk.
+
+    Parameters
+    ----------
+    foot_series : Series
+        Index values are frames.
+        Values are foot positions.
+    r_window : int, optional
+        Radius of sliding window (a number of frames).
+
+    Returns
+    -------
+    signal : Series
+        Index values are frames.
+        Values are the foot signal.
+
+    """
+    frames = foot_series.index.values
+    signal = pd.Series(index=frames)
+
+    x_coords = pd.Series(np.stack(foot_series)[:, 0], index=frames)
+
+    for f in frames:
+
+        x_prev = x_coords.reindex(np.arange(f - r_window, f)).dropna()
+        x_next = x_coords.reindex(np.arange(f, f + r_window)).dropna()
+
+        if x_prev.empty or x_next.empty:
+            continue
+
+        result_prev = linregress(x_prev.index.values, x_prev.values)
+        result_next = linregress(x_next.index.values, x_next.values)
+
+        signal[f] = result_prev.slope - result_next.slope
+
+    return signal
 
 
 def walking_pass_metrics(df_pass):
