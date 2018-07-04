@@ -1,7 +1,9 @@
 """Module for signal processing."""
 
 import numpy as np
+import pandas as pd
 
+import modules.general as gen
 import modules.mean_shift as ms
 import modules.linear_algebra as lin
 
@@ -80,7 +82,7 @@ def mean_shift_peaks(signal, **kwargs):
 
     Parameters
     ----------
-    signal : pandas Series
+    signal : Series
         Index values are frames.
 
     **kwargs : keyword arguments
@@ -107,6 +109,36 @@ def mean_shift_peaks(signal, **kwargs):
                   for x in centroids]
 
     return np.unique(peak_frames), np.unique(mid_frames)
+
+
+def derivative(signal):
+    """
+    First derivative of discrete signal.
+
+    Parameters
+    ----------
+    signal : Series
+        Index values are frames.
+
+    Returns
+    -------
+    deriv : Series
+        First derivative.
+
+    """
+    frames = signal.index.values
+
+    deriv = pd.Series(index=frames)
+
+    for t_prev, t_curr, t_next in gen.window(frames, 3):
+
+        delta_t = t_next - t_prev
+
+        delta_signal = signal[t_next] - signal[t_prev]
+
+        deriv[t_curr] = delta_signal / delta_t
+
+    return deriv
 
 
 if __name__ == "__main__":
