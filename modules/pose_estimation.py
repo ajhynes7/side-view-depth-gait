@@ -679,6 +679,31 @@ def assign_side(foot_1, foot_2, forward):
     return lin.angle_direction(target_direction, forward, up)
 
 
+def direction_of_pass(df_pass):
+    """
+    Return vector representing overall direction of motion for a walking pass.
+
+    Parameters
+    ----------
+    df_pass : pandas DataFrame
+        Head and foot positions at each frame in a walking pass.
+        Three columns: HEAD, L_FOOT, R_FOOT.
+
+    Returns
+    -------
+    direction : ndarray
+        Direction vector.
+
+    """
+    # All head positions on one walking pass
+    head_points = np.stack(tuple(df_pass.HEAD))
+
+    # Line of best fit for head positions
+    _, direction = lin.best_fit_line(head_points)
+
+    return direction
+
+
 def consistent_sides(df_pass):
     """
     Assign foot positions to correct left/right sides.
@@ -700,14 +725,7 @@ def consistent_sides(df_pass):
         Points in general direction of motion over the walking pass.
 
     """
-    # All head positions on one walking pass
-    head_points = np.stack(tuple(df_pass.HEAD))
-
-    # Convert array to floats so it can be input to best fit line function
-    head_points = head_points
-
-    # Line of best fit for head positions
-    _, direction = lin.best_fit_line(head_points)
+    direction = direction_of_pass(df_pass)
 
     df_consistent = df_pass.copy()
 
