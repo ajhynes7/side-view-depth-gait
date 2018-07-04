@@ -57,7 +57,7 @@ def scatter_pos(points, color='b'):
 
 def scatter2(points):
     """
-    Produce a 2D scatter plot from an array of points.
+    Produce a 2D scatter plot.
 
     Parameters
     ----------
@@ -66,6 +66,22 @@ def scatter2(points):
 
     """
     plt.scatter(points[:, 0], points[:, 1])
+
+
+def scatter3(points):
+    """
+    Produce a 3D scatter plot.
+
+    Parameters
+    ----------
+    points : ndarray
+        (n, 3) array of n points in three dimensions.
+
+    """
+    fig, ax = plt.subplots()
+    ax = Axes3D(fig)
+
+    ax.scatter(points[:, 0], points[:, 1], points[:, 2])
 
 
 def scatter_order(points, order):
