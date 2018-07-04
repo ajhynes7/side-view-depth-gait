@@ -3,7 +3,7 @@
 import numpy as np
 from numpy.linalg import norm
 
-import modules.general as gen
+import general as gen
 
 
 def unit(v):
@@ -391,6 +391,52 @@ def angle_between(x, y, degrees=False):
         theta = np.rad2deg(theta)
 
     return theta
+
+
+def line_coordinate_system(line_point, direction, points):
+    """
+    Represent points in a one-dimensional coordinate system defined by a line.
+
+    The input line point acts as the origin of the coordinate system.
+
+    The line is analagous to an x-axis. The output coordinates represent the
+    x-values of points on this line.
+
+    Parameters
+    ----------
+    line_point : ndarray
+        Point on line.
+    direction : ndarray
+        Direction vector of line.
+    points : ndarray
+        (n, d) array of n points with dimension d.
+
+    Returns
+    -------
+    coordinates : ndarray
+        One-dimensional coordinates.
+
+    Examples
+    --------
+    >>> line_point = np.array([0, 0])
+    >>> direction = np.array([1, 0])
+
+    >>> points = np.array([[10, 2], [3, 4], [-5, 5]])
+
+    >>> line_coordinate_system(line_point, direction, points)
+    array([10.,  3., -5.])
+
+    """
+    line_point_2 = line_point + direction
+
+    projected_points = np.apply_along_axis(project_point_line, 1, points,
+                                           line_point, line_point_2)
+
+    vectors = projected_points - line_point
+
+    coordinates = np.apply_along_axis(np.dot, 1, vectors, direction)
+
+    return coordinates
 
 
 if __name__ == "__main__":
