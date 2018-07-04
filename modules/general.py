@@ -293,6 +293,42 @@ def unique_no_sort(x):
     return unique[np.argsort(return_ind)]
 
 
+def map_with_dict(seq, mapping):
+    """
+    Map items in a sequence using a dictionary.
+
+    The keys of the dictionary are mapped to their values.
+
+    Parameters
+    ----------
+    seq : iterable
+        Input sequence.
+    mapping : dict
+        Dictionary used for mapping.
+
+    Returns
+    -------
+    list
+        New sequence with mapped items.
+
+    Examples
+    --------
+    >>> seq = ['R', 'L', 'R']
+    >>> mapping = {'R': 'Right', 'L': 'Left'}
+
+    >>> map_with_dict(seq, mapping)
+    ['Right', 'Left', 'Right']
+
+    >>> seq = [0, 0, 1]
+    >>> mapping = {0: 10, 1: 5, 2: 8}
+
+    >>> map_with_dict(seq, mapping)
+    [10, 10, 5]
+
+    """
+    return list(map(mapping.get, seq))
+
+
 def map_sort(x):
     """
     Map elements in an array to whole numbers in order (0, 1, 2, ...).
@@ -300,7 +336,7 @@ def map_sort(x):
     Parameters
     ----------
     x : array_like
-        Input array.
+        Input array of numbers.
 
     Returns
     -------
@@ -320,9 +356,9 @@ def map_sort(x):
 
     output_values = [i for i, _ in enumerate(unique)]
 
-    d = {k: v for k, v in zip(unique, output_values)}
+    mapping = {k: v for k, v in zip(unique, output_values)}
 
-    return list(map(d.get, x))
+    return map_with_dict(x, mapping)
 
 
 def window(sequence, n=2):
