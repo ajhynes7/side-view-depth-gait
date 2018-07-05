@@ -289,8 +289,7 @@ def combine_walking_passes(pass_dfs):
     -------
     df_final : DataFrame
         Each row represents one walking pass.
-        Columns are gait metrics
-        Combined gait metrics.
+        Columns are gait metrics for left/right sides.
 
     """
     list_ = []
@@ -306,13 +305,18 @@ def combine_walking_passes(pass_dfs):
     # Reset the index because there are repeated index elements
     df_combined = df_combined.reset_index(drop=True)
 
-    df_l = df_combined[df_combined['side'] == 'L']
-    df_r = df_combined[df_combined['side'] == 'R']
+    # Split the DataFrame by body side
+    # There may be an empty DataFrame if one side has no values
+    df_l = df_combined[df_combined.side == 'L']
+    df_r = df_combined[df_combined.side == 'R']
 
     df_final = pd.merge(df_l, df_r, how='outer', left_on='pass',
                         right_on='pass', suffixes=['_L', '_R'])
 
-    strings_to_drop = ['side', 'pass', 'number']
+    df_final = df_final.set_index('pass')   # Set the index to the pass column
+    df_final = df_final.sort_index(axis=1)  # Sort the columns alphabetically
+
+    strings_to_drop = ['side', 'number']
     df_final = pf.drop_any_like(df_final, strings_to_drop, axis=1)
 
     return df_final

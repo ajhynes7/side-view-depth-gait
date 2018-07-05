@@ -226,3 +226,46 @@ def is_step(foot_a0, foot_b0, foot_a1):
     a_b_different = foot_a0.side != foot_b0.side
 
     return a_is_stride and a_b_different
+
+
+def foot_signal(foot_series, *, r_window=5):
+    """
+    Return a signal from foot data.
+
+    Uses a sliding window of frames to compute a clean signal.
+    The signal can be used to detect stance and swing phases of a walk.
+
+    Parameters
+    ----------
+    foot_series : Series
+        Index values are frames.
+        Values are foot positions.
+    r_window : int, optional
+        Radius of sliding window (a number of frames).
+
+    Returns
+    -------
+    signal : Series
+        Index values are frames.
+        Values are the foot signal.
+
+    """
+    frames = foot_series.index.values
+    signal = pd.Series(index=frames)
+
+    x_coords = pd.Series(np.stack(foot_series)[:, 0], index=frames)
+
+    for f in frames:
+
+        x_prev = x_coords.reindex(np.arange(f - r_window, f)).dropna()
+        x_next = x_coords.reindex(np.arange(f, f + r_window)).dropna()
+
+        if x_prev.empty or x_next.empty:
+            continue
+
+        result_prev = linregress(x_prev.index.values, x_prev.values)
+        result_next = linregress(x_next.index.values, x_next.values)
+
+        signal[f] = result_prev.slope - result_next.slope
+
+    return signal

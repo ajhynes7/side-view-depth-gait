@@ -3,7 +3,7 @@
 import numpy as np
 from numpy.linalg import norm
 
-import general as gen
+import modules.general as gen
 
 
 def unit(v):
