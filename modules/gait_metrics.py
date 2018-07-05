@@ -1,14 +1,31 @@
-"""Module for calculating gait metrics from 3D body part positions."""
+"""
+Module for calculating gait metrics from 3D body part positions.
 
+Common Parameters
+-----------------
+df_pass : DataFrame
+    DataFrame for one walking pass.
+    Index values are frames.
+    Columns must include 'L_FOOT', 'R_FOOT'.
+    Elements are position vectors.
+df_contact : DataFrame
+    Each row represents a frame when a foot contacts the floor.
+    Columns include 'number', 'side', 'frame'.
+df_gait : DataFrame
+    Each row represents a stride.
+    Columns include gait metrics, e.g. 'stride_length', and the side and
+    stride number.
+
+"""
 import numpy as np
 import pandas as pd
 from numpy.linalg import norm
-from scipy.stats import linregress
 
 import modules.general as gen
 import modules.linear_algebra as lin
 import modules.pose_estimation as pe
 import modules.pandas_funcs as pf
+import modules.signals as sig
 
 
 class Stride:
@@ -70,22 +87,113 @@ class Stride:
         return self.stride_length / self.stride_time
 
 
-def foot_contacts_to_gait(df_foot):
+def detect_foot_contacts(foot_interest, foot_other, direction_pass):
     """
-
+    Detect frames where foot first contacts the floor.
 
     Parameters
     ----------
-    df_foot :  DataFrame
-        [description]
+    foot_interest, foot_other : Series
+        Index values are frames.
+        Values are foot positions.
+        The first series is the foot of interest (left or right).
+    direction_pass : ndarray
+        Direction of motion for the walking pass.
 
     Returns
     -------
-    df_gait : DataFrame
-        [description]
+    contact_frames : ndarray
+        Frames where foot of interest contacts the floor.
 
     """
-    foot_tuples = df_foot.itertuples(index=False)
+    vectors_to_foot = foot_interest - foot_other
+
+    signal = vectors_to_foot.apply(np.dot, args=(direction_pass,))
+
+    _, signal_upper = sig.filter_by_function(signal, sig.root_mean_square)
+
+    contact_frames, _ = sig.mean_shift_peaks(signal_upper, kernel='gaussian',
+                                             radius=10)
+
+    return contact_frames
+
+
+def join_foot_contacts(contacts_l, contacts_r):
+    """
+    Combine arrays of foot contact frames into a DataFrame object.
+
+    Parameters
+    ----------
+    contacts_l, contacts_r : array_like
+        Left and right contact frames.
+
+    Returns
+    -------
+    df_contact : DataFrame
+        Each row represents a first contact of a foot on the floor.
+        Columns are 'number', 'side', and 'frame'.
+
+    Examples
+    --------
+    >>> contacts_l = [214, 256]
+    >>> contacts_r = [234]
+
+    >>> join_foot_contacts(contacts_l, contacts_r)
+       number side  frame
+    0       0    L    214
+    1       0    R    234
+    2       1    L    256
+
+    """
+    df_l = pd.DataFrame(contacts_l, columns=['L'])
+    df_r = pd.DataFrame(contacts_r, columns=['R'])
+
+    df_joined = df_l.join(df_r, how='outer')
+
+    # Reshape data to have one frame per row
+    series_contact = df_joined.stack().sort_values().astype(int)
+
+    df_contact = series_contact.reset_index()
+    df_contact.columns = ['number', 'side', 'frame']
+
+    return df_contact
+
+
+def lookup_contact_positions(df_pass, df_contact, side_to_part):
+    """
+    Add foot positions at the contact frames.
+
+    Parameters
+    ----------
+    df_pass, df_contact
+        See module docstring.
+    side_to_part : dict
+        Dictionary mapping sides to body parts.
+        e.g. {'L': 'L_FOOT', 'R': 'R_FOOT'}
+
+    """
+    parts = gen.map_with_dict(df_contact.side, side_to_part)
+    frames = df_contact.frame
+
+    df_contact['position'] = df_pass.lookup(frames, parts)
+
+
+def foot_contacts_to_gait(df_contact):
+    """
+    Calculate gait metrics using instances when the feet contact the floor.
+
+    Parameters
+    ----------
+    df_contact
+        See module docstring.
+
+    Returns
+    -------
+    df_gait
+        See module docstring.
+
+    """
+    foot_tuples = df_contact.itertuples(index=False)
 
     property_dict = {}
 
@@ -101,17 +209,56 @@ def foot_contacts_to_gait(df_foot):
     return df_gait
 
 
-def split_by_pass(df, frame_labels):
+def walking_pass_metrics(df_pass):
     """
-    Split a DataFrame into separate DataFrames for each walking pass.
-    The new DataFrames are ordered by image frame number.
+    Calculate gait metrics from a single walking pass in front of the camera.
 
     Parameters
     ----------
-    df : pandas DataFrame
-        Index contains image frames.
+    df_pass
+        See module docstring.
+
+    Returns
+    -------
+    df_gait
+        See module docstring.
+
+    """
+    # Calculate the general direction of motion for each pass.
+    line_point, direction_pass = pe.direction_of_pass(df_pass)
+
+    # Enforce consistent sides for the feet on all walking passes.
+    df_pass = pe.consistent_sides(df_pass, direction_pass)
+
+    contacts_l = detect_foot_contacts(df_pass.L_FOOT, df_pass.R_FOOT,
+                                      direction_pass)
+
+    contacts_r = detect_foot_contacts(df_pass.R_FOOT, df_pass.L_FOOT,
+                                      direction_pass)
+
+    df_contact = join_foot_contacts(contacts_l, contacts_r)
+
+    # Add a column of foot positions
+    side_to_part = {'L': 'L_FOOT', 'R': 'R_FOOT'}
+    lookup_contact_positions(df_pass, df_contact, side_to_part)
+
+    df_gait = foot_contacts_to_gait(df_contact)
+
+    return df_gait
+
+
+def split_by_pass(df, frame_labels):
+    """
+    Split a DataFrame into separate DataFrames for each walking pass.
+
+    The new DataFrames are ordered by frame number.
+
+    Parameters
+    ----------
+    df : DataFrame
+        Index values are frames.
     frame_labels : ndarray
-        Label of each image frame.
+        Label of each frame.
         Label indicates the walking pass.
 
     Returns
@@ -129,134 +276,23 @@ def split_by_pass(df, frame_labels):
     return pass_dfs
 
 
-def foot_contacts(df_pass, direction_pass):
-    """
-    Estimate the frames where foot makes contact with floor.
-
-    Separate arrays are returned for left and right feet.
-
-    Parameters
-    ----------
-    df_pass : pandas DataFrame
-        DataFrame for walking pass.
-        Columns must include 'L_FOOT', 'R_FOOT'.
-    direction_pass : ndarray
-        Direction of motion for walking pass.
-
-    Returns
-    -------
-    df_contact : pandas DataFrame
-        Columns are 'number', 'part', 'frame'.
-        Each row represents a frame when a foot contacts the floor.
-
-    """
-    right_to_left = df_pass.L_FOOT - df_pass.R_FOOT
-
-    projections_l = right_to_left.apply(np.dot, args=(direction_pass,))
-    projections_r = -projections_l
-
-    contacts_l, _ = mean_shift_peaks(root_mean_filter(projections_l), r=10)
-    contacts_r, _ = mean_shift_peaks(root_mean_filter(projections_r), r=10)
-
-    df_peaks_l = pd.DataFrame(contacts_l, columns=['L_FOOT'])
-    df_peaks_r = pd.DataFrame(contacts_r, columns=['R_FOOT'])
-
-    df_joined = df_peaks_l.join(df_pfeaks_r, how='outer')
-
-    # Reshape data to have one frame per row
-    series_contact = df_joined.stack().sort_values().astype(int)
-
-    df_contact = series_contact.reset_index()
-
-    df_contact.columns = ['number', 'part', 'frame']
-
-    return df_contact
-
-
-def foot_signal(foot_series, *, r_window=5):
-    """
-    Return a signal from foot data.
-
-    Uses a sliding window of frames to compute a clean signal.
-    The signal can be used to detect stance and swing phases of a walk.
-
-    Parameters
-    ----------
-    foot_series : Series
-        Index values are frames.
-        Values are foot positions.
-    r_window : int, optional
-        Radius of sliding window (a number of frames).
-
-    Returns
-    -------
-    signal : Series
-        Index values are frames.
-        Values are the foot signal.
-
-    """
-    frames = foot_series.index.values
-    signal = pd.Series(index=frames)
-
-    x_coords = pd.Series(np.stack(foot_series)[:, 0], index=frames)
-
-    for f in frames:
-
-        x_prev = x_coords.reindex(np.arange(f - r_window, f)).dropna()
-        x_next = x_coords.reindex(np.arange(f, f + r_window)).dropna()
-
-        if x_prev.empty or x_next.empty:
-            continue
-
-        result_prev = linregress(x_prev.index.values, x_prev.values)
-        result_next = linregress(x_next.index.values, x_next.values)
-
-        signal[f] = result_prev.slope - result_next.slope
-
-    return signal
-
-
-def walking_pass_metrics(df_pass):
-    """
-    Calculate gait metrics from a single walking pass in front of the camera.
-
-    Parameters
-    ----------
-    df_pass : DataFrame
-        Index is the frame numbers.
-        Columns must include L_FOOT', 'R_FOOT'.
-        Elements are position vectors.
-
-    Returns
-    -------
-    df_gait : DataFrame
-        Each row represents a stride.
-        Columns include gait metrics, e.g. 'stride_length', and the side and
-        stride number.
-
-    """
-    # Enforce consistent sides for the feet on all walking passes.
-    # Also calculate the general direction of motion for each pass.
-    df_pass, direction = pe.consistent_sides(df_pass)
-
-    # Estimate frames where foot contacts floor
-    df_contact = foot_contacts(df_pass, direction)
-
-    # Add column with corresponding foot positions
-    df_contact = pf.column_from_lookup(df_contact, df_pass, column='position',
-                                       lookup_cols=('frame', 'part'))
-
-    # For simplicity, substitute the part 'R_FOOT' with a side 'R'
-    df_contact['side'] = df_contact.part.str[0]
-    df_contact = df_contact.drop('part', axis=1)
-
-    df_gait = foot_contacts_to_gait(df_contact)
-
-    return df_gait
-
-
 def combine_walking_passes(pass_dfs):
+    """
+    Combine gait metrics from all walking passes in a trial.
 
+    Parameters
+    ----------
+    pass_dfs : list
+        Each element is a df_pass (see module docstring).
+
+    Returns
+    -------
+    df_final : DataFrame
+        Each row represents one walking pass.
+        Columns are gait metrics
+        Combined gait metrics.
+
+    """
     list_ = []
     for i, df_pass in enumerate(pass_dfs):
 
@@ -280,3 +316,9 @@ def combine_walking_passes(pass_dfs):
     df_final = pf.drop_any_like(df_final, strings_to_drop, axis=1)
 
     return df_final
+
+
+if __name__ == "__main__":
+
+    import doctest
+    doctest.testmod()
