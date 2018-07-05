@@ -9,4 +9,6 @@
     "python.linting.mypyEnabled": false,
 
     "git.ignoreLimitWarning": true,
+
+    "vim.enableNeovim": true
 }

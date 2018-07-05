@@ -87,9 +87,38 @@ class Stride:
         return self.stride_length / self.stride_time
 
 
-def detect_foot_contacts(foot_interest, foot_other, direction_pass):
+def split_by_pass(df, frame_labels):
     """
-    Detect frames where foot first contacts the floor.
+    Split a DataFrame into separate DataFrames for each walking pass.
+
+    The new DataFrames are ordered by frame number.
+
+    Parameters
+    ----------
+    df : DataFrame
+        Index values are frames.
+    frame_labels : ndarray
+        Label of each frame.
+        Label indicates the walking pass.
+
+    Returns
+    -------
+    pass_dfs : list
+        List containing DataFrame for each walking pass.
+
+    """
+    # Put labels in order so that walking pass
+    # DataFrames will be ordered by frame.
+    frame_labels = np.array(gen.map_sort(frame_labels))
+
+    pass_dfs = [df[frame_labels == i] for i in np.unique(frame_labels)]
+
+    return pass_dfs
+
+
+def foot_signal(foot_interest, foot_other, direction_pass):
+    """
+    Return a signal from foot data that is used to detect contact frames.
 
     Parameters
     ----------
@@ -102,18 +131,37 @@ def detect_foot_contacts(foot_interest, foot_other, direction_pass):
 
     Returns
     -------
-    contact_frames : ndarray
-        Frames where foot of interest contacts the floor.
+    signal : Series
+        Signal from foot data.
 
     """
     vectors_to_foot = foot_interest - foot_other
 
     signal = vectors_to_foot.apply(np.dot, args=(direction_pass,))
 
-    _, signal_upper = sig.filter_by_function(signal, sig.root_mean_square)
+    return signal
 
-    contact_frames, _ = sig.mean_shift_peaks(signal_upper, kernel='gaussian',
-                                             radius=10)
+
+def detect_foot_contacts(signal):
+    """
+    Detect frames where foot first contacts the floor.
+
+    Parameters
+    ----------
+    signal : Series
+        Signal from foot data.
+
+    Returns
+    -------
+    contact_frames : ndarray
+        Frames where foot of interest contacts the floor.
+
+    """
+    signal_upper = signal[signal > 0]
+    masses = signal_upper.values
+
+    contact_frames, _ = sig.mean_shift_peaks(signal_upper, masses=masses,
+                                             kernel='gaussian', radius=10)
 
     return contact_frames
 
@@ -230,11 +278,11 @@ def walking_pass_metrics(df_pass):
     # Enforce consistent sides for the feet on all walking passes.
     df_pass = pe.consistent_sides(df_pass, direction_pass)
 
-    contacts_l = detect_foot_contacts(df_pass.L_FOOT, df_pass.R_FOOT,
-                                      direction_pass)
+    signal_l = foot_signal(df_pass.L_FOOT, df_pass.R_FOOT, direction_pass)
+    signal_r = -signal_l
 
-    contacts_r = detect_foot_contacts(df_pass.R_FOOT, df_pass.L_FOOT,
-                                      direction_pass)
+    contacts_l = detect_foot_contacts(signal_l)
+    contacts_r = detect_foot_contacts(signal_r)
 
     df_contact = join_foot_contacts(contacts_l, contacts_r)
 
@@ -245,35 +293,6 @@ def walking_pass_metrics(df_pass):
     df_gait = foot_contacts_to_gait(df_contact)
 
     return df_gait
-
-
-def split_by_pass(df, frame_labels):
-    """
-    Split a DataFrame into separate DataFrames for each walking pass.
-
-    The new DataFrames are ordered by frame number.
-
-    Parameters
-    ----------
-    df : DataFrame
-        Index values are frames.
-    frame_labels : ndarray
-        Label of each frame.
-        Label indicates the walking pass.
-
-    Returns
-    -------
-    pass_dfs : list
-        List containing DataFrame for each walking pass.
-
-    """
-    # Put labels in order so that walking pass
-    # DataFrames will be ordered by frame.
-    frame_labels = np.array(gen.map_sort(frame_labels))
-
-    pass_dfs = [df[frame_labels == i] for i in np.unique(frame_labels)]
-
-    return pass_dfs
 
 
 def combine_walking_passes(pass_dfs):
@@ -288,7 +307,8 @@ def combine_walking_passes(pass_dfs):
     Returns
     -------
     df_final : DataFrame
-        Each row represents one walking pass.
+        Each row represents a single stride.
+        There can be multiple strides in a walking pass.
         Columns are gait metrics for left/right sides.
 
     """
