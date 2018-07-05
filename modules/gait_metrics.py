@@ -20,6 +20,7 @@ df_gait : DataFrame
 import numpy as np
 import pandas as pd
 from numpy.linalg import norm
+from scipy.signal import medfilt
 
 import modules.general as gen
 import modules.linear_algebra as lin
@@ -157,6 +158,8 @@ def detect_foot_contacts(signal):
         Frames where foot of interest contacts the floor.
 
     """
+    signal[:] = medfilt(signal)  # Apply a median filter to remove noise
+
     signal_upper = signal[signal > 0]
     masses = signal_upper.values
 
