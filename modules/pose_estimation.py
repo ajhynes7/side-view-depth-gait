@@ -64,10 +64,10 @@ def estimate_lengths(pop_series, label_series, cost_func, n_frames, eps=0.01):
 
     Parameters
     ----------
-    pop_series : pandas series
+    pop_series : Series
         Index of the series is image frame numbers.
         Value at each frame is the population of body part hypotheses.
-    label_series : pandas series
+    label_series : Series
         Index of the series is image frame numbers.
         Value at each frame is the labels of the body part hypotheses.
     cost_func : function
@@ -133,7 +133,7 @@ def get_population(frame_series, part_labels):
 
     Parameters
     ----------
-    frame_series : pandas series
+    frame_series : Series
         Index of the series is body parts.
         Values of the series are part hypotheses.
     part_labels : array_like
@@ -685,26 +685,28 @@ def direction_of_pass(df_pass):
 
     Parameters
     ----------
-    df_pass : pandas DataFrame
+    df_pass : DataFrame
         Head and foot positions at each frame in a walking pass.
         Three columns: HEAD, L_FOOT, R_FOOT.
 
     Returns
     -------
-    direction : ndarray
-        Direction vector.
+    line_point : ndarray
+        Point that lies on line of motion.
+    direction_pass : ndarray
+        Direction of motion for the walking pass.
 
     """
     # All head positions on one walking pass
     head_points = np.stack(tuple(df_pass.HEAD))
 
     # Line of best fit for head positions
-    _, direction = lin.best_fit_line(head_points)
+    line_point, direction_pass = lin.best_fit_line(head_points)
 
-    return direction
+    return line_point, direction_pass
 
 
-def consistent_sides(df_pass):
+def consistent_sides(df_pass, direction_pass):
     """
     Assign foot positions to correct left/right sides.
 
@@ -712,28 +714,25 @@ def consistent_sides(df_pass):
 
     Parameters
     ----------
-    df_pass : pandas DataFrame
+    df_pass : DataFrame
         Head and foot positions at each frame in a walking pass.
         Three columns: HEAD, L_FOOT, R_FOOT.
+    direction_pass : ndarray
+        Direction of motion for the walking pass.
 
     Returns
     -------
-    df_consistent : pandas DataFrame
+    df_consistent : DataFrame
         DataFrame with feet on consistent sides.
-    direction : ndarray
-        Direction vector of line of best fit to all head points.
-        Points in general direction of motion over the walking pass.
 
     """
-    direction = direction_of_pass(df_pass)
-
     df_consistent = df_pass.copy()
 
     for frame, row in df_pass.iterrows():
 
         foot_1, foot_2 = row.L_FOOT, row.R_FOOT
 
-        side_of_1 = assign_side(foot_1, foot_2, direction)
+        side_of_1 = assign_side(foot_1, foot_2, direction_pass)
 
         if side_of_1 == 1:
             # A value of 1 indicates that foot A is on the right of the line of
@@ -742,7 +741,7 @@ def consistent_sides(df_pass):
             row.L_FOOT, row.R_FOOT = row.R_FOOT, row.L_FOOT
             df_consistent.loc[frame] = row
 
-    return df_consistent, direction
+    return df_consistent
 
 
 if __name__ == "__main__":
