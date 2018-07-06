@@ -27,6 +27,7 @@ import modules.linear_algebra as lin
 import modules.pose_estimation as pe
 import modules.pandas_funcs as pf
 import modules.signals as sig
+import modules.math_funcs as mf
 
 
 class Stride:
@@ -143,14 +144,18 @@ def foot_signal(foot_interest, foot_other, direction_pass):
     return signal
 
 
-def detect_foot_contacts(signal):
+def detect_foot_contacts(signal, min_peak_height):
     """
     Detect frames where foot first contacts the floor.
+
+    This is achieved by locating peaks in a foot signal.
 
     Parameters
     ----------
     signal : Series
         Signal from foot data.
+    min_peak_height : {int, float}
+        Minimum allowed height for signal peak.
 
     Returns
     -------
@@ -161,10 +166,16 @@ def detect_foot_contacts(signal):
     signal[:] = medfilt(signal)  # Apply a median filter to remove noise
 
     signal_upper = signal[signal > 0]
-    masses = signal_upper.values
 
-    contact_frames, _ = sig.mean_shift_peaks(signal_upper, masses=masses,
-                                             kernel='gaussian', radius=10)
+    norm_values = mf.normalize_array(signal_upper.values)
+
+    contact_frames, _ = sig.mean_shift_peaks(signal_upper, masses=norm_values,
+                                             kernel='gaussian', radius=5,
+                                             eps=1e-3)
+
+    # Filter the contact frames to remove false peaks
+    contact_values = signal[contact_frames]
+    contact_frames = contact_frames[contact_values > min_peak_height]
 
     return contact_frames
 
@@ -284,8 +295,10 @@ def walking_pass_metrics(df_pass):
     signal_l = foot_signal(df_pass.L_FOOT, df_pass.R_FOOT, direction_pass)
     signal_r = -signal_l
 
-    contacts_l = detect_foot_contacts(signal_l)
-    contacts_r = detect_foot_contacts(signal_r)
+    min_peak_height = sig.root_mean_square(signal_l)
+
+    contacts_l = detect_foot_contacts(signal_l, min_peak_height)
+    contacts_r = detect_foot_contacts(signal_r, min_peak_height)
 
     df_contact = join_foot_contacts(contacts_l, contacts_r)
 
