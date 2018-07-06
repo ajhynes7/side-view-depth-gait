@@ -326,28 +326,30 @@ def angle_direction(target_direction, forward, up):
 
     Returns
     -------
-    int
-        Value is 1 if target is to the left,
-        -1 if to the right, 0 if straight ahead.
+    str
+        'left', 'right', or 'straight'
 
     Examples
     --------
-    >>> fwd, up = [0, 1, 0], [0, 0, 1]
-    >>> angle_direction([1, 1, 0], fwd, up)
-    -1
+    >>> up, fwd = [8, 125, 3], [1, 0, 0]
 
-    >>> angle_direction(np.array([-1, 1, 0]), fwd, up)
-    1
+    >>> angle_direction([0, 0, 20], fwd, up)
+    'left'
 
-    >>> angle_direction(np.array([0.0, -1.0, 0.0]), fwd, up)
-    0
+    >>> angle_direction([0, 0, -20], fwd, up)
+    'right'
+
+    >>> angle_direction([2, 0, 0], fwd, up)
+    'straight'
 
     """
+    results_dict = {-1: 'left', 1: 'right', 0: 'straight'}
+
     perpendicular = np.cross(forward, target_direction)
 
     signed = np.sign(np.dot(perpendicular, up))
 
-    return int(signed)
+    return results_dict[signed]
 
 
 def angle_between(x, y, degrees=False):
