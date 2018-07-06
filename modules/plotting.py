@@ -68,20 +68,26 @@ def scatter2(points):
     plt.scatter(points[:, 0], points[:, 1])
 
 
-def scatter3(points):
+def scatter3(ax, points, **kwargs):
     """
     Produce a 3D scatter plot.
 
     Parameters
     ----------
+    ax : Axes3D object
+        Axis for plotting.
     points : ndarray
         (n, 3) array of n points in three dimensions.
+        One-dimensional array with shape (3, ) also allowed.
+    **kwargs : keyword arguments
+        Keyword arguments for scatter function.
 
     """
-    fig, ax = plt.subplots()
-    ax = Axes3D(fig)
+    if points.ndim == 1:
+        # Convert to 2d array
+        points = points.reshape(1, -1)
 
-    ax.scatter(points[:, 0], points[:, 1], points[:, 2])
+    ax.scatter(points[:, 0], points[:, 1], points[:, 2], **kwargs)
 
 
 def scatter_order(points, order):
