@@ -290,9 +290,10 @@ def walking_pass_metrics(df_pass):
     line_point, direction_pass = pe.direction_of_pass(df_pass)
 
     # Enforce consistent sides for the feet on all walking passes.
-    df_pass = pe.consistent_sides(df_pass, direction_pass)
+    verified_sides = list(pe.verify_sides_pass(df_pass, direction_pass))
+    df_cons = pe.enforce_consistency(df_pass, verified_sides)
 
-    signal_l = foot_signal(df_pass.L_FOOT, df_pass.R_FOOT, direction_pass)
+    signal_l = foot_signal(df_cons.L_FOOT, df_cons.R_FOOT, direction_pass)
     signal_r = -signal_l
 
     min_peak_height = sig.root_mean_square(signal_l)
@@ -304,7 +305,7 @@ def walking_pass_metrics(df_pass):
 
     # Add a column of foot positions
     side_to_part = {'L': 'L_FOOT', 'R': 'R_FOOT'}
-    lookup_contact_positions(df_pass, df_contact, side_to_part)
+    lookup_contact_positions(df_cons, df_contact, side_to_part)
 
     df_gait = foot_contacts_to_gait(df_contact)
 

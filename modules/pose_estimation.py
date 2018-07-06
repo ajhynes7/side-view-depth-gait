@@ -713,6 +713,29 @@ def verify_sides(foot_l, foot_r, head, direction_motion):
     return verified
 
 
+def verify_sides_pass(df_pass, direction_pass):
+    """
+    Verify the assigned foot sides on each frame in a walking pass.
+
+    Parameters
+    ----------
+    df_pass : DataFrame
+        Head and foot positions at each frame in a walking pass.
+        Three columns: HEAD, L_FOOT, R_FOOT.
+    direction_pass : array_like
+        Direction of motion for walking pass.
+
+    Yields
+    ------
+    bool
+        True if sides are verified.
+
+    """
+    for frame, row in df_pass.iterrows():
+
+        yield verify_sides(row.L_FOOT, row.R_FOOT, row.HEAD, direction_pass)
+
+
 def enforce_consistency(df_pass, verified_sides):
     """
     Assign foot positions to correct left/right sides.
