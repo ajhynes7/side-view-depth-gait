@@ -637,48 +637,6 @@ def process_frame(population, labels, label_adj_list, radii, cost_func,
     return pop_1, pop_2
 
 
-def assign_side(foot_1, foot_2, forward):
-    """
-    Assign a foot position to the left or right side on a single frame.
-
-    Uses the direction of motion for a walking pass.
-
-    Parameters
-    ----------
-    foot_1, foot_2 : ndarray
-        Positions of feet.
-    forward : array_like
-        Vector in the direction of motion.
-
-    Returns
-    -------
-    int
-        Value is 1 if foot A is to the left,
-        -1 if to the right, 0 if straight ahead.
-
-    Examples
-    --------
-    >>> foot_1 = np.array([0, 0, 250])
-    >>> foot_2 = np.array([0, 0, 200])
-    >>> forward = [1, 0, 0]
-
-    >>> assign_side(foot_1, foot_2, forward)
-    -1
-
-    """
-    # Up direction defined as positive y
-    up = np.array([0, 1, 0])
-
-    # Point on line is mean position of feet
-    line_point = (foot_1 + foot_2) / 2
-
-    # Vector from mean foot position to current foot
-    target_direction = foot_1 - line_point
-
-    # Check if point is left or right of the line
-    return lin.angle_direction(target_direction, forward, up)
-
-
 def direction_of_pass(df_pass):
     """
     Return vector representing overall direction of motion for a walking pass.
@@ -706,19 +664,66 @@ def direction_of_pass(df_pass):
     return line_point, direction_pass
 
 
-def consistent_sides(df_pass, direction_pass):
+def verify_sides(foot_l, foot_r, head, direction_motion):
+    """
+    Verify that the assigned feet are consistent with the direction of motion.
+
+    Parameters
+    ----------
+    foot_l, foot_r : ndarray
+        Left and right foot positions.
+    head : ndarray
+        Head position
+    direction_motion : array_like
+        Direction of motion
+
+    Returns
+    -------
+    verified : bool
+        True if the foot labels are consistent with the direction of motion.
+
+    Examples
+    --------
+    >>> direction = [1, 0, 0]
+    >>> foot_l, foot_r = np.array([88, -67, 267]), np.array([34, -66, 225])
+    >>> head = np.array([70, 57, 249])
+
+    >>> verify_sides(foot_l, foot_r, head, direction)
+    True
+
+    >>> verify_sides(foot_r, foot_l, head, direction)
+    False
+
+    >>> verify_sides(foot_l, foot_r, head, -np.array(direction))
+    False
+
+    >>> verify_sides(foot_r, foot_l, head, -np.array(direction))
+    True
+
+    """
+    mean_foot = (foot_l + foot_r) / 2
+    up = head - mean_foot
+
+    vector_to_left = foot_l - mean_foot
+
+    angle_dir = lin.angle_direction(vector_to_left, direction_motion, up)
+
+    verified = angle_dir == 'left' or angle_dir == 'straight'
+
+    return verified
+
+
+def enforce_consistency(df_pass, verified_sides):
     """
     Assign foot positions to correct left/right sides.
-
-    Uses the direction of motion for a walking pass.
 
     Parameters
     ----------
     df_pass : DataFrame
         Head and foot positions at each frame in a walking pass.
         Three columns: HEAD, L_FOOT, R_FOOT.
-    direction_pass : ndarray
-        Direction of motion for the walking pass.
+    verified_sides : array_like
+        Element is True if the corresponding frame has correct sides.
 
     Returns
     -------
@@ -728,15 +733,10 @@ def consistent_sides(df_pass, direction_pass):
     """
     df_consistent = df_pass.copy()
 
-    for frame, row in df_pass.iterrows():
+    for i, (frame, row) in enumerate(df_pass.iterrows()):
 
-        foot_1, foot_2 = row.L_FOOT, row.R_FOOT
-
-        side_of_1 = assign_side(foot_1, foot_2, direction_pass)
-
-        if side_of_1 == 1:
-            # A value of 1 indicates that foot A is on the right of the line of
-            # best fit. Thus, the sides should be switched.
+        if not verified_sides[i]:
+            # The sides should be switched.
 
             row.L_FOOT, row.R_FOOT = row.R_FOOT, row.L_FOOT
             df_consistent.loc[frame] = row
