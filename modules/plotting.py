@@ -24,37 +24,6 @@ def scatter_labels(points, labels):
         plt.scatter(points_label[:, 0], points_label[:, 1])
 
 
-def scatter_pos(points, color='b'):
-    """
-    Plot 3D positions.
-
-    Parameters
-    ----------
-    points : ndarray
-        (n, 3) array of n points.
-    color : str, optional
-        Colour of all points (default 'b')
-
-    """
-    fig, ax = plt.subplots()
-
-    ax = Axes3D(fig)
-
-    # The z values of the points represent depth values,
-    # while y values represent height
-    # Thus, y and z are switched for plotting
-    for point in points:
-        ax.scatter(point[0], point[2], point[1], c=color, depthshade=False)
-
-    ax.set_xlim3d(-100, 100)
-    ax.set_ylim3d(100, 300)
-    ax.set_zlim3d(-100, 100)
-
-    ax.set_xlabel('X')
-    ax.set_ylabel('Z')
-    ax.set_zlabel('Y')
-
-
 def scatter2(points):
     """
     Produce a 2D scatter plot.
