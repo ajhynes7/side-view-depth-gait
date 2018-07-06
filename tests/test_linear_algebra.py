@@ -79,16 +79,16 @@ def test_plane_distance():
 
 
 @pytest.mark.parametrize("test_input, expected", [
-    (np.array([1, 1, 0]), -1),
-    (np.array([-1, 5, 0]), 1),
-    (np.array([0, 5, 0]), 0),
-    (np.array([0, -5, -10]), 0),
-    (np.array([4, 2, 1]), -1),
+    (np.array([1, 1, 0]), 'straight'),
+    (np.array([-1, 5, 0]), 'straight'),
+    (np.array([0, 5, 1]), 'left'),
+    (np.array([0, -5, -10]), 'right'),
+    (np.array([4, 2, 1]), 'left'),
 ])
 def test_angle_direction(test_input, expected):
 
-    forward = np.array([0, 1, 0])
-    up = np.array([0, 0, 1])
+    forward = np.array([1, 0, 0])
+    up = np.array([0, 1, 0])
 
     assert lin.angle_direction(test_input, forward, up) == expected
 
