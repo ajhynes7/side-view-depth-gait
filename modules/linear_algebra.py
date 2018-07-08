@@ -347,6 +347,42 @@ def best_fit_plane(points):
     return centroid, normal
 
 
+def plane_coefficients(point, normal):
+    """
+    Return the coefficients of the plane equation.
+
+    The equation has the form ax + by + cz + d = 0
+
+    Parameters
+    ----------
+    point : ndarray
+        Point on plane.
+    normal : ndarray
+        Normal vector of plane.
+
+    Returns
+    -------
+    a, b, c, d : int
+        Plane coefficients.
+
+    Examples
+    --------
+    >>> point = np.array([0, 0, 0])
+    >>> normal = np.array([1, 2, 3])
+
+    >>> plane_coefficients(point, normal)
+    (1, 2, 3, 0)
+
+    >>> point = np.array([-1, 10, 4])
+    >>> plane_coefficients(point, normal)
+    (1, 2, 3, -31)
+    """
+    a, b, c = normal
+    d = -point.dot(normal)
+
+    return a, b, c, d
+
+
 def angle_direction(target_direction, forward, up):
     """
     Find the direction (right or left) of a target.
