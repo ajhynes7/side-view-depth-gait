@@ -93,7 +93,7 @@ def test_angle_direction(test_input, expected):
     assert lin.angle_direction(test_input, forward, up) == expected
 
 
-def test_best_fit_line():
+def test_best_fit_line_1():
 
     points = np.random.rand(10, 3)
     _, direction = lin.best_fit_line(points)
@@ -107,6 +107,34 @@ def test_best_fit_line():
     npt.assert_array_almost_equal(cross_prod, np.array([0, 0, 0]))
 
     npt.assert_allclose(np.linalg.norm(direction), 1)
+
+
+@pytest.mark.parametrize("points, centroid, direction", [
+    (np.array([[0, 0, 0], [1, 0, 0], [2, 0, 0]]), np.array([1, 0, 0]),
+     np.array([1, 0, 0])),
+    (np.array([[0, 0], [4, 0]]), np.array([2, 0]), np.array([1, 0])),
+    (np.array([[0, 0], [0, -10]]), np.array([0, -5]), np.array([0, -1])),
+])
+def test_best_fit_line_2(points, centroid, direction):
+
+    centroid_calc, direction_calc = lin.best_fit_line(points)
+
+    npt.assert_allclose(centroid, np.round(centroid_calc, 2))
+    npt.assert_allclose(direction, direction_calc)
+
+
+@pytest.mark.parametrize("points, centroid, normal", [
+    (np.array([[0, 0, 0], [1, 0, 0], [0, 0, 1]]), np.array([0.33, 0, 0.33]),
+     np.array([0, -1, 0])),
+    (np.array([[0, 0, 0], [3, 0, 0], [0, 3, 0]]), np.array([1, 1, 0]),
+     np.array([0, 0, 1])),
+])
+def test_best_fit_plane(points, centroid, normal):
+
+    centroid_calc, normal_calc = lin.best_fit_plane(points)
+
+    npt.assert_allclose(centroid, np.round(centroid_calc, 2))
+    npt.assert_allclose(normal, normal_calc)
 
 
 @pytest.mark.parametrize("a, b, expected", [
