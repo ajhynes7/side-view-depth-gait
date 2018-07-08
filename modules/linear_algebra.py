@@ -376,6 +376,7 @@ def plane_coefficients(point, normal):
     >>> point = np.array([-1, 10, 4])
     >>> plane_coefficients(point, normal)
     (1, 2, 3, -31)
+
     """
     a, b, c = normal
     d = -point.dot(normal)
