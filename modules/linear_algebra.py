@@ -263,7 +263,7 @@ def project_point_plane(point, plane_point, normal):
 
 def best_fit_line(points):
     """
-    Find the line of best fit for a set of multi-dimensional points.
+    Return the line of best fit for a set of points.
 
     The direction of the line depends on the order of the points.
 
@@ -275,7 +275,7 @@ def best_fit_line(points):
     Returns
     -------
     centroid : ndarray
-        Centroid of all the points. Line of best fit passes through centroid.
+        Centroid of points. Line of best fit passes through centroid.
     direction : ndarray
         Unit direction vector for line of best fit.
         Right singular vector which corresponds to the largest
@@ -307,6 +307,44 @@ def best_fit_line(points):
     direction = vh[0, :]
 
     return centroid, direction
+
+
+def best_fit_plane(points):
+    """
+    Return the plane of best fit for a set of points.
+
+    Parameters
+    ----------
+    points : ndarray
+        (n, d) array of n points with dimension d.
+
+    Returns
+    -------
+    centroid : ndarray
+        Centroid of points. Plane of best fit passes through centroid.
+    normal : ndarray
+        Normal vector of plane.
+
+    Examples
+    --------
+    >>> points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0]])
+
+    >>> centroid, normal = best_fit_plane(points)
+
+    >>> centroid
+    array([0.5, 0.5, 0. ])
+
+    >>> normal
+    array([0., 0., 1.])
+
+    """
+    centroid = np.mean(points, axis=0)
+    centroid_out = points - centroid
+
+    u, s, vh = np.linalg.svd(centroid_out.T)
+    normal = u[:, -1]
+
+    return centroid, normal
 
 
 def angle_direction(target_direction, forward, up):
