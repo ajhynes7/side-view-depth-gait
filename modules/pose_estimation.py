@@ -740,7 +740,7 @@ def evaluate_foot_side(head_points, foot_points_1, foot_points_2):
     """
     Yield a value indicating the side (left/right) of a foot.
 
-    A positive value indicates right, and negative indicates left.
+    A positive value indicates right, while negative indicates left.
 
     Parameters
     ----------
