@@ -1,3 +1,4 @@
+"""Script to calculate gait metrics from Kinect data."""
 import os
 import glob
 
@@ -5,6 +6,7 @@ import pandas as pd
 from sklearn.cluster import KMeans
 
 import modules.gait_metrics as gm
+import modules.general as gen
 
 
 def main():
@@ -32,8 +34,11 @@ def main():
         frames = df_head_feet.index.values.reshape(-1, 1)
         k_means = KMeans(n_clusters=4, random_state=0).fit(frames)
 
+        # Sort labels so that the frames are in temporal order
+        labels = gen.map_sort(k_means.labels_)
+
         # DataFrames for each walking pass in a trial
-        pass_dfs = gm.split_by_pass(df_head_feet, k_means.labels_)
+        pass_dfs = gen.group_by_label(df_head_feet, labels)
 
         df_trial = gm.combine_walking_passes(pass_dfs)
 
