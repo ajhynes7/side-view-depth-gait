@@ -384,20 +384,47 @@ def plane_coefficients(point, normal):
     return a, b, c, d
 
 
-def angle_direction(target_direction, forward, up):
+def target_direction_value(forward, up, target):
     """
-    Find the direction (right or left) of a target.
+    Return a signed value indicating the left/right direction of a target.
 
     An orientation is defined by specifying the forward and up directions.
 
     Parameters
     ----------
-    target_direction : array_like
-        Vector in direction of a target point.
     forward : array_like
         Vector for forward direction.
     up : array_like
         Vector for up direction.
+    target : array_like
+        Vector for up direction.
+
+    Returns
+    -------
+    float
+        Signed value indicating degree of left/right direction.
+        Positive value indicates right, negative indicates left.
+
+    """
+    perpendicular = np.cross(forward, target)
+
+    return np.dot(perpendicular, up)
+
+
+def target_side(forward, up, target):
+    """
+    Find the direction (left or right) of a target.
+
+    An orientation is defined by specifying the forward and up directions.
+
+    Parameters
+    ----------
+    forward : array_like
+        Vector for forward direction.
+    up : array_like
+        Vector for up direction.
+    target : array_like
+        Vector to a target.
 
     Returns
     -------
@@ -408,21 +435,19 @@ def angle_direction(target_direction, forward, up):
     --------
     >>> up, fwd = [8, 125, 3], [1, 0, 0]
 
-    >>> angle_direction([0, 0, 20], fwd, up)
+    >>> target_side([0, 0, 20], fwd, up)
     'left'
 
-    >>> angle_direction([0, 0, -20], fwd, up)
+    >>> target_side([0, 0, -20], fwd, up)
     'right'
 
-    >>> angle_direction([2, 0, 0], fwd, up)
+    >>> target_side([2, 0, 0], fwd, up)
     'straight'
 
     """
     results_dict = {-1: 'left', 1: 'right', 0: 'straight'}
 
-    perpendicular = np.cross(forward, target_direction)
-
-    signed = np.sign(np.dot(perpendicular, up))
+    signed = np.sign(target_direction_value(forward, up, target))
 
     return results_dict[signed]
 

@@ -85,12 +85,12 @@ def test_plane_distance():
     (np.array([0, -5, -10]), 'right'),
     (np.array([4, 2, 1]), 'left'),
 ])
-def test_angle_direction(test_input, expected):
+def test_target_side(test_input, expected):
 
     forward = np.array([1, 0, 0])
     up = np.array([0, 1, 0])
 
-    assert lin.angle_direction(test_input, forward, up) == expected
+    assert lin.target_side(test_input, forward, up) == expected
 
 
 def test_best_fit_line_1():

@@ -706,7 +706,7 @@ def verify_sides(foot_l, foot_r, head, direction_motion):
 
     vector_to_left = foot_l - mean_foot
 
-    angle_dir = lin.angle_direction(vector_to_left, direction_motion, up)
+    angle_dir = lin.target_side(vector_to_left, direction_motion, up)
 
     verified = angle_dir == 'left' or angle_dir == 'straight'
 
@@ -756,7 +756,7 @@ def enforce_consistency(df_pass, verified_sides):
     """
     df_consistent = df_pass.copy()
 
-    for i, (frame, row) in enumerate(df_pass.iterrows()):
+    for i, (frame, row) in enumerate(df_consistent.iterrows()):
 
         if not verified_sides[i]:
             # The sides should be switched.
