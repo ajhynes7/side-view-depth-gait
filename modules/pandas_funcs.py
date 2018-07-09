@@ -5,6 +5,40 @@ import pandas as pd
 import modules.general as gen
 
 
+def swap_columns(df, column_1, column_2):
+    """
+    Return a copy of a DataFrame with the values of two columns swapped.
+
+    Parameters
+    ----------
+    df : DataFrame
+        Input DataFrame.
+    column_1, column_2 : str
+        Names of the two columns to be swapped.
+
+    Returns
+    -------
+    df_swapped : DataFrame
+        DataFrame with swapped columns
+
+    Examples
+    --------
+    >>> df = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6], 'C': [7, 8, 9]})
+
+    >>> swap_columns(df, 'A', 'B')
+       A  B  C
+    0  4  1  7
+    1  5  2  8
+    2  6  3  9
+
+    """
+    df_swapped = df.copy()
+
+    df_swapped[[column_1, column_2]] = df[[column_2, column_1]]
+
+    return df_swapped
+
+
 def apply_to_columns(df_1, df_2, func):
     """
     Apply a function on each pair of matching columns from two DataFrames.
