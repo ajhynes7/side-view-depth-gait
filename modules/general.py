@@ -392,3 +392,42 @@ def window(sequence, n=2):
         result = result[1:] + (elem, )
 
         yield result
+
+
+def group_by_label(array, labels):
+    """
+    Group elements of an array by their corresponding labels.
+
+    Parameters
+    ----------
+    array : ndarray
+        Input array.
+    labels : array_like
+        Label of each element in the input array.
+
+    Yields
+    ------
+    ndarray
+        Subset of input array that corresponds to one label.
+
+    Examples
+    --------
+    >>> array = np.array([10, 2, 4, 8])
+    >>> labels = [0, 1, 2, 1]
+
+    >>> for x in group_by_label(array, labels): print(x)
+    [10]
+    [2 8]
+    [4]
+
+    >>> array = np.array([[1, 2], [2, 4], [5, 0]])
+    >>> labels = [0, 1, 1]
+
+    >>> for x in group_by_label(array, labels): print(x)
+    [[1 2]]
+    [[2 4]
+     [5 0]]
+
+    """
+    for label in np.unique(labels):
+        yield array[labels == label]

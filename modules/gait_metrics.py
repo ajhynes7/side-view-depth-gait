@@ -89,32 +89,6 @@ class Stride:
         return self.stride_length / self.stride_time
 
 
-def split_by_pass(df, frame_labels):
-    """
-    Split a DataFrame into separate DataFrames for each walking pass.
-
-    The new DataFrames are ordered by frame number.
-
-    Parameters
-    ----------
-    df : DataFrame
-        Index values are frames.
-    frame_labels : ndarray
-        Label of each frame.
-        Label indicates the walking pass.
-
-    Returns
-    -------
-    pass_dfs : list
-        List containing DataFrame for each walking pass.
-
-    """
-    # Put labels in order so that walking pass
-    # DataFrames will be ordered by frame.
-    frame_labels = np.array(gen.map_sort(frame_labels))
-
-    pass_dfs = [df[frame_labels == i] for i in np.unique(frame_labels)]
-
     return pass_dfs
 
 
