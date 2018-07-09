@@ -89,9 +89,6 @@ class Stride:
         return self.stride_length / self.stride_time
 
 
-    return pass_dfs
-
-
 def foot_signal(foot_interest, foot_other, direction_pass):
     """
     Return a signal from foot data that is used to detect contact frames.
