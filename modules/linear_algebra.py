@@ -384,7 +384,7 @@ def plane_coefficients(point, normal):
     return a, b, c, d
 
 
-def target_direction_value(forward, up, target):
+def target_side_value(forward, up, target):
     """
     Return a signed value indicating the left/right direction of a target.
 
@@ -405,15 +405,30 @@ def target_direction_value(forward, up, target):
         Signed value indicating degree of left/right direction.
         Positive value indicates right, negative indicates left.
 
-    """
-    perpendicular = np.cross(forward, target)
+    Examples
+    --------
+    >>> forward, up = [1, 0, 0], [0, 1, 0]
 
-    return np.dot(perpendicular, up)
+    >>> target_side_value(forward, up, [0, 0, -1])
+    1.0
+
+    >>> target_side_value(forward, up, [0, 0, 5])
+    -5.0
+
+    >>> target_side_value(forward, [0, 2, 0], [0, 0, 5])
+    -5.0
+
+    """
+    unit_forward, unit_up = unit(forward), unit(up)
+
+    perpendicular = np.cross(unit_forward, target)
+
+    return np.dot(perpendicular, unit_up)
 
 
 def target_side(forward, up, target):
     """
-    Find the direction (left or right) of a target.
+    Return the direction (left, right, or straight) of a target.
 
     An orientation is defined by specifying the forward and up directions.
 
@@ -447,7 +462,7 @@ def target_side(forward, up, target):
     """
     results_dict = {-1: 'left', 1: 'right', 0: 'straight'}
 
-    signed = np.sign(target_direction_value(forward, up, target))
+    signed = np.sign(target_side_value(forward, up, target))
 
     return results_dict[signed]
 

@@ -706,7 +706,7 @@ def verify_sides(foot_l, foot_r, head, direction_motion):
 
     vector_to_left = foot_l - mean_foot
 
-    angle_dir = lin.target_side(vector_to_left, direction_motion, up)
+    angle_dir = lin.target_side(direction_motion, up, vector_to_left)
 
     verified = angle_dir == 'left' or angle_dir == 'straight'
 
