@@ -736,6 +736,37 @@ def verify_sides_pass(df_pass, direction_pass):
         yield verify_sides(row.L_FOOT, row.R_FOOT, row.HEAD, direction_pass)
 
 
+def evaluate_foot_side(head_points, foot_points_1, foot_points_2):
+    """
+    Yield a value indicating the side (left/right) of a foot.
+
+    A positive value indicates right, and negative indicates left.
+
+    Parameters
+    ----------
+    head_points : ndarray
+        (n, 3) array of head positions.
+    foot_points_1 : ndarray
+        (n, 3) array of foot positions.
+
+    Yields
+    ------
+    float
+        Value indicating left/right direction for foot 1.
+
+    """
+    _, direction = lin.best_fit_line(head_points)
+
+    for head, foot_1, foot_2 in zip(head_points, foot_points_1, foot_points_2):
+
+        mean_foot = (foot_1 + foot_2) / 2
+        up = head - mean_foot
+
+        target = foot_1 - mean_foot
+
+        yield lin.target_side_value(direction, up, target)
+
+
 def enforce_consistency(df_pass, verified_sides):
     """
     Assign foot positions to correct left/right sides.
