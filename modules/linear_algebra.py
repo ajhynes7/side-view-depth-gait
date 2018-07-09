@@ -514,9 +514,3 @@ def line_coordinate_system(line_point, direction, points):
     coordinates = np.apply_along_axis(np.dot, 1, vectors, direction)
 
     return coordinates
-
-
-if __name__ == "__main__":
-
-    import doctest
-    doctest.testmod()

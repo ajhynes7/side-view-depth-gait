@@ -392,9 +392,3 @@ def window(sequence, n=2):
         result = result[1:] + (elem, )
 
         yield result
-
-
-if __name__ == "__main__":
-
-    import doctest
-    doctest.testmod()

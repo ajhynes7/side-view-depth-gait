@@ -139,9 +139,3 @@ def derivative(signal):
         deriv[t_curr] = delta_signal / delta_t
 
     return deriv
-
-
-if __name__ == "__main__":
-
-    import doctest
-    doctest.testmod()

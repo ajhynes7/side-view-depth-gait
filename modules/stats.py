@@ -227,9 +227,3 @@ def mad_outliers(x, c):
     x_filtered[np.logical_or(x < lower_bound, x > upper_bound)] = np.nan
 
     return x_filtered
-
-
-if __name__ == "__main__":
-
-    import doctest
-    doctest.testmod()

@@ -765,9 +765,3 @@ def enforce_consistency(df_pass, verified_sides):
             df_consistent.loc[frame] = row
 
     return df_consistent
-
-
-if __name__ == "__main__":
-
-    import doctest
-    doctest.testmod()

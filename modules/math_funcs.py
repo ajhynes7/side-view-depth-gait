@@ -179,9 +179,3 @@ def centre_of_mass(points, masses):
     denom = masses.sum()
 
     return num / denom
-
-
-if __name__ == "__main__":
-
-    import doctest
-    doctest.testmod()

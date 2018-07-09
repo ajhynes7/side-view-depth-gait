@@ -216,9 +216,3 @@ def drop_any_like(df, strings_to_drop, axis=0):
     df = df.drop(labels[to_drop], axis=axis)
 
     return df
-
-
-if __name__ == "__main__":
-
-    import doctest
-    doctest.testmod()

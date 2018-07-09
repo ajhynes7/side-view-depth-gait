@@ -202,9 +202,3 @@ def _kernel_function(distances, radius, kernel):
         raise ValueError('Invalid kernel type')
 
     return masses
-
-
-if __name__ == "__main__":
-
-    import doctest
-    doctest.testmod()

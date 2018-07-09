@@ -357,9 +357,3 @@ def combine_walking_passes(pass_dfs):
     df_final = pf.drop_any_like(df_final, strings_to_drop, axis=1)
 
     return df_final
-
-
-if __name__ == "__main__":
-
-    import doctest
-    doctest.testmod()

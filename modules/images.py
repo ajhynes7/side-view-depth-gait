@@ -218,9 +218,3 @@ def points_to_image(points):
         img[y, x] = z
 
     return img
-
-
-if __name__ == "__main__":
-
-    import doctest
-    doctest.testmod()

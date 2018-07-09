@@ -357,9 +357,3 @@ def points_to_graph(points, labels, expected_dists, weight_func):
     adj_matrix = weight_func(dist_matrix, dist_matrix_expected)
 
     return adj_matrix_to_list(adj_matrix)
-
-
-if __name__ == "__main__":
-
-    import doctest
-    doctest.testmod()
