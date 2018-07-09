@@ -216,3 +216,53 @@ def drop_any_like(df, strings_to_drop, axis=0):
     df = df.drop(labels[to_drop], axis=axis)
 
     return df
+
+
+def series_of_rows(array, *, index=None):
+    """
+    Place the rows of a numpy array into a pandas Series.
+
+    Parameters
+    ----------
+    array : ndarray
+        (n, d) array of n rows with length d.
+    index : array_like, optional
+        Index of the output series (default None).
+
+    Returns
+    -------
+    series : Series
+        Series with n elements.
+        Each element in the series is an array of shape (d, ).
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> array = np.array([[1, 2], [2, 3], [5, 0], [10, 2]])
+
+    >>> series_of_rows(array)
+    0     [1, 2]
+    1     [2, 3]
+    2     [5, 0]
+    3    [10, 2]
+    dtype: object
+
+    >>> series_of_rows(array, index=[1, 3, 5, 7])
+    1     [1, 2]
+    3     [2, 3]
+    5     [5, 0]
+    7    [10, 2]
+    dtype: object
+
+    """
+    if index is None:
+        index, _ = zip(*enumerate(array))
+
+    series = pd.Series(index=index)
+    series = series.apply(lambda x: [])
+
+    for idx, vector in zip(series.index, array):
+
+        series[idx] = vector
+
+    return series
