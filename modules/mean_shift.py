@@ -51,6 +51,9 @@ def cluster(points, *, masses=None, kernel='flat', radius=1, eps=1e-3):
     2
 
     """
+    assert np.all(~np.isnan(points)) and np.all(~np.isnan(masses))
+    assert np.all(masses >= 0)
+
     n_points, n_dimensions = points.shape
 
     if masses is None:
