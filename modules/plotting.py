@@ -75,44 +75,19 @@ def scatter_order(points, order):
     plt.scatter(points[:, order[0]], points[:, order[1]])
 
 
-def scatter_dataframe(df):
-    """
-    Produce a scatter plot from a pandas DataFrame containing vectors.
-
-    Parameters
-    ----------
-    df : pandas DataFrame
-        Elements are vectors as 1D numpy arrays.
-        Column names are used in the legend.
-
-    """
-    for column, values in df.items():
-        points = np.vstack(values)
-
-        scatter2(points)
-
-    plt.legend(df.columns)
-
-
 def scatter_series(series):
     """
-    Plot a pandas series containing vectors.
+    Produce a scatter plot from a pandas Series.
+
+    The index is used as the x-values.
 
     Parameters
     ----------
-    series : pandas Series
-        Values are vectors as 1D numpy arrays.
-        Index names are used in the legend.
+    series : Series
+        Input pandas Series.
 
     """
-    # Array of points
-    points = np.vstack(series)
-
-    for point in points:
-
-        plt.scatter(point[0], point[1])
-
-    plt.legend(series.index)
+    plt.scatter(series.index, series)
 
 
 def plot_plane(ax, point, normal, *, x_range=range(10), y_range=range(10),
