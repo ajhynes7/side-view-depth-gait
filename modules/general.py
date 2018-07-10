@@ -462,3 +462,48 @@ def find_indices(array, elems_to_find):
 
     """
     return np.in1d(array, elems_to_find).nonzero()[0]
+
+
+def label_by_split(array, split_vals):
+    """
+    Produce an array of labels by splitting the array at given values.
+
+    Parameters
+    ----------
+    array : array_like
+        Input array of n values.
+    split_vals : array_like
+        The input array is split into sub-arrays at these values.
+        If a split value does not exist in the array, a new label is not
+        created for it.
+
+    Returns
+    -------
+    labels : ndarray
+        (n, ) array of labels. If no splits are made, the labels are all zero.
+
+    Examples
+    --------
+    >>> label_by_split([1, 2, 3, 4, 5], [2, 4])
+    array([0, 1, 1, 2, 2])
+
+    >>> label_by_split([10, 2, 3, -1, 5], [2, 4])
+    array([0, 1, 1, 1, 1])
+
+    >>> label_by_split([10, 2, 3, -1, 5], [2, 5])
+    array([0, 1, 1, 1, 2])
+
+    >>> label_by_split([1, 2, 3], [8, 5])
+    array([0, 0, 0])
+
+    """
+    split_indices = find_indices(array, split_vals)
+    sub_arrays = np.split(array, split_indices)
+
+    labels = np.zeros(len(array), dtype=int)
+
+    for i, sub_array in enumerate(sub_arrays):
+
+        labels[np.in1d(array, sub_array)] = i
+
+    return labels
