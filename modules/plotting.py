@@ -13,7 +13,7 @@ def scatter_labels(points, labels):
     Parameters
     ----------
     points : ndarray
-        (n, d) array of n points with dimension d.
+        (n, 2) array of n points with dimension 2.
     labels : ndarray
         (n, ) array of point labels.
 
@@ -67,7 +67,7 @@ def scatter_order(points, order):
     Parameters
     ----------
     points : ndarray
-        (n, d) array of n points in d dimensions.
+        (n, 2) array of n points with dimension 2.
     order : array_like
         Order of the coordinates
 
