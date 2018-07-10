@@ -51,15 +51,15 @@ def cluster(points, *, masses=None, kernel='flat', radius=1, eps=1e-3):
     2
 
     """
-    assert np.all(~np.isnan(points)) and np.all(~np.isnan(masses))
-    assert np.all(masses >= 0)
-
     n_points, n_dimensions = points.shape
 
     if masses is None:
         # The points are all equally weighted
         # They are all given a mass of one
         masses = np.ones(n_points)
+
+    assert np.all(~np.isnan(points)) and np.all(~np.isnan(masses))
+    assert np.all(masses >= 0)
 
     index_matrix = np.full((n_points, n_points), False)
     all_centroids = np.full((n_points, n_dimensions), np.nan)
