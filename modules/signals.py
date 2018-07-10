@@ -86,8 +86,8 @@ def mean_shift_peaks(signal, **kwargs):
     signal : Series
         Index values are frames.
 
-    **kwargs : keyword arguments
-        Keyword arguments for mean shift cluster function.
+    kwargs : dict, optional
+        Additional keywords passed to mean shift cluster function.
 
     Returns
     -------

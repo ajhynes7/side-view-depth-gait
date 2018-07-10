@@ -49,8 +49,8 @@ def scatter3(ax, points, **kwargs):
     points : ndarray
         (n, 3) array of n points in three dimensions.
         One-dimensional array with shape (3, ) also allowed.
-    **kwargs : keyword arguments
-        Keyword arguments for scatter function.
+    kwargs : dict, optional
+        Additional keywords passed to `scatter`.
 
     """
     if points.ndim == 1:
@@ -130,8 +130,8 @@ def plot_plane(ax, point, normal, *, x_range=range(10), y_range=range(10),
         Normal vector of plane.
     x_range, y_range : iterable, optional
         Range of x and y used to plot the plane (default range(10))
-    kwargs: keyword arguments
-        Keyword arguments for ax.plot_surface()
+    kwargs: dict, optional
+        Additional keywords passed to `plot_surface`.
 
     """
     a, b, c, d = lin.plane_coefficients(point, normal)
@@ -177,8 +177,8 @@ def compare_measurements(x, y, **kwargs):
         Measurements of device A.
     y : array_like
         Measurements of device B.
-    **kwargs
-        Keyword arguments for scatter plot.
+    kwargs : dict, optional
+        Additional keywords passed to `plot_surface`.
 
     """
     _, ax = plt.subplots()
