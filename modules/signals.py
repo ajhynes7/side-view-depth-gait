@@ -87,7 +87,7 @@ def mean_shift_peaks(signal, **kwargs):
         Index values are frames.
 
     kwargs : dict, optional
-        Additional keywords passed to mean shift cluster function.
+        Additional keywords passed to `mean_shift.cluster`.
 
     Returns
     -------
@@ -99,7 +99,6 @@ def mean_shift_peaks(signal, **kwargs):
     """
     frames = signal.index.values.reshape(-1, 1)
 
-    # Find centres of foot distance peaks with mean shift
     labels, centroids, k = ms.cluster(frames, **kwargs)
 
     # Find frames with highest foot distance in each mean shift cluster
