@@ -2,6 +2,7 @@
 
 import numpy as np
 import pandas as pd
+from scipy.stats import linregress
 
 import modules.general as gen
 import modules.mean_shift as ms
@@ -137,5 +138,65 @@ def derivative(signal):
         delta_signal = signal[t_next] - signal[t_prev]
 
         deriv[t_curr] = delta_signal / delta_t
+
+    return deriv
+
+
+def window_derivative(signal, n=3):
+    """
+    Compute the derivative of a discrete signal with a sliding window.
+
+    The slope of the best fit line is found for each window.
+
+    Parameters
+    ----------
+    signal : Series
+        Index values are frames.
+    n : int, optional
+        Number of elements in sliding window (default 3).
+        The number must be odd, so that the median of the window frames is a
+        whole number.
+
+    Returns
+    -------
+    deriv : Series
+        Series of same length as the input signal.
+        Index values are frames.
+
+    Examples
+    --------
+    >>> frames = [1, 2, 3, 5, 6, 8, 9, 10, 11, 12]
+    >>> data = [10, 11, 14, 15, 18, 20, 15, 10, -2, -10]
+    >>> signal = pd.Series(data, index=frames)
+
+    >>> window_derivative(signal, n=3)
+    1           NaN
+    2      2.000000
+    3      1.214286
+    5      1.214286
+    6      1.571429
+    8     -0.714286
+    9     -5.000000
+    10    -8.500000
+    11   -10.000000
+    12          NaN
+    dtype: float64
+
+    """
+    assert n % 2 != 0
+
+    frames = signal.index.values
+
+    frame_windows = gen.window(frames, n)
+    signal_windows = gen.window(signal, n)
+
+    deriv = pd.Series(index=frames)
+
+    for x, y in zip(frame_windows, signal_windows):
+
+        frame = np.median(x)
+        slope = linregress(x, y).slope
+
+        deriv[frame] = slope
 
     return deriv
