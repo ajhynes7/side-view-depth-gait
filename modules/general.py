@@ -431,3 +431,34 @@ def group_by_label(array, labels):
     """
     for label in np.unique(labels):
         yield array[labels == label]
+
+
+def find_indices(array, elems_to_find):
+    """
+    Return the indices of array elements that match those in another array.
+
+    Parameters
+    ----------
+    array : array_like
+        Input array.
+    elems_to_find : array_like
+        Array of elements to find in the first array.
+
+    Returns
+    -------
+    ndarray
+        Indices to array.
+
+    Examples
+    --------
+    >>> array = [1, 2, 3, 5, 10]
+    >>> elems_to_find = [2, 3, 15]
+
+    >>> find_indices(array, elems_to_find)
+    array([1, 2])
+
+    >>> find_indices(array, [8, 11])
+    array([], dtype=int64)
+
+    """
+    return np.in1d(array, elems_to_find).nonzero()[0]
