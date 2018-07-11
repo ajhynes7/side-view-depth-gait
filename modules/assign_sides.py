@@ -10,33 +10,6 @@ import modules.linear_algebra as lin
 import modules.point_processing as pp
 
 
-def direction_of_pass(df_pass):
-    """
-    Return vector representing overall direction of motion for a walking pass.
-
-    Parameters
-    ----------
-    df_pass : DataFrame
-        Head and foot positions at each frame in a walking pass.
-        Three columns: HEAD, L_FOOT, R_FOOT.
-
-    Returns
-    -------
-    line_point : ndarray
-        Point that lies on line of motion.
-    direction_pass : ndarray
-        Direction of motion for the walking pass.
-
-    """
-    # All head positions on one walking pass
-    head_points = np.stack(df_pass.HEAD)
-
-    # Line of best fit for head positions
-    line_point, direction_pass = lin.best_fit_line(head_points)
-
-    return line_point, direction_pass
-
-
 def evaluate_foot_side(head_points, foot_points_1, foot_points_2, direction):
     """
     Yield a value indicating the side (left/right) of a foot.
@@ -106,7 +79,7 @@ def assign_sides_portion(df_walk, direction):
     return df_assigned
 
 
-def assign_sides_pass(df_pass):
+def assign_sides_pass(df_pass, direction_pass):
     """
     Assign correct sides to feet over a full walking pass.
 
@@ -115,6 +88,8 @@ def assign_sides_pass(df_pass):
     df_pass : DataFrame
         Head and foot positions at each frame in a walking pass.
         Three columns: HEAD, L_FOOT, R_FOOT.
+    direction_pass : ndarray
+        Direction of motion for the walking pass.
 
     Returns
     -------
@@ -122,8 +97,6 @@ def assign_sides_pass(df_pass):
         New DataFrame for walking pass with feet assigned to correct sides.
 
     """
-    _, direction_pass = direction_of_pass(df_pass)
-
     foot_dist = (df_pass.L_FOOT - df_pass.R_FOOT).apply(np.linalg.norm)
 
     deriv = sig.window_derivative(foot_dist, 5)

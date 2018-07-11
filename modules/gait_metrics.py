@@ -23,11 +23,11 @@ from numpy.linalg import norm
 from scipy.signal import medfilt
 
 import modules.general as gen
-import modules.linear_algebra as lin
-import modules.pose_estimation as pe
-import modules.pandas_funcs as pf
 import modules.signals as sig
 import modules.math_funcs as mf
+import modules.pandas_funcs as pf
+import modules.assign_sides as asi
+import modules.linear_algebra as lin
 
 
 class Stride:
@@ -87,6 +87,33 @@ class Stride:
     def stride_velocity(self):
 
         return self.stride_length / self.stride_time
+
+
+def direction_of_pass(df_pass):
+    """
+    Return vector representing overall direction of motion for a walking pass.
+
+    Parameters
+    ----------
+    df_pass : DataFrame
+        Head and foot positions at each frame in a walking pass.
+        Three columns: HEAD, L_FOOT, R_FOOT.
+
+    Returns
+    -------
+    line_point : ndarray
+        Point that lies on line of motion.
+    direction_pass : ndarray
+        Direction of motion for the walking pass.
+
+    """
+    # All head positions on one walking pass
+    head_points = np.stack(df_pass.HEAD)
+
+    # Line of best fit for head positions
+    line_point, direction_pass = lin.best_fit_line(head_points)
+
+    return line_point, direction_pass
 
 
 def foot_signal(foot_interest, foot_other, direction_pass):
@@ -242,7 +269,7 @@ def foot_contacts_to_gait(df_contact):
     return df_gait
 
 
-def walking_pass_metrics(df_pass):
+def walking_pass_metrics(df_pass, direction_pass):
     """
     Calculate gait metrics from a single walking pass in front of the camera.
 
@@ -250,6 +277,8 @@ def walking_pass_metrics(df_pass):
     ----------
     df_pass
         See module docstring.
+    direction_pass : ndarray
+        Direction of motion for the walking pass.
 
     Returns
     -------
@@ -257,14 +286,7 @@ def walking_pass_metrics(df_pass):
         See module docstring.
 
     """
-    # Calculate the general direction of motion for each pass.
-    line_point, direction_pass = pe.direction_of_pass(df_pass)
-
-    # Enforce consistent sides for the feet on all walking passes.
-    verified_sides = list(pe.verify_sides_pass(df_pass, direction_pass))
-    df_cons = pe.enforce_consistency(df_pass, verified_sides)
-
-    signal_l = foot_signal(df_cons.L_FOOT, df_cons.R_FOOT, direction_pass)
+    signal_l = foot_signal(df_pass.L_FOOT, df_pass.R_FOOT, direction_pass)
     signal_r = -signal_l
 
     min_peak_height = sig.root_mean_square(signal_l)
@@ -276,7 +298,7 @@ def walking_pass_metrics(df_pass):
 
     # Add a column of foot positions
     side_to_part = {'L': 'L_FOOT', 'R': 'R_FOOT'}
-    lookup_contact_positions(df_cons, df_contact, side_to_part)
+    lookup_contact_positions(df_pass, df_contact, side_to_part)
 
     df_gait = foot_contacts_to_gait(df_contact)
 
@@ -300,15 +322,20 @@ def combine_walking_passes(pass_dfs):
         Columns are gait metrics for left/right sides.
 
     """
-    list_ = []
+    df_list = []
     for i, df_pass in enumerate(pass_dfs):
 
-        df_gait = walking_pass_metrics(df_pass)
+        _, direction_pass = direction_of_pass(df_pass)
+
+        # Assign correct sides to feet
+        df_assigned = asi.assign_sides_pass(df_pass, direction_pass)
+
+        df_gait = walking_pass_metrics(df_assigned, direction_pass)
         df_gait['pass'] = i  # Add column to record the walking pass
 
-        list_.append(df_gait)
+        df_list.append(df_gait)
 
-    df_combined = pd.concat(list_, sort=True)
+    df_combined = pd.concat(df_list, sort=True)
 
     # Reset the index because there are repeated index elements
     df_combined = df_combined.reset_index(drop=True)
