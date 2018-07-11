@@ -6,7 +6,7 @@ import numpy as np
 import modules.math_funcs as mf
 
 
-def cluster(points, *, masses=None, kernel='flat', radius=1, eps=1e-3):
+def cluster(points, *, masses=None, kernel='flat', radius=1, eps=1e-2):
     """
     Cluster points with the mean shift algorithm.
 

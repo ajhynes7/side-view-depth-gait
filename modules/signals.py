@@ -171,10 +171,10 @@ def window_derivative(signal, n=3):
     >>> window_derivative(signal, n=3)
     1           NaN
     2      2.000000
-    3      1.214286
-    5      1.214286
-    6      1.571429
-    8     -0.714286
+    3      1.333333
+    5      1.333333
+    6      1.666667
+    8     -1.000000
     9     -5.000000
     10    -8.500000
     11   -10.000000
@@ -189,13 +189,20 @@ def window_derivative(signal, n=3):
     frame_windows = gen.window(frames, n)
     signal_windows = gen.window(signal, n)
 
+    middle_index = int(n / 2)
+
     deriv = pd.Series(index=frames)
+
+    frame_list, deriv_list = [], []
 
     for x, y in zip(frame_windows, signal_windows):
 
-        frame = np.median(x)
-        slope = linregress(x, y).slope
+        rise = y[-1] - y[0]
+        run = x[-1] - x[0]
 
-        deriv[frame] = slope
+        frame_list.append(x[middle_index])
+        deriv_list.append(rise / run)
+
+    deriv[frame_list] = deriv_list
 
     return deriv
