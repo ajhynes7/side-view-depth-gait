@@ -3,8 +3,8 @@
 import numpy as np
 import pandas as pd
 
-import modules.general as gen
 import modules.mean_shift as ms
+import modules.sliding_window as sw
 import modules.linear_algebra as lin
 
 
@@ -129,7 +129,7 @@ def derivative(signal):
 
     deriv = pd.Series(index=frames)
 
-    for t_prev, t_curr, t_next in gen.window(frames, 3):
+    for t_prev, t_curr, t_next in sw.generate_window(frames, 3):
 
         delta_t = t_next - t_prev
 
@@ -138,3 +138,47 @@ def derivative(signal):
         deriv[t_curr] = delta_signal / delta_t
 
     return deriv
+
+
+def normalize(x):
+    """
+    Map all values in an array to the range [0, 1].
+
+    Parameters
+    ----------
+    x : array_like
+        Input array.
+        Max and min values should be different to avoid division by zero.
+
+    Returns
+    -------
+    ndarray
+        Normalized array.
+
+    Examples
+    --------
+    >>> x = [i for i in range(5)]
+    >>> np.array_equal(normalize(x), [0, 0.25, 0.5, 0.75, 1])
+    True
+
+    """
+    max_value = np.nanmax(x)
+    min_value = np.nanmin(x)
+
+    return (x - min_value) / (max_value - min_value)
+
+
+def detect_peaks(signal, **kwargs):
+
+    frames = signal.index.values
+
+    # Expand signal to include all frames from start to end
+    # This is needed for the peak detection to function properly
+    signal_expanded = pd.Series(index=range(frames.min(), frames.max()))
+    signal_expanded.update(signal)
+
+    peak_indices = sw.detect_peaks(signal_expanded.values, **kwargs)
+
+    peak_frames = signal_expanded.index.values[peak_indices]
+
+    return peak_frames

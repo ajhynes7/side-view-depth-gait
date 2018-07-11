@@ -20,13 +20,12 @@ df_gait : DataFrame
 import numpy as np
 import pandas as pd
 from numpy.linalg import norm
-from scipy.signal import medfilt
 
 import modules.general as gen
 import modules.signals as sig
-import modules.math_funcs as mf
 import modules.pandas_funcs as pf
 import modules.assign_sides as asi
+import modules.sliding_window as sw
 import modules.linear_algebra as lin
 
 
@@ -142,42 +141,6 @@ def foot_signal(foot_interest, foot_other, direction_pass):
     return signal
 
 
-def detect_foot_contacts(signal, min_peak_height):
-    """
-    Detect frames where foot first contacts the floor.
-
-    This is achieved by locating peaks in a foot signal.
-
-    Parameters
-    ----------
-    signal : Series
-        Signal from foot data.
-    min_peak_height : {int, float}
-        Minimum allowed height for signal peak.
-
-    Returns
-    -------
-    contact_frames : ndarray
-        Frames where foot of interest contacts the floor.
-
-    """
-    signal[:] = medfilt(signal)  # Apply a median filter to remove noise
-
-    signal_upper = signal[signal > 0]
-
-    norm_values = mf.normalize_array(signal_upper.values)
-
-    contact_frames, _ = sig.mean_shift_peaks(signal_upper, masses=norm_values,
-                                             kernel='gaussian', radius=5,
-                                             eps=1e-3)
-
-    # Filter the contact frames to remove false peaks
-    contact_values = signal[contact_frames]
-    contact_frames = contact_frames[contact_values > min_peak_height]
-
-    return contact_frames
-
-
 def join_foot_contacts(contacts_l, contacts_r):
     """
     Combine arrays of foot contact frames into a DataFrame object.
@@ -257,7 +220,7 @@ def foot_contacts_to_gait(df_contact):
 
     property_dict = {}
 
-    for i, foot_tuple in enumerate(gen.window(foot_tuples, n=3)):
+    for i, foot_tuple in enumerate(sw.generate_window(foot_tuples, n=3)):
 
         stride_instance = Stride(*foot_tuple)
 
@@ -289,10 +252,9 @@ def walking_pass_metrics(df_pass, direction_pass):
     signal_l = foot_signal(df_pass.L_FOOT, df_pass.R_FOOT, direction_pass)
     signal_r = -signal_l
 
-    min_peak_height = sig.root_mean_square(signal_l)
-
-    contacts_l = detect_foot_contacts(signal_l, min_peak_height)
-    contacts_r = detect_foot_contacts(signal_r, min_peak_height)
+    rms = sig.root_mean_square(signal_l)
+    contacts_l = sig.detect_peaks(signal_l, window_length=15, min_height=rms)
+    contacts_r = sig.detect_peaks(signal_r, window_length=15, min_height=rms)
 
     df_contact = join_foot_contacts(contacts_l, contacts_r)
 

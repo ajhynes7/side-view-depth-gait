@@ -116,34 +116,6 @@ def norm_ratio(a, b):
     return ratio
 
 
-def normalize_array(x):
-    """
-    Map all values in an array to the range [0, 1].
-
-    Parameters
-    ----------
-    x : array_like
-        Input array.
-        Max and min values should be different to avoid division by zero.
-
-    Returns
-    -------
-    ndarray
-        Normalized array.
-
-    Examples
-    --------
-    >>> x = [i for i in range(5)]
-    >>> np.array_equal(normalize_array(x), [0, 0.25, 0.5, 0.75, 1])
-    True
-
-    """
-    max_value = np.nanmax(x)
-    min_value = np.nanmin(x)
-
-    return (x - min_value) / (max_value - min_value)
-
-
 def centre_of_mass(points, masses):
     """
     Compute the centre of mass of a set of points.

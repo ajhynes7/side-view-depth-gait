@@ -4,7 +4,6 @@ import pandas as pd
 
 import modules.signals as sig
 import modules.general as gen
-import modules.math_funcs as mf
 import modules.pandas_funcs as pf
 import modules.linear_algebra as lin
 import modules.point_processing as pp
@@ -97,16 +96,14 @@ def assign_sides_pass(df_pass, direction_pass):
         New DataFrame for walking pass with feet assigned to correct sides.
 
     """
-    foot_dist = (df_pass.L_FOOT - df_pass.R_FOOT).apply(np.linalg.norm)
-
-    deriv = sig.window_derivative(foot_dist, 5)
-    deriv_2 = sig.window_derivative(deriv, 5).dropna()
-
-    masses = mf.normalize_array(deriv_2.values)
-    peak_frames, mid_frames = sig.mean_shift_peaks(deriv_2, masses=masses,
-                                                   kernel='gaussian', radius=3)
-
     frames = df_pass.index.values
+
+    foot_dist = (df_pass.L_FOOT - df_pass.R_FOOT).apply(np.linalg.norm)
+    signal = 1 - sig.normalize(foot_dist)
+
+    rms = sig.root_mean_square(signal)
+    peak_frames = sig.detect_peaks(signal, window_length=3, min_height=rms)
+
     labels = gen.label_by_split(frames, peak_frames)
 
     grouped_dfs = list(gen.group_by_label(df_pass, labels))

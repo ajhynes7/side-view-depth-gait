@@ -135,13 +135,15 @@ def detect_peaks(array, *, window_length=3, min_height=0):
     for window in generate_window(all_indices, n=window_length):
 
         indices = np.array(window)
-
         values = array[indices]
-        max_index = indices[np.argmax(values)]
+
+        if np.all(np.isnan(values)):
+            continue
+
+        max_index = indices[np.nanargmax(values)]
 
         non_peaks = set(indices)
         non_peaks.remove(max_index)
-
         peak_set = peak_set - non_peaks
 
     # Keep only indices of array values that reach min height
