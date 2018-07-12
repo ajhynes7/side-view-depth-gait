@@ -256,9 +256,12 @@ def walking_pass_metrics(df_pass, direction_pass):
     signal_l = foot_signal(df_pass.L_FOOT, df_pass.R_FOOT, direction_pass)
     signal_r = -signal_l
 
-    rms = sig.root_mean_square(signal_l)
-    contacts_l = sig.detect_peaks(signal_l, window_length=15, min_height=rms)
-    contacts_r = sig.detect_peaks(signal_r, window_length=15, min_height=rms)
+    min_height = np.sqrt(2) * sig.root_mean_square(signal_l)
+    contacts_l = sig.detect_peaks(signal_l, window_length=15,
+                                  min_height=min_height)
+
+    contacts_r = sig.detect_peaks(signal_r, window_length=15,
+                                  min_height=min_height)
 
     df_contact = join_foot_contacts(contacts_l, contacts_r)
 
