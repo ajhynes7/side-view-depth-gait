@@ -36,10 +36,9 @@ class Stride:
         self.swing_i, self.swing_f = swing_i, swing_f
         self.stance = stance
 
-        pos_p = stance.position
-        pos_a, pos_b = swing_i.position, swing_f.position
-
-        self.stance_proj = lin.project_point_line(pos_p, pos_a, pos_b)
+        point_1, point_2 = swing_i.position, swing_f.position
+        self.proj_position = lin.project_point_line(stance.position,
+                                                    point_1, point_2)
 
     def __str__(self):
 
@@ -58,9 +57,14 @@ class Stride:
         return self.swing_i.number
 
     @property
+    def absolute_step_length(self):
+
+        return norm(self.swing_f.position - self.stance.position)
+
+    @property
     def step_length(self):
 
-        return norm(self.stance_proj - self.swing_f.position)
+        return norm(self.swing_f.position - self.proj_position)
 
     @property
     def step_time(self):
@@ -70,7 +74,7 @@ class Stride:
     @property
     def stride_width(self):
 
-        return norm(self.stance.position - self.stance_proj)
+        return norm(self.stance.position - self.proj_position)
 
     @property
     def stride_length(self):
