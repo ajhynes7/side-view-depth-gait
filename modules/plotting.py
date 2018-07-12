@@ -25,7 +25,7 @@ def scatter_labels(points, labels):
         plt.scatter(points_label[:, 0], points_label[:, 1])
 
 
-def scatter2(points):
+def scatter2(points, **kwargs):
     """
     Produce a 2D scatter plot.
 
@@ -33,9 +33,15 @@ def scatter2(points):
     ----------
     points : ndarray
         (n, 2) array of n points in two dimensions.
+    kwargs : dict, optional
+        Additional keywords passed to `scatter`.
 
     """
-    plt.scatter(points[:, 0], points[:, 1])
+    if points.ndim == 1:
+        # Convert to 2d array
+        points = points.reshape(1, -1)
+
+    plt.scatter(points[:, 0], points[:, 1], **kwargs)
 
 
 def scatter3(ax, points, **kwargs):
