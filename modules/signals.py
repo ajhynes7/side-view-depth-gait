@@ -169,7 +169,21 @@ def normalize(x):
 
 
 def detect_peaks(signal, **kwargs):
+    """
+    Detect peaks in a signal using a sliding window.
 
+    Parameters
+    ----------
+    signal : Series
+        Input signal.
+        Index values are frames.
+
+    Returns
+    -------
+    peak_frames : ndarray
+        Array of detected peak frames.
+
+    """
     frames = signal.index.values
 
     # Expand signal to include all frames from start to end
