@@ -102,6 +102,25 @@ def scatter_series(series, **kwargs):
     plt.scatter(series.index, series, **kwargs)
 
 
+def plot_groups(data_groups, plot_func, **kwargs):
+    """
+    Apply a plotting function to each group of data in an iterable.
+
+    Parameters
+    ----------
+    data_groups : iterable
+        Each element is an array of data points.
+    plot_func : function
+        Function used to plot each group of data
+    kwargs : dict, optional
+        Additional keywords passed to `plot_func`.
+
+    """
+    for data in data_groups:
+
+        plot_func(data, **kwargs)
+
+
 def plot_plane(ax, point, normal, *, x_range=range(10), y_range=range(10),
                **kwargs):
     """
