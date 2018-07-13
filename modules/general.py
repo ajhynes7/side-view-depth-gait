@@ -489,7 +489,7 @@ def repeat_by_list(array, repeat_nums):
 
     Returns
     -------
-    iterator
+    itertools.chain
         Iterator with repeated elements.
 
     Examples
@@ -507,3 +507,38 @@ def repeat_by_list(array, repeat_nums):
     repeated = (repeat(x, n) for x, n in zip(array, repeat_nums))
 
     return chain(*repeated)
+
+
+def label_repeated_elements(array):
+    """
+    Assign a label to each group of repeated elements in an iterable.
+
+    Parameters
+    ----------
+    array : iterable
+        Input iterable.
+
+    Yields
+    ------
+    int
+        Current label value.
+
+    Examples
+    --------
+    >>> array = [0, 0, 1, 0, 0, 1]
+    >>> [*label_repeated_elements(array)]
+    [0, 0, 1, 2, 2, 3]
+
+    >>> [*label_repeated_elements("abbbddg")]
+    [0, 1, 1, 1, 2, 2, 3]
+
+    """
+    current_value, count = array[0], 0
+
+    for x in array:
+
+        if x != current_value:
+            current_value = x
+            count += 1
+
+        yield count
