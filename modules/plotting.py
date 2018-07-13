@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import modules.linear_algebra as lin
 
 
-def scatter_labels(points, labels):
+def scatter_labels(points, labels, **kwargs):
     """
     Scatter points that are coloured by label.
 
@@ -16,13 +16,15 @@ def scatter_labels(points, labels):
         (n, 2) array of n points with dimension 2.
     labels : ndarray
         (n, ) array of point labels.
+    kwargs : dict, optional
+        Additional keywords passed to `scatter`.
 
     """
     for label in np.unique(labels):
 
         points_label = points[labels == label]
 
-        plt.scatter(points_label[:, 0], points_label[:, 1])
+        plt.scatter(points_label[:, 0], points_label[:, 1], **kwargs)
 
 
 def scatter2(points, **kwargs):
@@ -66,7 +68,7 @@ def scatter3(ax, points, **kwargs):
     ax.scatter(points[:, 0], points[:, 1], points[:, 2], **kwargs)
 
 
-def scatter_order(points, order):
+def scatter_order(points, order, **kwargs):
     """
     Produce a scatter plot using a specified order of the (x, y) coordinates.
 
@@ -76,12 +78,14 @@ def scatter_order(points, order):
         (n, 2) array of n points with dimension 2.
     order : array_like
         Order of the coordinates
+    kwargs : dict, optional
+        Additional keywords passed to `scatter`.
 
     """
-    plt.scatter(points[:, order[0]], points[:, order[1]])
+    plt.scatter(points[:, order[0]], points[:, order[1]], **kwargs)
 
 
-def scatter_series(series):
+def scatter_series(series, **kwargs):
     """
     Produce a scatter plot from a pandas Series.
 
@@ -91,9 +95,11 @@ def scatter_series(series):
     ----------
     series : Series
         Input pandas Series.
+    kwargs : dict, optional
+        Additional keywords passed to `scatter`.
 
     """
-    plt.scatter(series.index, series)
+    plt.scatter(series.index, series, **kwargs)
 
 
 def plot_plane(ax, point, normal, *, x_range=range(10), y_range=range(10),
