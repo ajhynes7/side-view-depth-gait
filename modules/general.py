@@ -1,6 +1,7 @@
 """General functions."""
 
 import numpy as np
+from itertools import chain, repeat
 
 
 def get_properties(class_object):
@@ -473,3 +474,36 @@ def label_by_split(array, split_vals):
         labels[np.in1d(array, sub_array)] = i
 
     return labels
+
+
+def repeat_by_list(array, repeat_nums):
+    """
+    Repeat each element in an array by a corresponding number.
+
+    Parameters
+    ----------
+    array : iterable
+        Input iterable.
+    repeat_nums : iterable
+        Iterable of numbers.
+
+    Returns
+    -------
+    iterator
+        Iterator with repeated elements.
+
+    Examples
+    --------
+    >>> [*repeat_by_list([1, 2, 3], [2, 2, 3])]
+    [1, 1, 2, 2, 3, 3, 3]
+
+    >>> [*repeat_by_list([1, 2, 3], [0, 2, 3])]
+    [2, 2, 3, 3, 3]
+
+    >>> [*repeat_by_list("abc", (2, 0, 3, 4))]
+    ['a', 'a', 'c', 'c', 'c']
+
+    """
+    repeated = (repeat(x, n) for x, n in zip(array, repeat_nums))
+
+    return chain(*repeated)
