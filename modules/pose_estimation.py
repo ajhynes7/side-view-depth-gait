@@ -116,7 +116,7 @@ def estimate_lengths(pop_series, label_series, cost_func, n_frames, eps=0.01):
 
             min_pop = population[min_path]
 
-            length_array[i, :] = list(lin.consecutive_dist(min_pop))
+            length_array[i, :] = [*lin.consecutive_dist(min_pop)]
 
         # Update lengths
         lengths = np.median(length_array, axis=0)
@@ -509,7 +509,7 @@ def select_best_feet(dist_matrix, score_matrix, path_matrix, radii):
     in_spheres_list = inside_radii(dist_matrix, path_matrix, radii)
 
     # All possible pairs of paths
-    combos = list(itertools.combinations(range(n_paths), 2))
+    combos = [*itertools.combinations(range(n_paths), 2)]
 
     n_combos = len(combos)
 

@@ -21,7 +21,7 @@ def test_pairwise():
 
     x = [1, 2, 3, 4]
 
-    assert list(gen.pairwise(x)) == [(1, 2), (2, 3), (3, 4)]
+    assert [*gen.pairwise(x)] == [(1, 2), (2, 3), (3, 4)]
 
 
 def test_strings_with_any_substrings():

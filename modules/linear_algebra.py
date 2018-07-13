@@ -140,7 +140,7 @@ def consecutive_dist(points):
     Examples
     --------
     >>> points = [[1, 1], [2, 1], [0, 1]]
-    >>> list(consecutive_dist(points))
+    >>> [*consecutive_dist(points)]
     [1.0, 2.0]
 
     """

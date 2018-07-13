@@ -326,7 +326,7 @@ def map_with_dict(seq, mapping):
     [10, 10, 5]
 
     """
-    return list(map(mapping.get, seq))
+    return [*map(mapping.get, seq)]
 
 
 def map_sort(x):

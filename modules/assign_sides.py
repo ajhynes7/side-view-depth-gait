@@ -106,7 +106,7 @@ def assign_sides_pass(df_pass, direction_pass):
 
     labels = gen.label_by_split(frames, peak_frames)
 
-    grouped_dfs = list(gen.group_by_label(df_pass, labels))
+    grouped_dfs = [*gen.group_by_label(df_pass, labels)]
 
     assigned_dfs = [assign_sides_portion(x, direction_pass) for x in
                     grouped_dfs]

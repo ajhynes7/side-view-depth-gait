@@ -20,7 +20,7 @@ def test_unit():
 
 def test_consecutive_dist():
 
-    lengths = list(lin.consecutive_dist(points))
+    lengths = [*lin.consecutive_dist(points)]
 
     npt.assert_array_equal(np.round(lengths, 4), [2.2361, 9.0554, 8.1854])
 
