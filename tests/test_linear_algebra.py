@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
 import numpy.testing as npt
+from numpy.linalg import norm
 
 import modules.linear_algebra as lin
 
@@ -14,7 +15,7 @@ def test_unit():
         dim = np.random.randint(1, 5)  # Vector dimension
         v = np.random.uniform(low, high, dim)
 
-        npt.assert_allclose(np.linalg.norm(lin.unit(v)), 1)
+        npt.assert_allclose(norm(lin.unit(v)), 1)
 
 
 def test_consecutive_dist():
@@ -32,6 +33,29 @@ def test_closest_point():
     assert close_index == 3
 
 
+def test_project_point_line():
+
+    np.random.seed(0)
+
+    point_a, point_b = np.random.rand(3), np.random.rand(3)
+    point_p = np.random.rand(3)
+
+    point_proj = lin.project_point_line(point_p, point_a, point_b)
+
+    vector_ab = point_a - point_b
+    vector_proj_p = point_proj - point_p
+
+    dist_proj_line = lin.dist_point_line(point_proj, point_a, point_b)
+    dist_p_line = lin.dist_point_line(point_p, point_a, point_b)
+    dist_p_proj = norm(point_p - point_proj)
+
+    assert lin.is_perpendicular(vector_ab, vector_proj_p)
+    assert lin.is_collinear(point_a, point_b, point_proj)
+
+    assert np.isclose(dist_proj_line, 0)
+    assert np.isclose(dist_p_proj, dist_p_line)
+
+
 def test_line_distance():
 
     P = np.array([2, 3, 4])
@@ -42,7 +66,7 @@ def test_line_distance():
     d = lin.dist_point_line(P, A, B)
 
     npt.assert_allclose(d, 1.752549)
-    npt.assert_allclose(d, np.linalg.norm(P_proj - P))
+    npt.assert_allclose(d, norm(P_proj - P))
 
     low, high = -10, 10  # Limits for random numbers
 
@@ -57,7 +81,7 @@ def test_line_distance():
         P_proj = lin.project_point_line(P, A, B)
         d = lin.dist_point_line(P, A, B)
 
-        npt.assert_allclose(d, np.linalg.norm(P_proj - P))
+        npt.assert_allclose(d, norm(P_proj - P))
 
 
 def test_plane_distance():
@@ -75,7 +99,7 @@ def test_plane_distance():
         P_proj = lin.project_point_plane(P, P_plane, normal)
         d = lin.dist_point_plane(P, P_plane, normal)
 
-        npt.assert_allclose(d, np.linalg.norm(P_proj - P))
+        npt.assert_allclose(d, norm(P_proj - P))
 
 
 @pytest.mark.parametrize("test_input, expected", [
@@ -106,7 +130,7 @@ def test_best_fit_line_1():
     cross_prod = np.cross(direction_reversed, direction)
     npt.assert_array_almost_equal(cross_prod, np.array([0, 0, 0]))
 
-    npt.assert_allclose(np.linalg.norm(direction), 1)
+    npt.assert_allclose(norm(direction), 1)
 
 
 @pytest.mark.parametrize("points, centroid, direction", [

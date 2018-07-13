@@ -6,6 +6,97 @@ from numpy.linalg import norm
 import modules.general as gen
 
 
+def is_perpendicular(u, v):
+    """
+    Check if two vectors are perpendicular.
+
+    The vectors are perpendicular if their dot product is zero.
+
+    Parameters
+    ----------
+    u, v : array_like
+        Input vectors
+
+    Returns
+    -------
+    bool
+        True if vectors are perpendicular.
+
+    Examples
+    --------
+    >>> is_perpendicular([0, 1], [1, 0])
+    True
+
+    >>> is_perpendicular([-1, 5], [3, 4])
+    False
+
+    >>> is_perpendicular([2, 0, 0], [0, 0, 2])
+    True
+
+    """
+    return np.isclose(np.dot(u, v), 0)
+
+
+def is_parallel(u, v):
+    """
+    Check if two vectors are parallel.
+
+    Parameters
+    ----------
+    u, v : array_like
+        Input vectors
+
+    Returns
+    -------
+    bool
+        True if vectors are parallel.
+
+    Examples
+    --------
+    >>> is_parallel([0, 1], [1, 0])
+    False
+
+    >>> is_parallel([-1, 5], [2, -10])
+    True
+
+    >>> is_parallel([1, 2, 3], [3, 6, 9])
+    True
+
+    """
+    return np.all(np.isclose(np.cross(u, v), 0))
+
+
+def is_collinear(point_a, point_b, point_c):
+    """
+    Check if three points are collinear.
+
+    Points A, B, C are collinear if AB is parallel to AC.
+
+    Parameters
+    ----------
+    point_a, point_b, point_c : ndarray
+        Input points.
+
+    Returns
+    -------
+    bool
+        True if points are collinear.
+
+    Examples
+    --------
+    >>> is_collinear([0, 1], [1, 0], [1, 2])
+    False
+
+    >>> is_collinear([1, 1], [2, 2], [5, 5])
+    True
+
+    """
+    vector_ab = np.subtract(point_a, point_b)
+    vector_ac = np.subtract(point_a, point_c)
+
+    return is_parallel(vector_ab, vector_ac)
+
+
 def unit(v):
     """
     Return the unit vector of v.
