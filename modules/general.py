@@ -4,6 +4,35 @@ import numpy as np
 from itertools import chain, repeat
 
 
+def is_sorted(array):
+    """
+    Check if array is sorted in ascending order.
+
+    Parameters
+    ----------
+    array : array_like
+        Input array.
+
+    Returns
+    -------
+    bool
+        True if array is in ascending order.
+
+    Examples
+    --------
+    >>> is_sorted([1, 2, 3])
+    True
+
+    >>> is_sorted([-10, -5, 0, 8])
+    True
+
+    >>> is_sorted([-5, 0, 4, 3, 6, 8])
+    False
+
+    """
+    return np.all(np.diff(array) >= 0)
+
+
 def get_properties(class_object):
     """
     Calculate all properties of a class instance.
