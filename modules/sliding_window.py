@@ -55,14 +55,18 @@ def derivative(signal, n=3):
         Index values are frames.
     n : int, optional
         Number of elements in sliding window (default 3).
-        The number must be odd, so that the median of the window frames is a
-        whole number.
+        The number must be odd so the window has a middle element.
 
     Returns
     -------
     deriv : Series
         Series of same length as the input signal.
         Index values are frames.
+
+    Raises
+    ------
+    ValueError
+        When the sliding window length is an even number.
 
     Examples
     --------
@@ -84,7 +88,8 @@ def derivative(signal, n=3):
     dtype: float64
 
     """
-    assert n % 2 != 0
+    if n % 2 == 0:
+        raise ValueError("The sliding window length is even.")
 
     frames = signal.index.values
 

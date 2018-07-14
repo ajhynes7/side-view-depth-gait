@@ -27,6 +27,11 @@ def filter_by_function(signal, func):
     signal_lower, signal_upper : ndarray
         Values below and above the output of the function.
 
+    Raises
+    ------
+    ValueError
+        When the output of the given function is NaN.
+
     Examples
     --------
     >>> x = np.array([1, 2, 3, 5, 6])
@@ -41,7 +46,8 @@ def filter_by_function(signal, func):
     """
     value = func(signal)
 
-    assert ~np.isnan(value)
+    if np.isnan(value):
+        raise ValueError("Output of function is NaN.")
 
     signal_lower = signal[signal < value]
     signal_upper = signal[signal > value]

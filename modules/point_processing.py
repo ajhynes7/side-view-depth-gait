@@ -26,6 +26,11 @@ def correspond_points(points_prev, points_curr):
     points_ordered : ndarray
         Current points in the order that corresponds to previous points.
 
+    Raises
+    ------
+    ValueError
+        When either input does not have two rows.
+
     Examples
     --------
     >>> points_prev = np.array([[0, 0], [10, 11]])
@@ -43,7 +48,9 @@ def correspond_points(points_prev, points_curr):
            [ 5,  5,  1]])
 
     """
-    assert len(points_prev) == 2 and len(points_curr) == 2
+    inputs = [points_prev, points_curr]
+    if not all(points.shape[0] == 2 for points in inputs):
+        raise ValueError("Inputs do not have two rows of points.")
 
     dist_matrix = cdist(points_prev, points_curr)
 

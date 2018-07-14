@@ -275,6 +275,11 @@ def dist_line_line(point_a, point_b, dir_a, dir_b):
     float
         Shortest distance between lines.
 
+    Raises
+    ------
+    ValueError
+        When the input vectors are not three-dimensional.
+
     Examples
     --------
     >>> dist_line_line([0, 0, 0], [1, 0, 0], [1, 1, 0], [1, 1, 0])
@@ -288,10 +293,9 @@ def dist_line_line(point_a, point_b, dir_a, dir_b):
     2.29
 
     """
-    # All inputs must have more than 2 dimensions to function properly
-    # with the cross product
-    vectors = (point_a, point_b, dir_a, dir_b)
-    assert all(len(v) == 3 for v in vectors)
+    vectors = [point_a, point_b, dir_a, dir_b]
+    if not all(v.size == 3 for v in vectors):
+        raise ValueError("Input vectors are not three-dimensional.")
 
     normal = np.cross(dir_a, dir_b)
     vec_ab = np.subtract(point_a, point_b)

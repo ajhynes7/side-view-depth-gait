@@ -35,6 +35,12 @@ def cluster(points, *, masses=None, kernel='flat', radius=1, eps=1e-3):
     k : int
         Number of clusters.
 
+    Raises
+    ------
+    ValueError
+        When the points or masses contain NaN or when the masses
+        are not all positive.
+
     Examples
     --------
     >>> points = np.array([[1, 2], [2, 3], [20, 3]])
@@ -58,8 +64,11 @@ def cluster(points, *, masses=None, kernel='flat', radius=1, eps=1e-3):
         # They are all given a mass of one
         masses = np.ones(n_points)
 
-    assert np.all(~np.isnan(points)) and np.all(~np.isnan(masses))
-    assert np.all(masses >= 0)
+    if not np.all(~np.isnan(points)) and np.all(~np.isnan(masses)):
+        raise ValueError("Points or masses contain NaN.")
+
+    if not np.all(masses >= 0):
+        raise ValueError("Masses are not all positive.")
 
     index_matrix = np.full((n_points, n_points), False)
     all_centroids = np.full((n_points, n_dimensions), np.nan)
