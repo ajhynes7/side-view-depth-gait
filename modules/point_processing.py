@@ -49,7 +49,7 @@ def correspond_points(points_prev, points_curr):
 
     """
     inputs = [points_prev, points_curr]
-    if not all(points.shape[0] == 2 for points in inputs):
+    if not all(len(points) == 2 for points in inputs):
         raise ValueError("Inputs do not have two rows of points.")
 
     dist_matrix = cdist(points_prev, points_curr)
