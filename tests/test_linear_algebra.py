@@ -56,6 +56,24 @@ def test_project_point_line():
     assert np.isclose(dist_p_proj, dist_p_line)
 
 
+def test_project_point_plane():
+
+    np.random.seed(0)
+
+    normal, point_plane = np.random.rand(3), np.random.rand(3)
+    point = np.random.rand(3)
+
+    point_proj = lin.project_point_plane(point, point_plane, normal)
+
+    vector_proj_p = point_proj - point
+    
+    dist_to_plane = lin.dist_point_plane(point, point_plane, normal)
+
+    assert lin.is_parallel(normal, vector_proj_p)
+    assert lin.is_perpendicular(point_plane - point_proj, vector_proj_p)
+    assert np.isclose(norm(vector_proj_p), dist_to_plane)
+
+
 def test_line_distance():
 
     P = np.array([2, 3, 4])
