@@ -4,6 +4,35 @@ import numpy as np
 from itertools import chain, repeat
 
 
+def all_consecutive(array):
+    """
+    Check if elements in array are all consecutive.
+
+    Parameters
+    ----------
+    array : array_like
+        Input array.
+
+    Returns
+    -------
+    bool
+        True if all elements are consecutive
+
+    Examples
+    --------
+    >>> all_consecutive([1, 2, 3])
+    True
+
+    >>> all_consecutive([1, 2, 4])
+    False
+
+    >>> all_consecutive([1.1, 2.1, 3.1])
+    True
+
+    """
+    return np.all(np.diff(array) == 1)
+
+
 def is_sorted(array):
     """
     Check if array is sorted in ascending order.
