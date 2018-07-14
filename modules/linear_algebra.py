@@ -294,7 +294,7 @@ def dist_line_line(point_a, point_b, dir_a, dir_b):
 
     """
     vectors = [point_a, point_b, dir_a, dir_b]
-    if not all(v.size == 3 for v in vectors):
+    if not all(np.array(v).size == 3 for v in vectors):
         raise ValueError("Input vectors are not three-dimensional.")
 
     normal = np.cross(dir_a, dir_b)
