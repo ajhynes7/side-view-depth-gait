@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-import modules.general as gen
+import modules.string_funcs as sf
 
 
 def swap_columns(df, column_1, column_2):
@@ -245,7 +245,7 @@ def drop_any_like(df, strings_to_drop, axis=0):
     """
     labels = getattr(df, df._get_axis_name(axis))
 
-    to_drop = [gen.any_in_string(x, strings_to_drop) for x in labels]
+    to_drop = [sf.any_in_string(x, strings_to_drop) for x in labels]
 
     df = df.drop(labels[to_drop], axis=axis)
 

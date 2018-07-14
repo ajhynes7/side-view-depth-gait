@@ -4,10 +4,10 @@ import glob
 import pandas as pd
 import numpy as np
 
-import modules.general as gen
-import modules.math_funcs as mf
-import modules.pose_estimation as pe
 import modules.stats as st
+import modules.math_funcs as mf
+import modules.string_funcs as sf
+import modules.pose_estimation as pe
 
 
 def main():
@@ -54,7 +54,7 @@ def main():
         lengths = df_length.loc[file_name]  # Read lengths
 
         # Select frames with data
-        string_index, part_labels = gen.strings_with_any_substrings(
+        string_index, part_labels = sf.strings_with_any_substrings(
             df.columns, lower_part_types)
 
         lower_parts = df.columns[string_index]

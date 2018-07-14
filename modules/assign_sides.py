@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 import modules.signals as sig
-import modules.general as gen
+import modules.numpy_funcs as nf
 import modules.pandas_funcs as pf
 import modules.linear_algebra as lin
 import modules.point_processing as pp
@@ -104,9 +104,9 @@ def assign_sides_pass(df_pass, direction_pass):
     rms = sig.root_mean_square(signal)
     peak_frames = sig.detect_peaks(signal, window_length=3, min_height=rms)
 
-    labels = gen.label_by_split(frames, peak_frames)
+    labels = nf.label_by_split(frames, peak_frames)
 
-    grouped_dfs = [*gen.group_by_label(df_pass, labels)]
+    grouped_dfs = [*nf.group_by_label(df_pass, labels)]
 
     assigned_dfs = [assign_sides_portion(x, direction_pass) for x in
                     grouped_dfs]

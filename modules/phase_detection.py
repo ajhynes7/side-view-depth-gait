@@ -5,7 +5,8 @@ import pandas as pd
 from sklearn.cluster import KMeans
 
 import modules.signals as sig
-import modules.general as gen
+import modules.numpy_funcs as nf
+import modules.iterable_funcs as itf
 import modules.linear_algebra as lin
 
 
@@ -96,8 +97,8 @@ def detect_phases(step_signal, frames_interest):
     """
     frames = step_signal.index.values
 
-    split_labels = gen.label_by_split(frames, frames_interest)
-    sub_signals = list(gen.group_by_label(step_signal, split_labels))
+    split_labels = nf.label_by_split(frames, frames_interest)
+    sub_signals = list(nf.group_by_label(step_signal, split_labels))
 
     variances = [*map(np.var, sub_signals)]
     variance_array = np.array(variances).reshape(-1, 1)
@@ -106,14 +107,14 @@ def detect_phases(step_signal, frames_interest):
     variance_labels = k_means.labels_
 
     sub_signal_lengths = [*map(len, sub_signals)]
-    expanded_labels = [*gen.repeat_by_list(variance_labels,
+    expanded_labels = [*itf.repeat_by_list(variance_labels,
                                            sub_signal_lengths)]
 
     stance_label = np.argmin(k_means.cluster_centers_)
     swing_label = 1 - stance_label
     phase_dict = {stance_label: 'stance', swing_label: 'swing'}
 
-    phase_strings = gen.map_with_dict(expanded_labels, phase_dict)
+    phase_strings = itf.map_with_dict(expanded_labels, phase_dict)
     frame_phases = pd.Series(phase_strings, index=frames)
 
     return frame_phases
@@ -136,28 +137,39 @@ def get_phase_dataframe(frame_phases):
     -------
     df_phase : DataFrame
         Index values are frames.
-        Columns are 'Phase', 'Number'.
+        Columns are 'phase', 'number'.
 
     """
     frames = frame_phases.index
 
-    df_phase = pd.DataFrame({'Phase': frame_phases},
+    df_phase = pd.DataFrame({'phase': frame_phases},
                             index=frames,
                             dtype='category')
 
     phase_strings = frame_phases.values
-    phase_labels = np.array([*gen.label_repeated_elements(phase_strings)])
+    phase_labels = np.array([*itf.label_repeated_elements(phase_strings)])
 
-    is_stance = df_phase.Phase == 'stance'
-    is_swing = df_phase.Phase == 'swing'
+    is_stance = df_phase.phase == 'stance'
+    is_swing = df_phase.phase == 'swing'
 
-    stance_labels = [*gen.label_repeated_elements(phase_labels[is_stance])]
-    swing_labels = [*gen.label_repeated_elements(phase_labels[is_swing])]
+    stance_labels = [*itf.label_repeated_elements(phase_labels[is_stance])]
+    swing_labels = [*itf.label_repeated_elements(phase_labels[is_swing])]
 
     stance_series = pd.Series(stance_labels, index=frames[is_stance])
     swing_series = pd.Series(swing_labels, index=frames[is_swing])
 
-    df_phase['Number'] = pd.concat([stance_series, swing_series])
-    df_phase.index.name = 'Frame'
+    df_phase['number'] = pd.concat([stance_series, swing_series])
+    df_phase.index.name = 'frame'
+
+    return df_phase
+
+
+def foot_phases(frames_interest, direction_pass, foot_series):
+
+    step_signal = get_step_signal(foot_series, direction_pass)
+    frame_phases = detect_phases(step_signal, frames_interest)
+
+    df_phase = get_phase_dataframe(frame_phases)
+    df_phase['position'] = foot_series
 
     return df_phase

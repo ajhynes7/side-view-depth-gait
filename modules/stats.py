@@ -1,8 +1,10 @@
+"""Module for statisical calculations."""
+
 import numpy as np
 
 from statsmodels import robust
 
-import modules.general as gen
+import modules.math_funcs as mf
 
 
 class BlandAltman:
@@ -91,7 +93,7 @@ class BlandAltman:
 
         standard_dev = self.differences.std()
 
-        lower_lim, upper_lim = gen.limits(self.bias, 1.96 * standard_dev)
+        lower_lim, upper_lim = mf.limits(self.bias, 1.96 * standard_dev)
 
         return lower_lim, upper_lim
 

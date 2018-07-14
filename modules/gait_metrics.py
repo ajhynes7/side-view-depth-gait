@@ -21,11 +21,12 @@ import numpy as np
 import pandas as pd
 from numpy.linalg import norm
 
-import modules.general as gen
 import modules.signals as sig
+import modules.class_funcs as cf
 import modules.pandas_funcs as pf
 import modules.assign_sides as asi
 import modules.sliding_window as sw
+import modules.iterable_funcs as itf
 import modules.linear_algebra as lin
 
 
@@ -199,7 +200,7 @@ def lookup_contact_positions(df_pass, df_contact, side_to_part):
         e.g. {'L': 'L_FOOT', 'R': 'R_FOOT'}
 
     """
-    parts = gen.map_with_dict(df_contact.side, side_to_part)
+    parts = itf.map_with_dict(df_contact.side, side_to_part)
     frames = df_contact.frame
 
     df_contact['position'] = df_pass.lookup(frames, parts)
@@ -228,7 +229,7 @@ def foot_contacts_to_gait(df_contact):
 
         stride_instance = Stride(*foot_tuple)
 
-        property_dict[i] = gen.get_properties(stride_instance)
+        property_dict[i] = cf.get_properties(stride_instance)
 
     # By setting the orient, the keys of the dictionary become the index
     df_gait = pd.DataFrame.from_dict(property_dict, orient='index')

@@ -10,7 +10,7 @@ import numpy as np
 from scipy.spatial.distance import cdist
 
 import modules.graphs as gr
-import modules.general as gen
+import modules.iterable_funcs as itf
 import modules.linear_algebra as lin
 
 
@@ -111,7 +111,7 @@ def estimate_lengths(pop_series, label_series, cost_func, n_frames, eps=0.01):
             prev, dist = pop_shortest_paths(population, labels,
                                             length_dict, cost_func)
 
-            label_dict = gen.iterable_to_dict(labels)
+            label_dict = itf.iterable_to_dict(labels)
             min_path = gr.min_shortest_path(prev, dist, label_dict, n_lengths)
 
             min_pop = population[min_path]
@@ -320,7 +320,7 @@ def get_score_matrix(population, labels, label_adj_list, score_func):
 
     # Adjacency list of all n nodes in the graph
     # Edge weights are the expected distances between points
-    label_dict = gen.iterable_to_dict(labels)
+    label_dict = itf.iterable_to_dict(labels)
     expected_adj_list = gr.labelled_nodes_to_graph(label_dict, label_adj_list)
 
     # Convert adj list to a matrix so it can be compared to the

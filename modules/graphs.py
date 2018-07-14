@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from scipy.spatial.distance import cdist
 
-import modules.general as gen
+import modules.iterable_funcs as itf
 
 
 def adj_list_to_matrix(graph):
@@ -254,7 +254,7 @@ def weight_along_path(graph, path):
     """
     total_weight = 0
 
-    for a, b in gen.pairwise(path):
+    for a, b in itf.pairwise(path):
         total_weight += graph[a][b]
 
     return total_weight
@@ -344,7 +344,7 @@ def points_to_graph(points, labels, expected_dists, weight_func):
     {0: {1: 2.0, 2: 3.0}, 1: {}, 2: {}}
 
     """
-    label_dict = gen.iterable_to_dict(labels)
+    label_dict = itf.iterable_to_dict(labels)
 
     # Expected distances between points
     adj_list_expected = labelled_nodes_to_graph(label_dict, expected_dists)

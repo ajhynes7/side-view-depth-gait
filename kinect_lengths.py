@@ -3,7 +3,7 @@ import glob
 
 import pandas as pd
 
-import modules.general as gen
+import modules.string_funcs as sf
 import modules.pose_estimation as pe
 
 
@@ -35,7 +35,7 @@ def main():
         df = pd.read_pickle(file_path)
 
         # Select frames with data
-        string_index, part_labels = gen.strings_with_any_substrings(
+        string_index, part_labels = sf.strings_with_any_substrings(
             df.columns, lower_part_types)
 
         lower_parts = df.columns[string_index]

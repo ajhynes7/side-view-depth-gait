@@ -3,7 +3,8 @@
 import numpy as np
 from numpy.linalg import norm
 
-import modules.general as gen
+import modules.numpy_funcs as nf
+import modules.iterable_funcs as itf
 
 
 def is_perpendicular(u, v):
@@ -120,7 +121,7 @@ def unit(v):
     array([ 0., -1.])
 
     """
-    return gen.divide_no_error(v, norm(v))
+    return nf.divide_no_error(v, norm(v))
 
 
 def consecutive_dist(points):
@@ -144,7 +145,7 @@ def consecutive_dist(points):
     [1.0, 2.0]
 
     """
-    for point_1, point_2 in gen.pairwise(points):
+    for point_1, point_2 in itf.pairwise(points):
 
         vector = np.subtract(point_1, point_2)
         yield norm(vector)
@@ -223,7 +224,7 @@ def dist_point_line(point, line_point_1, line_point_2):
     num = norm(np.cross(point - line_point_1, point - line_point_2))
     denom = norm(line_point_1 - line_point_2)
 
-    return gen.divide_no_error(num, denom)
+    return nf.divide_no_error(num, denom)
 
 
 def dist_point_plane(point, plane_point, normal):
@@ -369,8 +370,8 @@ def project_point_line(point, line_point_1, line_point_2):
     vec_1_2 = line_point_2 - line_point_1  # Vector from A to B
 
     # Project point onto line
-    return line_point_1 + gen.divide_no_error(np.dot(vec_1, vec_1_2),
-                                              norm(vec_1_2)**2) * vec_1_2
+    return line_point_1 + nf.divide_no_error(np.dot(vec_1, vec_1_2),
+                                             norm(vec_1_2)**2) * vec_1_2
 
 
 def project_point_plane(point, plane_point, normal):
@@ -646,7 +647,7 @@ def angle_between(x, y, degrees=False):
     """
     dot_product = np.dot(x, y)
 
-    cos_theta = gen.divide_no_error(dot_product, (norm(x) * norm(y)))
+    cos_theta = nf.divide_no_error(dot_product, (norm(x) * norm(y)))
 
     theta = np.arccos(cos_theta)
 
