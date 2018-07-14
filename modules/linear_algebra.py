@@ -257,6 +257,54 @@ def dist_point_plane(point, plane_point, normal):
     return abs(np.dot(n_hat, point - plane_point))
 
 
+def dist_line_line(point_a, point_b, dir_a, dir_b):
+    """
+    Shortest distance between two lines in space.
+
+    The input vectors must be three-dimensional.
+
+    Parameters
+    ----------
+    point_a, point_b : array_like
+        Points on lines A and B.
+    dir_a, dir_b : array_like
+        Direction of lines A and B.
+
+    Returns
+    -------
+    float
+        Shortest distance between lines.
+
+    Examples
+    --------
+    >>> dist_line_line([0, 0, 0], [1, 0, 0], [1, 1, 0], [1, 1, 0])
+    1.0
+
+    >>> dist_line_line([0, 0, 0], [0, 0, 2], [1, 0, 0], [0, 1, 0])
+    2.0
+
+    >>> dist = dist_line_line([-4, 5, 0], [2, 1, 4], [1, 2, 1], [-1, 5, 1])
+    >>> np.round(dist, 2)
+    2.29
+
+    """
+    # All inputs must have more than 2 dimensions to function properly
+    # with the cross product
+    vectors = (point_a, point_b, dir_a, dir_b)
+    assert all(len(v) == 3 for v in vectors)
+
+    normal = np.cross(dir_a, dir_b)
+    vec_ab = np.subtract(point_a, point_b)
+
+    if np.all(np.isclose(normal, 0)):
+        # The lines are parallel
+        return norm(np.cross(dir_a, vec_ab))
+
+    projection = project_vector(vec_ab, normal)
+
+    return norm(projection)
+
+
 def project_vector(u, v):
     """
     Project vector u onto vector v.
