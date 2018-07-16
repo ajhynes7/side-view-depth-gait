@@ -1,5 +1,7 @@
 """Functions for assisting with the pandas library."""
 
+from functools import reduce
+
 import pandas as pd
 
 import modules.string_funcs as sf
@@ -300,3 +302,34 @@ def series_of_rows(array, *, index=None):
         series[idx] = vector
 
     return series
+
+
+def merge_multiple(dataframes, **kwargs):
+    """
+    Merge multiple DataFrames together.
+
+    Parameters
+    ----------
+    dataframes : iterable
+        Each element is a DataFrame.
+
+    Returns
+    -------
+    DataFrame
+        Result of merging all DataFrames.
+
+    Examples
+    --------
+    >>> df_1, df_2 = pd.DataFrame([1, 2, 3]), pd.DataFrame([4, 5, 6])
+    >>> df_3, df_4 = pd.DataFrame([7, 8, 9]), pd.DataFrame([10, 11, 12])
+
+    >>> dataframes = [df_1, df_2, df_3, df_4]
+
+    >>> merge_multiple(dataframes, left_index=True, right_index=True)
+       0_x  0_y  0_x  0_y
+    0    1    4    7   10
+    1    2    5    8   11
+    2    3    6    9   12
+
+    """
+    return reduce(lambda a, b: pd.merge(a, b, **kwargs), dataframes)
