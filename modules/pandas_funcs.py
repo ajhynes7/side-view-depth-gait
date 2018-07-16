@@ -333,3 +333,44 @@ def merge_multiple(dataframes, **kwargs):
 
     """
     return reduce(lambda a, b: pd.merge(a, b, **kwargs), dataframes)
+
+
+def apply_to_grouped(df, groupby_column, column_funcs):
+    """
+    Apply functions to columns of a groupby object and combine the results.
+
+    Parameters
+    ----------
+    df : DataFrame
+        Input DataFrame.
+    groupby_column : str
+        Name of column to group.
+    column_funcs : dict
+        Each key is a column name.
+        Each value is a function to apply to the column.
+
+    Returns
+    -------
+    DataFrame
+        Result of applying functions to each grouped column.
+        Index is the groupby column.
+        Columns are those specified as keys in the dictionary.
+
+    Examples
+    --------
+    >>> d = {'letter': ['K', 'K', 'J'], 'number': [1, 2, 5], 'age': [1, 2, 3]}
+    >>> df = pd.DataFrame(d)
+
+    >>> apply_to_grouped(df, 'letter', {'number': min}).reset_index()
+      letter  number
+    0      J       5
+    1      K       1
+
+    """
+    groupby_object = df.groupby(groupby_column)
+
+    def yield_groups():
+        for column, func in column_funcs.items():
+            yield groupby_object[column].apply(func).to_frame()
+
+    return merge_multiple(yield_groups(), left_index=True, right_index=True)
