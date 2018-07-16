@@ -30,67 +30,33 @@ import modules.iterable_funcs as itf
 import modules.linear_algebra as lin
 
 
-class Stride:
+def stride_metrics(side_x_i, side_y, side_x_f, *, fps=30):
 
-    def __init__(self, swing_i, stance, swing_f):
+    foot_x_i, foot_x_f = side_x_i.position, side_x_f.position
+    foot_y = side_y.position
 
-        self.swing_i, self.swing_f = swing_i, swing_f
-        self.stance = stance
+    foot_y_proj = lin.project_point_line(foot_y, foot_x_i, foot_x_f)
 
-        point_1, point_2 = swing_i.position, swing_f.position
-        self.proj_position = lin.project_point_line(stance.position,
-                                                    point_1, point_2)
+    stride_length = norm(foot_x_f - foot_x_i)
+    stride_time = norm(side_x_f.frame - side_x_i.frame) / fps
 
-    def __str__(self):
+    stride_velocity = stride_length / stride_time
 
-        string = "Stride(side={self.side}, number={self.number})"
+    metrics = {'number': side_x_i.number,
+               'side': side_x_i.side,
 
-        return string.format(self=self)
+               'stride_length': stride_length,
+               'stride_time': stride_time,
+               'stride_velocity': stride_velocity,
 
-    @property
-    def side(self):
+               'absolute_step_length': norm(foot_x_f - foot_y),
+               'step_length': norm(foot_x_f - foot_y_proj),
+               'stride_width': norm(foot_y - foot_y_proj),
 
-        return self.swing_i.side
+               'step_time': (side_x_f.frame - side_y.frame) / fps
+               }
 
-    @property
-    def number(self):
-
-        return self.swing_i.number
-
-    @property
-    def absolute_step_length(self):
-
-        return norm(self.swing_f.position - self.stance.position)
-
-    @property
-    def step_length(self):
-
-        return norm(self.swing_f.position - self.proj_position)
-
-    @property
-    def step_time(self):
-
-        return (self.swing_f.frame - self.stance.frame) / 30
-
-    @property
-    def stride_width(self):
-
-        return norm(self.stance.position - self.proj_position)
-
-    @property
-    def stride_length(self):
-
-        return norm(self.swing_f.position - self.swing_i.position)
-
-    @property
-    def stride_time(self):
-
-        return (self.swing_f.frame - self.swing_i.frame) / 30
-
-    @property
-    def stride_velocity(self):
-
-        return self.stride_length / self.stride_time
+    return metrics
 
 
 def direction_of_pass(df_pass):
