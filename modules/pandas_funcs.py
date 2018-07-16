@@ -374,3 +374,58 @@ def apply_to_grouped(df, groupby_column, column_funcs):
             yield groupby_object[column].apply(func).to_frame()
 
     return merge_multiple(yield_groups(), left_index=True, right_index=True)
+
+
+def split_column(df, *, column=0, delim=' ', new_columns=None, drop=True):
+    """
+    Split a column into multiple columns by splitting strings at a delimiter.
+
+    Parameters
+    ----------
+    df : DataFrame
+        Input DataFrame.
+    column : {int, str}, optional
+        Name of column to split (default 0).
+    delim : str, optional
+        Delimiter used to split column (default ' ').
+    new_columns : iterable, optional
+        Iterable of new column names (default None).
+    drop : bool, optional
+        If true, drop the original column that was split (default True).
+
+    Returns
+    -------
+    df_final : DataFrame
+        DataFrame including new columns from the split.
+
+    Examples
+    --------
+    >>> df = pd.DataFrame(['1_2_3', '4_5_6'])
+
+    >>> split_column(df, column=0, delim='_', drop=False)
+           0  0  1  2
+    0  1_2_3  1  2  3
+    1  4_5_6  4  5  6
+
+    >>> split_column(df, column=0, delim='_')
+       0  1  2
+    0  1  2  3
+    1  4  5  6
+
+    >>> split_column(df, column=0, delim='_', new_columns=['a', 'b', 'c'])
+       a  b  c
+    0  1  2  3
+    1  4  5  6
+
+    """
+    df_split = df[column].str.split(delim, expand=True)
+
+    if new_columns is not None:
+        df_split.columns = new_columns
+
+    if drop:
+        df = df.drop(column, axis=1)
+
+    df_final = pd.concat([df, df_split], axis=1)
+
+    return df_final
