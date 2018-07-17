@@ -194,13 +194,42 @@ def foot_phases(frames_interest, direction_pass, foot_series_pass):
 
 
 def group_stance_frames(df_phase, suffix):
+    """
+    Create a DataFrame of stance frames grouped by contact number.
 
+    Parameters
+    ----------
+    df_phase : DataFrame
+        Index is 'frame'.
+        Columns are 'phase', 'number', 'position'.
+    suffix : str
+        Suffix to add to values of the index ('_L' or '_R').
+
+    Returns
+    -------
+    df_grouped : DataFrame
+        Index values have the suffix appended.
+        Columns are 'frame', 'position'
+
+    Examples
+    --------
+    >>> pos = [[1, 2], [3, 4]]
+    >>> d = {'phase': ['stance', 'stance'], 'number': [0, 0], 'position': pos}
+
+    >>> df = pd.DataFrame(d, index=[175, 176])
+    >>> df.index.name = 'frame'
+
+    >>> group_stance_frames(df, '_L')
+         frame    position
+    0_L  175.5  [2.0, 3.0]
+
+    """
     df_stance = df_phase[df_phase.phase == 'stance'].reset_index()
 
-    column_funcs = {'frame': list, 'position': np.stack}
+    column_funcs = {'frame': np.median, 'position': np.stack}
     df_grouped = pf.apply_to_grouped(df_stance, 'number', column_funcs)
 
-    df_grouped.frame = df_grouped.frame.apply(np.median)
+    df_grouped.position = df_grouped.position.apply(np.median, axis=0)
     df_grouped.index = df_grouped.index.astype('str') + suffix
 
     return df_grouped
