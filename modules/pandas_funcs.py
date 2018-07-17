@@ -449,15 +449,16 @@ def column_to_suffixes(df, *, groupby_col=0, merge_col=1):
     -------
     df_suffix : DataFrame
         Final DataFrame with suffixes on new columns.
-        The groupby column is set as the new index.
+        The merge column is set as the new index.
 
     Examples
     --------
     >>> d = {'group': ['A', 'A', 'B'], 'value': [1, 2, 3], 'number': [0, 1, 0]}
     >>> df = pd.DataFrame(d)
 
-    >>> column_to_suffixes(df, groupby_col='group', merge_col='number')
+    >>> df_2 = column_to_suffixes(df, groupby_col='group', merge_col='number')
 
+    >>> df_2.reset_index()
        number  value_A  value_B
     0       0        1      3.0
     1       1        2      NaN
@@ -471,7 +472,7 @@ def column_to_suffixes(df, *, groupby_col=0, merge_col=1):
                          suffixes=suffixes, how='outer')
 
     df_suffix = drop_any_like(df_suffix, [groupby_col], axis=1)
-    df_suffix = df_suffix.set_index(groupby_col)
+    df_suffix = df_suffix.set_index(merge_col)
 
     df_suffix = df_suffix.sort_index(axis=1)
 
