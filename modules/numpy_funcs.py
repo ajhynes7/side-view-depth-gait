@@ -296,3 +296,39 @@ def label_by_split(array, split_vals):
         labels[np.in1d(array, sub_array)] = i
 
     return labels
+
+
+def expand_arrays(x, y):
+    """
+    Expand arrays so that x is all consecutive numbers and y aligns with x.
+
+    Parameters
+    ----------
+    x, y : array_like
+        Input arrays.
+
+    Returns
+    -------
+    x_exp, y_exp : ndarray
+        Expanded arrays.
+
+    Examples
+    --------
+    >>> x = [0, 1, 2, 5, 8, 9]
+    >>> y = [7, 6, 3, 4, 1, 5]
+    >>> x_exp, y_exp = expand_arrays(x, y)
+
+    >>> x_exp
+    array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+    >>> y_exp
+    array([ 7.,  6.,  3., nan, nan,  4., nan, nan,  1.,  5.])
+
+    """
+    min_x, max_x = np.min(x), np.max(x)
+    x_exp = np.arange(min_x, max_x + 1)
+
+    y_exp = np.full(x_exp.size, np.nan)
+    y_exp[x] = y
+
+    return x_exp, y_exp
