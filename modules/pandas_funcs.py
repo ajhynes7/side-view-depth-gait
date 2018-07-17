@@ -431,49 +431,48 @@ def split_column(df, *, column=0, delim=' ', new_columns=None, drop=True):
     return df_final
 
 
-def column_to_suffixes(df, *, column=0, merge_column=1,
-                       column_vals=['A', 'B']):
+def column_to_suffixes(df, *, groupby_col=0, merge_col=1):
     """
-    Convert the two values of one column into suffixes of new column names.
+    Convert the two values of a column into suffixes of new column names.
 
     Parameters
     ----------
     df : DataFrame
         Input DataFrame.
-    column : {int, str}, optional
-        Name of column name containing two values (default 0).
-    merge_column : {int, str}, optional
-        Name of column to merge on (default 1).
-    column_vals : list, optional
-        The two values of the column (default ['A', 'B']).
+    groupby_col : {int, str}, optional
+        Name of column used to group the DataFrame into two sub-DataFrames.
+        The column must contain only two values.
+    merge_col : {int, str}, optional
+        Column used to merge the two sub-DataFrames.
 
     Returns
     -------
     df_suffix : DataFrame
         Final DataFrame with suffixes on new columns.
+        The groupby column is set as the new index.
 
     Examples
     --------
     >>> d = {'group': ['A', 'A', 'B'], 'value': [1, 2, 3], 'number': [0, 1, 0]}
     >>> df = pd.DataFrame(d)
 
-    >>> a, b, c = 'group' , 'number', ['A', 'B']
+    >>> column_to_suffixes(df, groupby_col='group', merge_col='number')
 
-    >>> column_to_suffixes(df, column=a, merge_column=b, column_vals=c)
        number  value_A  value_B
     0       0        1      3.0
     1       1        2      NaN
 
     """
-    df_l = df[df[column] == column_vals[0]]
-    df_r = df[df[column] == column_vals[1]]
+    (value_1, df_1),  (value_2, df_2) = df.groupby(groupby_col)
 
-    suffixes = ['_' + x for x in column_vals]
+    suffixes = ['_' + str(x) for x in (value_1, value_2)]
 
-    df_suffix = pd.merge(df_l, df_r, left_on=merge_column,
-                         right_on=merge_column, suffixes=suffixes, how='outer')
+    df_suffix = pd.merge(df_1, df_2, left_on=merge_col, right_on=merge_col,
+                         suffixes=suffixes, how='outer')
 
-    df_suffix = drop_any_like(df_suffix, [column], axis=1)
+    df_suffix = drop_any_like(df_suffix, [groupby_col], axis=1)
+    df_suffix = df_suffix.set_index(groupby_col)
+
     df_suffix = df_suffix.sort_index(axis=1)
 
     return df_suffix
