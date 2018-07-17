@@ -324,11 +324,19 @@ def expand_arrays(x, y):
     >>> y_exp
     array([ 7.,  6.,  3., nan, nan,  4., nan, nan,  1.,  5.])
 
+    >>> x_exp, y_exp = expand_arrays([5, 8, 15], [7, 6, 3])
+
+    >>> x_exp
+    array([ 5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15])
+
+    >>> y_exp
+    array([ 7., nan, nan,  6., nan, nan, nan, nan, nan, nan,  3.])
+
     """
     min_x, max_x = np.min(x), np.max(x)
     x_exp = np.arange(min_x, max_x + 1)
 
     y_exp = np.full(x_exp.size, np.nan)
-    y_exp[x] = y
+    y_exp[x - min_x] = y
 
     return x_exp, y_exp
