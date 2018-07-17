@@ -2,6 +2,7 @@
 import os
 import glob
 
+import numpy as np
 import pandas as pd
 from sklearn.cluster import KMeans
 
@@ -42,12 +43,13 @@ def main():
         pass_dfs = nf.group_by_label(df_head_feet, labels)
 
         df_trial = gm.combine_walking_passes(pass_dfs)
+        row_metrics = df_trial.apply(np.nanmedian, axis=0)
 
         base_name = os.path.basename(file_path)     # File with extension
         file_name = os.path.splitext(base_name)[0]  # File with no extension
 
         # Fill in row of gait metrics DataFrame
-        df_metrics.loc[file_name] = df_trial.mean()
+        df_metrics.loc[file_name] = row_metrics
 
     df_metrics.to_csv(save_path, na_rep='NaN')
 

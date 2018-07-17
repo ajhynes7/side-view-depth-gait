@@ -21,13 +21,12 @@ import numpy as np
 import pandas as pd
 from numpy.linalg import norm
 
-import modules.signals as sig
-import modules.class_funcs as cf
 import modules.pandas_funcs as pf
 import modules.assign_sides as asi
 import modules.sliding_window as sw
 import modules.iterable_funcs as itf
 import modules.linear_algebra as lin
+import modules.phase_detection as pde
 
 
 def stride_metrics(side_x_i, side_y, side_x_f, *, fps=30):
@@ -203,22 +202,23 @@ def walking_pass_metrics(df_pass, direction_pass):
 
     """
     signal_l = foot_signal(df_pass.L_FOOT, df_pass.R_FOOT, direction_pass)
-    signal_r = -signal_l
+    split_frames = pde.frames_of_interest(signal_l)
 
-    min_height = np.sqrt(2) * sig.root_mean_square(signal_l)
-    contacts_l = sig.detect_peaks(signal_l, window_length=15,
-                                  min_height=min_height)
+    df_phase_l = pde.foot_phases(split_frames, direction_pass, df_pass.L_FOOT)
+    df_phase_r = pde.foot_phases(split_frames, direction_pass, df_pass.R_FOOT)
 
-    contacts_r = sig.detect_peaks(signal_r, window_length=15,
-                                  min_height=min_height)
+    df_grouped_l = pde.group_stance_frames(df_phase_l, '_L')
+    df_grouped_r = pde.group_stance_frames(df_phase_r, '_R')
+    grouped_dfs = [df_grouped_l, df_grouped_r]
 
-    df_contact = join_foot_contacts(contacts_l, contacts_r)
+    df_concat = pd.concat(grouped_dfs).sort_values('frame').reset_index()
 
-    # Add a column of foot positions
-    side_to_part = {'L': 'L_FOOT', 'R': 'R_FOOT'}
-    lookup_contact_positions(df_pass, df_contact, side_to_part)
+    df_contact = pf.split_column(df_concat, column='index', delim='_',
+                                 new_columns=['number', 'side'])
 
     df_gait = foot_contacts_to_gait(df_contact)
+    df_gait = pf.column_to_suffixes(df_gait, groupby_col='side',
+                                    merge_col='number')
 
     return df_gait
 
@@ -255,21 +255,9 @@ def combine_walking_passes(pass_dfs):
 
     df_combined = pd.concat(df_list, sort=True)
 
-    # Reset the index because there are repeated index elements
-    df_combined = df_combined.reset_index(drop=True)
-
-    # Split the DataFrame by body side
-    # There may be an empty DataFrame if one side has no values
-    df_l = df_combined[df_combined.side == 'L']
-    df_r = df_combined[df_combined.side == 'R']
-
-    df_final = pd.merge(df_l, df_r, how='outer', left_on='pass',
-                        right_on='pass', suffixes=['_L', '_R'])
+    df_final = df_combined.reset_index(drop=True)
 
     df_final = df_final.set_index('pass')   # Set the index to the pass column
     df_final = df_final.sort_index(axis=1)  # Sort the columns alphabetically
-
-    strings_to_drop = ['side', 'number']
-    df_final = pf.drop_any_like(df_final, strings_to_drop, axis=1)
 
     return df_final
