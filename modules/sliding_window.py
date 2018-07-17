@@ -9,6 +9,8 @@ import itertools
 import numpy as np
 import pandas as pd
 
+import modules.numpy_funcs as nf
+
 
 def generate_window(sequence, n=2):
     """
@@ -115,7 +117,7 @@ def derivative(signal, n=3):
     return deriv
 
 
-def detect_peaks(array, *, window_length=3, min_height=0):
+def detect_peaks(x, y, *, window_length=3, min_height=0):
     """
     Detect peaks in an array using a sliding window.
 
@@ -133,14 +135,35 @@ def detect_peaks(array, *, window_length=3, min_height=0):
     peak_indices : list
         Indices to the array where a peak value occurs.
 
+    Examples
+    --------
+    >>> x, y = [10, 11, 12, 13, 14, 15], [3, 2, 10, 5, 3, 2]
+
+    >>> detect_peaks(x, y)
+    (array([12]), array([10.]))
+
+    >>> x, y = [10, 11, 12, 30, 31, 32], [3, 2, 10, 5, 3, 2]
+
+    >>> detect_peaks(x, y)
+    (array([12, 30]), array([10.,  5.]))
+
+    >>> detect_peaks(x, y, min_height=6)
+    (array([12]), array([10.]))
+
+    >>> detect_peaks(x, y, window_length=20)
+    (array([12]), array([10.]))
+
     """
-    all_indices = [i for i, _ in enumerate(array)]
+    # Ensure there are no gaps in the x-values (must be all consecutive)
+    x, y = nf.expand_arrays(x, y)
+
+    all_indices = [i for i, _ in enumerate(x)]
     peak_set = set(all_indices)
 
     for window in generate_window(all_indices, n=window_length):
 
         indices = np.array(window)
-        values = array[indices]
+        values = y[indices]
 
         if np.all(np.isnan(values)):
             continue
@@ -152,8 +175,9 @@ def detect_peaks(array, *, window_length=3, min_height=0):
         peak_set = peak_set - non_peaks
 
     # Keep only indices of array values that reach min height
-    peak_set = {x for x in peak_set if array[x] >= min_height}
-
+    peak_set = {i for i in peak_set if y[i] >= min_height}
     peak_indices = sorted(peak_set)
 
-    return peak_indices
+    x_peak, y_peak = x[peak_indices], y[peak_indices]
+
+    return x_peak, y_peak
