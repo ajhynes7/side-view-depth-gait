@@ -7,6 +7,7 @@ from sklearn.cluster import KMeans
 import modules.signals as sig
 import modules.numpy_funcs as nf
 import modules.pandas_funcs as pf
+import modules.sliding_window as sw
 import modules.iterable_funcs as itf
 import modules.linear_algebra as lin
 
@@ -28,14 +29,18 @@ def frames_of_interest(foot_signal):
         Sorted array of frames.
 
     """
-    signal_1 = sig.normalize(foot_signal)
+    frames = foot_signal.index.values
+
+    signal_1 = sig.normalize(foot_signal.values)
     signal_2 = 1 - signal_1
 
     rms_1 = sig.root_mean_square(signal_1)
     rms_2 = sig.root_mean_square(signal_2)
 
-    frames_1 = sig.detect_peaks(signal_1, window_length=3, min_height=rms_1)
-    frames_2 = sig.detect_peaks(signal_2, window_length=3, min_height=rms_2)
+    frames_1, _ = sw.detect_peaks(frames, signal_1, window_length=3,
+                                  min_height=rms_1)
+    frames_2, _ = sw.detect_peaks(frames, signal_2, window_length=3,
+                                  min_height=rms_2)
 
     frames_interest = np.sort(np.append(frames_1, frames_2))
 

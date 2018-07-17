@@ -91,22 +91,21 @@ def foot_signal(foot_interest, foot_other, direction_pass):
 
     Parameters
     ----------
-    foot_interest, foot_other : Series
-        Index values are frames.
-        Values are foot positions.
-        The first series is the foot of interest (left or right).
+    foot_interest, foot_other : ndarray
+        Rows are foot positions.
+        The first array is the foot of interest (left or right).
     direction_pass : ndarray
         Direction of motion for the walking pass.
 
     Returns
     -------
-    signal : Series
+    signal : ndarray
         Signal from foot data.
 
     """
-    vectors_to_foot = foot_interest - foot_other
+    foot_difference = foot_interest - foot_other
 
-    signal = vectors_to_foot.apply(np.dot, args=(direction_pass,))
+    signal = np.apply_along_axis(np.dot, 1, foot_difference, direction_pass)
 
     return signal
 
@@ -201,8 +200,14 @@ def walking_pass_metrics(df_pass, direction_pass):
         See module docstring.
 
     """
-    signal_l = foot_signal(df_pass.L_FOOT, df_pass.R_FOOT, direction_pass)
-    split_frames = pde.frames_of_interest(signal_l)
+    frames = df_pass.index.values
+
+    foot_l, foot_r = np.stack(df_pass.L_FOOT), np.stack(df_pass.R_FOOT)
+    signal_l = foot_signal(foot_l, foot_r, direction_pass)
+
+    series_l = pd.Series(signal_l, index=frames)
+
+    split_frames = pde.frames_of_interest(series_l)
 
     df_phase_l = pde.foot_phases(split_frames, direction_pass, df_pass.L_FOOT)
     df_phase_r = pde.foot_phases(split_frames, direction_pass, df_pass.R_FOOT)

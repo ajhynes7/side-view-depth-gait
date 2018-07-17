@@ -172,33 +172,3 @@ def normalize(x):
     min_value = np.nanmin(x)
 
     return (x - min_value) / (max_value - min_value)
-
-
-def detect_peaks(signal, **kwargs):
-    """
-    Detect peaks in a signal using a sliding window.
-
-    Parameters
-    ----------
-    signal : Series
-        Input signal.
-        Index values are frames.
-
-    Returns
-    -------
-    peak_frames : ndarray
-        Array of detected peak frames.
-
-    """
-    frames = signal.index.values
-
-    # Expand signal to include all frames from start to end
-    # This is needed for the peak detection to function properly
-    signal_expanded = pd.Series(index=range(frames.min(), frames.max()))
-    signal_expanded.update(signal)
-
-    peak_indices = sw.detect_peaks(signal_expanded.values, **kwargs)
-
-    peak_frames = signal_expanded.index.values[peak_indices]
-
-    return peak_frames

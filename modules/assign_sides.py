@@ -1,10 +1,13 @@
 """Functions for assigning correct sides to the feet."""
+
 import numpy as np
 import pandas as pd
+from numpy.linalg import norm
 
 import modules.signals as sig
 import modules.numpy_funcs as nf
 import modules.pandas_funcs as pf
+import modules.sliding_window as sw
 import modules.linear_algebra as lin
 import modules.point_processing as pp
 
@@ -24,20 +27,26 @@ def evaluate_foot_side(head_points, foot_points_1, foot_points_2, direction):
     direction : ndarray
         Vector for direction of motion.
 
-    Yields
-    ------
-    float
-        Value indicating left/right direction for foot 1.
+    Returns
+    -------
+    side_values : ndarray
+        (n, ) array of values indicating left/right direction for foot 1.
 
     """
-    for head, foot_1, foot_2 in zip(head_points, foot_points_1, foot_points_2):
+    side_values = np.zeros(len(head_points))
+
+    zipped = zip(head_points, foot_points_1, foot_points_2)
+
+    for i, (head, foot_1, foot_2) in enumerate(zipped):
 
         mean_foot = (foot_1 + foot_2) / 2
         up = head - mean_foot
 
         target = foot_1 - mean_foot
 
-        yield lin.target_side_value(direction, up, target)
+        side_values[i] = lin.target_side_value(direction, up, target)
+
+    return side_values
 
 
 def assign_sides_portion(df_walk, direction):
@@ -58,9 +67,12 @@ def assign_sides_portion(df_walk, direction):
         Walking data after foot sides have been assigned.
 
     """
+    foot_points_l = np.stack(df_walk.L_FOOT)
+    foot_points_r = np.stack(df_walk.R_FOOT)
+
     # Find a motion correspondence so the foot sides do not switch abruptly
-    foot_points_l, foot_points_r = pp.track_two_objects(df_walk.L_FOOT,
-                                                        df_walk.R_FOOT)
+    foot_points_l, foot_points_r = pp.track_two_objects(foot_points_l,
+                                                        foot_points_r)
 
     df_assigned = df_walk.copy()
     df_assigned.L_FOOT = pf.series_of_rows(foot_points_l, index=df_walk.index)
@@ -70,7 +82,7 @@ def assign_sides_portion(df_walk, direction):
     side_values = evaluate_foot_side(head_points, foot_points_l,
                                      foot_points_r, direction)
 
-    if sum(side_values) > 0:
+    if np.sum(side_values) > 0:
 
         # The left foot should be labelled the right foot, and vice versa
         df_assigned = pf.swap_columns(df_assigned, 'L_FOOT', 'R_FOOT')
@@ -98,11 +110,16 @@ def assign_sides_pass(df_pass, direction_pass):
     """
     frames = df_pass.index.values
 
-    foot_dist = (df_pass.L_FOOT - df_pass.R_FOOT).apply(np.linalg.norm)
-    signal = 1 - sig.normalize(foot_dist)
+    foot_pos_l = np.stack(df_pass.L_FOOT)
+    foot_pos_r = np.stack(df_pass.R_FOOT)
+    norms = np.apply_along_axis(norm, 1, foot_pos_l - foot_pos_r)
 
-    rms = sig.root_mean_square(signal)
-    peak_frames = sig.detect_peaks(signal, window_length=3, min_height=rms)
+    signal = pd.Series(1 - sig.normalize(norms), index=frames)
+
+    rms = sig.root_mean_square(signal.values)
+
+    peak_frames, _ = sw.detect_peaks(frames, signal, window_length=3,
+                                     min_height=rms)
 
     labels = nf.label_by_split(frames, peak_frames)
 

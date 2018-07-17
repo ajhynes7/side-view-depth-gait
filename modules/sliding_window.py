@@ -119,12 +119,12 @@ def derivative(signal, n=3):
 
 def detect_peaks(x, y, *, window_length=3, min_height=0):
     """
-    Detect peaks in an array using a sliding window.
+    Detect peaks using a sliding window.
 
     Parameters
     ----------
-    array : ndarray
-        Input array.
+    x, y : array_like
+        Input arrays representing x and y coordinates.
     window_length : int, optional
         Length of sliding window (default 3).
     min_height : int, optional
@@ -132,8 +132,8 @@ def detect_peaks(x, y, *, window_length=3, min_height=0):
 
     Returns
     -------
-    peak_indices : list
-        Indices to the array where a peak value occurs.
+    x_peak, y_peak : ndarray
+        x and y values at the detected peaks.
 
     Examples
     --------

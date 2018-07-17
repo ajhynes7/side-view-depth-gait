@@ -1,4 +1,5 @@
 """Script to calculate gait metrics from Kinect data."""
+
 import os
 import glob
 
