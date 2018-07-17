@@ -24,7 +24,6 @@ from numpy.linalg import norm
 import modules.pandas_funcs as pf
 import modules.assign_sides as asi
 import modules.sliding_window as sw
-import modules.iterable_funcs as itf
 import modules.linear_algebra as lin
 import modules.phase_detection as pde
 
@@ -108,66 +107,6 @@ def foot_signal(foot_interest, foot_other, direction_pass):
     signal = np.apply_along_axis(np.dot, 1, foot_difference, direction_pass)
 
     return signal
-
-
-def join_foot_contacts(contacts_l, contacts_r):
-    """
-    Combine arrays of foot contact frames into a DataFrame object.
-
-    Parameters
-    ----------
-    contacts_l, contacts_r : array_like
-        Left and right contact frames.
-
-    Returns
-    -------
-    df_contact : DataFrame
-        Each row represents a first contact of a foot on the floor.
-        Columns are 'number', 'side', and 'frame'.
-
-    Examples
-    --------
-    >>> contacts_l = [214, 256]
-    >>> contacts_r = [234]
-
-    >>> join_foot_contacts(contacts_l, contacts_r)
-       number side  frame
-    0       0    L    214
-    1       0    R    234
-    2       1    L    256
-
-    """
-    df_l = pd.DataFrame(contacts_l, columns=['L'])
-    df_r = pd.DataFrame(contacts_r, columns=['R'])
-
-    df_joined = df_l.join(df_r, how='outer')
-
-    # Reshape data to have one frame per row
-    series_contact = df_joined.stack().sort_values().astype(int)
-
-    df_contact = series_contact.reset_index()
-    df_contact.columns = ['number', 'side', 'frame']
-
-    return df_contact
-
-
-def lookup_contact_positions(df_pass, df_contact, side_to_part):
-    """
-    Add foot positions at the contact frames.
-
-    Parameters
-    ----------
-    df_pass, df_contact
-        See module docstring.
-    side_to_part : dict
-        Dictionary mapping sides to body parts.
-        e.g. {'L': 'L_FOOT', 'R': 'R_FOOT'}
-
-    """
-    parts = itf.map_with_dict(df_contact.side, side_to_part)
-    frames = df_contact.frame
-
-    df_contact['position'] = df_pass.lookup(frames, parts)
 
 
 def foot_contacts_to_gait(df_contact):
