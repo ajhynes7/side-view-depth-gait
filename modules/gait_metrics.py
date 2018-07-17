@@ -173,34 +173,16 @@ def lookup_contact_positions(df_pass, df_contact, side_to_part):
 
 
 def foot_contacts_to_gait(df_contact):
-    """
-    Calculate gait metrics using instances when the feet contact the floor.
 
-    Parameters
-    ----------
-    df_contact
-        See module docstring.
-
-    Returns
-    -------
-    df_gait
-        See module docstring.
-
-    """
     foot_tuples = df_contact.itertuples(index=False)
 
-    property_dict = {}
+    def yield_metrics():
 
-    for i, foot_tuple in enumerate(sw.generate_window(foot_tuples, n=3)):
+        for foot_tuple in sw.generate_window(foot_tuples, n=3):
 
-        stride_instance = Stride(*foot_tuple)
+            yield stride_metrics(*foot_tuple)
 
-        property_dict[i] = cf.get_properties(stride_instance)
-
-    # By setting the orient, the keys of the dictionary become the index
-    df_gait = pd.DataFrame.from_dict(property_dict, orient='index')
-
-    return df_gait
+    return pd.DataFrame(yield_metrics())
 
 
 def walking_pass_metrics(df_pass, direction_pass):

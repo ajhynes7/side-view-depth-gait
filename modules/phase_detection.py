@@ -6,6 +6,7 @@ from sklearn.cluster import KMeans
 
 import modules.signals as sig
 import modules.numpy_funcs as nf
+import modules.pandas_funcs as pf
 import modules.iterable_funcs as itf
 import modules.linear_algebra as lin
 
@@ -190,3 +191,16 @@ def foot_phases(frames_interest, direction_pass, foot_series_pass):
     df_phase['position'] = foot_series_pass
 
     return df_phase
+
+
+def group_stance_frames(df_phase, suffix):
+
+    df_stance = df_phase[df_phase.phase == 'stance'].reset_index()
+
+    column_funcs = {'frame': list, 'position': np.stack}
+    df_grouped = pf.apply_to_grouped(df_stance, 'number', column_funcs)
+
+    df_grouped.frame = df_grouped.frame.apply(np.median)
+    df_grouped.index = df_grouped.index.astype('str') + suffix
+
+    return df_grouped
