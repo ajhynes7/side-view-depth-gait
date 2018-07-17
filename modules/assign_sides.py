@@ -6,7 +6,6 @@ from numpy.linalg import norm
 
 import modules.signals as sig
 import modules.numpy_funcs as nf
-import modules.pandas_funcs as pf
 import modules.sliding_window as sw
 import modules.linear_algebra as lin
 import modules.point_processing as pp
@@ -33,18 +32,12 @@ def evaluate_foot_side(head_points, foot_points_1, foot_points_2, direction):
         (n, ) array of values indicating left/right direction for foot 1.
 
     """
-    side_values = np.zeros(len(head_points))
+    mean_foot_points = (foot_points_1 + foot_points_2) / 2
+    up_vectors = head_points - mean_foot_points
+    targets = foot_points_1 - mean_foot_points
 
-    zipped = zip(head_points, foot_points_1, foot_points_2)
-
-    for i, (head, foot_1, foot_2) in enumerate(zipped):
-
-        mean_foot = (foot_1 + foot_2) / 2
-        up = head - mean_foot
-
-        target = foot_1 - mean_foot
-
-        side_values[i] = lin.target_side_value(direction, up, target)
+    side_values = np.array([lin.target_side_value(direction, up, target)
+                   for up, target in zip(up_vectors, targets)])
 
     return side_values
 
@@ -67,6 +60,7 @@ def assign_sides_portion(df_walk, direction):
         Walking data after foot sides have been assigned.
 
     """
+    head_points = np.stack(df_walk.HEAD)
     foot_points_l = np.stack(df_walk.L_FOOT)
     foot_points_r = np.stack(df_walk.R_FOOT)
 
@@ -74,18 +68,15 @@ def assign_sides_portion(df_walk, direction):
     foot_points_l, foot_points_r = pp.track_two_objects(foot_points_l,
                                                         foot_points_r)
 
-    df_assigned = df_walk.copy()
-    df_assigned.L_FOOT = pf.series_of_rows(foot_points_l, index=df_walk.index)
-    df_assigned.R_FOOT = pf.series_of_rows(foot_points_r, index=df_walk.index)
-
-    head_points = np.stack(df_walk.HEAD)
     side_values = evaluate_foot_side(head_points, foot_points_l,
                                      foot_points_r, direction)
+    df_assigned = df_walk.copy()
 
     if np.sum(side_values) > 0:
-
         # The left foot should be labelled the right foot, and vice versa
-        df_assigned = pf.swap_columns(df_assigned, 'L_FOOT', 'R_FOOT')
+
+        df_assigned.L_FOOT = df_walk.R_FOOT
+        df_assigned.R_FOOT = df_walk.L_FOOT
 
     return df_assigned
 
