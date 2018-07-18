@@ -1,10 +1,10 @@
-.. MS Gait Metrics documentation master file, created by
-   sphinx-quickstart on Sun Jun  3 15:10:25 2018.
+.. Kinect gait metrics documentation master file, created by
+   sphinx-quickstart on Wed Jul 18 13:00:47 2018.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to MS Gait Metrics's documentation!
-===========================================
+Welcome to Kinect gait metrics's documentation!
+===============================================
 
 This project is for calculating gait metrics using data from a depth sensor.
 
@@ -17,13 +17,9 @@ Requirements:
 - statsmodels
 
 
-
 .. toctree::
-   :numbered:
    :maxdepth: 2
    :caption: Contents:
-
-   code
 
 Indices and tables
 ==================
