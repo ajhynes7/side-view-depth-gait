@@ -3,19 +3,17 @@ import numpy as np
 import numpy.testing as npt
 from numpy.linalg import norm
 
+import hypothesis.strategies as st
+from hypothesis import given, assume
+
 import modules.linear_algebra as lin
 
 
-def test_unit():
+@given(st.lists(st.floats(min_value=0, max_value=1e10), min_size=1))
+def test_unit(vector):
 
-    low, high = -10, 10
-
-    for _ in range(10):
-
-        dim = np.random.randint(1, 5)  # Vector dimension
-        v = np.random.uniform(low, high, dim)
-
-        npt.assert_allclose(norm(lin.unit(v)), 1)
+    assume(all(x > 0 for x in vector))
+    npt.assert_allclose(norm(lin.unit(vector)), 1)
 
 
 def test_consecutive_dist():
@@ -66,7 +64,7 @@ def test_project_point_plane():
     point_proj = lin.project_point_plane(point, point_plane, normal)
 
     vector_proj_p = point_proj - point
-    
+
     dist_to_plane = lin.dist_point_plane(point, point_plane, normal)
 
     assert lin.is_parallel(normal, vector_proj_p)
