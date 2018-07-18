@@ -104,7 +104,7 @@ def detect_phases(step_signal, frames_interest):
     frames = step_signal.index.values
 
     split_labels = nf.label_by_split(frames, frames_interest)
-    sub_signals = list(nf.group_by_label(step_signal, split_labels))
+    sub_signals = [*nf.group_by_label(step_signal.values, split_labels)]
 
     variances = [*map(np.var, sub_signals)]
     variance_array = np.array(variances).reshape(-1, 1)
