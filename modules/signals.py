@@ -3,9 +3,9 @@
 import numpy as np
 import pandas as pd
 
+import modules.linear_algebra as lin
 import modules.mean_shift as ms
 import modules.sliding_window as sw
-import modules.linear_algebra as lin
 
 
 def filter_by_function(signal, func):

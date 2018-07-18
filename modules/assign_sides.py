@@ -4,12 +4,12 @@ import numpy as np
 import pandas as pd
 from numpy.linalg import norm
 
-import modules.signals as sig
+import modules.linear_algebra as lin
 import modules.numpy_funcs as nf
 import modules.pandas_funcs as pf
-import modules.sliding_window as sw
-import modules.linear_algebra as lin
 import modules.point_processing as pp
+import modules.signals as sig
+import modules.sliding_window as sw
 
 
 def evaluate_foot_side(head_points, foot_points_1, foot_points_2, direction):

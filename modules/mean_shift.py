@@ -1,6 +1,7 @@
 """Functions for mean shift clustering."""
 
 import functools
+
 import numpy as np
 
 import modules.math_funcs as mf

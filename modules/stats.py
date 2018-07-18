@@ -1,7 +1,6 @@
 """Module for statisical calculations."""
 
 import numpy as np
-
 from statsmodels import robust
 
 import modules.math_funcs as mf

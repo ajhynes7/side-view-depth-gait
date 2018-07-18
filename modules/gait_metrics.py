@@ -21,11 +21,11 @@ import numpy as np
 import pandas as pd
 from numpy.linalg import norm
 
-import modules.pandas_funcs as pf
 import modules.assign_sides as asi
-import modules.sliding_window as sw
 import modules.linear_algebra as lin
+import modules.pandas_funcs as pf
 import modules.phase_detection as pde
+import modules.sliding_window as sw
 
 
 def stride_metrics(side_x_i, side_y, side_x_f, *, fps=30):

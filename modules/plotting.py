@@ -1,7 +1,7 @@
 """Functions for plotting points and visualizing results."""
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 import modules.linear_algebra as lin
 

@@ -3,8 +3,8 @@
 import numpy as np
 from numpy.linalg import norm
 
-import modules.numpy_funcs as nf
 import modules.iterable_funcs as itf
+import modules.numpy_funcs as nf
 
 
 def is_perpendicular(u, v):

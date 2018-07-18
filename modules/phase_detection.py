@@ -4,12 +4,12 @@ import numpy as np
 import pandas as pd
 from sklearn.cluster import KMeans
 
-import modules.signals as sig
-import modules.numpy_funcs as nf
-import modules.pandas_funcs as pf
-import modules.sliding_window as sw
 import modules.iterable_funcs as itf
 import modules.linear_algebra as lin
+import modules.numpy_funcs as nf
+import modules.pandas_funcs as pf
+import modules.signals as sig
+import modules.sliding_window as sw
 
 
 def frames_of_interest(foot_signal):
