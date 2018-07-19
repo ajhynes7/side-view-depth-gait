@@ -586,8 +586,8 @@ def process_frame(population, labels, label_adj_list, radii, cost_func,
     """
     Return chosen body part positions from an input set of position hypotheses.
 
-    Use a score function to select the best foot positions,
-    and return the shortest paths to these feet in the body part graph.
+    Uses a score function to select the best foot positions and return the
+    shortest paths to these positions.
 
     Parameters
     ----------
@@ -611,20 +611,25 @@ def process_frame(population, labels, label_adj_list, radii, cost_func,
     -------
     pop_1, pop_2 : ndarray
         (n_labels, 3) array of chosen points from the input population.
-        One point for each label (i.e., each body part type)
+        One point for each label (i.e., each body part type).
 
     """
+    # Define a graph with edges between consecutive parts
+    # (e.g. knee to calf, not knee to foot)
     cons_label_adj_list = only_consecutive_labels(label_adj_list)
 
+    # Run shortest path alogorithm on the body graph
     prev, dist = pop_shortest_paths(population, labels,
                                     cons_label_adj_list, cost_func)
 
     # Get shortest path to each foot
     path_matrix, path_dist = paths_to_foot(prev, dist, labels)
 
+    # Compute scores for every edge between body parts
     score_matrix, dist_matrix = get_score_matrix(population, labels,
                                                  label_adj_list, score_func)
 
+    # Keep only scores of edges along the shortest paths to the feet
     filtered_score_matrix = filter_by_path(score_matrix, path_matrix,
                                            label_adj_list)
 
