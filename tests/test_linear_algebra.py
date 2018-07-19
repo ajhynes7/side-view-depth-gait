@@ -1,19 +1,44 @@
-import pytest
+import hypothesis.strategies as st
 import numpy as np
 import numpy.testing as npt
+import pytest
+from hypothesis import assume, given
+
 from numpy.linalg import norm
 
-import hypothesis.strategies as st
-from hypothesis import given, assume
-
 import modules.linear_algebra as lin
+
+
+def is_idempotent(f, x):
+    """
+    Verify that a function is idempotent.
+
+    For a function f:
+        f(x) == f(f(x))
+
+    Parameters
+    ----------
+    f : function
+        Function to test for idempotence.
+    x : any
+        Input to function.
+
+    Returns
+    -------
+    bool
+        True if function is idempotent.
+
+    """
+    return np.allclose(f(x), f(f(x)))
 
 
 @given(st.lists(st.floats(min_value=0, max_value=1e10), min_size=1))
 def test_unit(vector):
 
-    assume(all(x > 0 for x in vector))
+    assume(any(x > 0 for x in vector))
     npt.assert_allclose(norm(lin.unit(vector)), 1)
+
+    assert is_idempotent(lin.unit, vector)
 
 
 def test_consecutive_dist():
