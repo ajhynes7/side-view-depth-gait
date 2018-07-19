@@ -614,13 +614,13 @@ def target_side(forward, up, target):
     return results_dict[signed]
 
 
-def angle_between(x, y, degrees=False):
+def angle_between(u, v, degrees=False):
     """
-    Compute the angle between vectors x and y.
+    Compute the angle between vectors u and v.
 
     Parameters
     ----------
-    x, y : array_like
+    u, v : array_like
         Input vectors
 
     degrees : bool, optional
@@ -636,18 +636,18 @@ def angle_between(x, y, degrees=False):
     >>> angle_between([1, 0], [1, 0])
     0.0
 
-    >>> x, y = [1, 0], [1, 1]
-    >>> round(angle_between(x, y, degrees=True))
+    >>> u, v = [1, 0], [1, 1]
+    >>> round(angle_between(u, v, degrees=True))
     45.0
 
-    >>> x, y = [1, 0], [-2, 0]
-    >>> round(angle_between(x, y, degrees=True))
+    >>> u, v = [1, 0], [-2, 0]
+    >>> round(angle_between(u, v, degrees=True))
     180.0
 
     """
-    dot_product = np.dot(x, y)
+    dot_product = np.dot(u, v)
 
-    cos_theta = nf.divide_no_error(dot_product, (norm(x) * norm(y)))
+    cos_theta = nf.divide_no_error(dot_product, (norm(u) * norm(v)))
 
     theta = np.arccos(cos_theta)
 
