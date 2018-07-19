@@ -1,7 +1,7 @@
 """Script to calculate gait metrics from Kinect data."""
 
-import os
 import glob
+import os
 
 import numpy as np
 import pandas as pd

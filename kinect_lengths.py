@@ -1,10 +1,10 @@
-import os
 import glob
+import os
 
 import pandas as pd
 
-import modules.string_funcs as sf
 import modules.pose_estimation as pe
+import modules.string_funcs as sf
 
 
 def main():

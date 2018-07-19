@@ -1,13 +1,13 @@
-import os
 import glob
+import os
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
-import modules.stats as st
 import modules.math_funcs as mf
-import modules.string_funcs as sf
 import modules.pose_estimation as pe
+import modules.stats as st
+import modules.string_funcs as sf
 
 
 def main():
