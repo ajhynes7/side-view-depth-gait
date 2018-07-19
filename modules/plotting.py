@@ -102,6 +102,41 @@ def scatter_series(series, **kwargs):
     plt.scatter(series.index, series, **kwargs)
 
 
+def connect_points(point_1, point_2, **kwargs):
+    """
+    Plot a line between two 2D points.
+
+    Parameters
+    ----------
+    point_1, point_2 : array_like
+        Input 2D point.
+    kwargs : dict, optional
+        Additional keywords passed to `plot`.
+
+    """
+    x = [point_1[0], point_2[0]]
+    y = [point_1[1], point_2[1]]
+
+    plt.plot(x, y, **kwargs)
+
+
+def connect_two_sets(points_1, points_2, **kwargs):
+    """
+    Plot a line between all pairs of points in two sets.
+
+    Parameters
+    ----------
+    points_1, points_2 : array_like
+        (n, 2) array of n points.
+    kwargs : dict, optional
+        Additional keywords passed to `plot`.
+
+    """
+    for point_1 in points_1:
+        for point_2 in points_2:
+            connect_points(point_1, point_2, **kwargs)
+
+
 def plot_groups(data_groups, plot_func, **kwargs):
     """
     Apply a plotting function to each group of data in an iterable.
