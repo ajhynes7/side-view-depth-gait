@@ -378,21 +378,27 @@ def pop_shortest_paths(population, labels, label_adj_list, weight_func):
 
 def filter_by_path(input_matrix, path_matrix, part_connections):
     """
-    [description]
+    Filter values in a matrix using the shortest paths.
+
+    Only the connections along the set of shortest paths are kept.
 
     Parameters
     ----------
-    input_matrix : {[type]}
-        [description]
-    path_matrix : {[type]}
-        [description]
-    part_connections : {[type]}
-        [description]
+    input_matrix : ndarray
+        (n, n) matrix for the n position hypotheses.
+    path_matrix : ndarray
+        (n_paths, n_types) array.
+        Each row lists the nodes on a shortest path through the body part
+        types, i.e., from head to foot.
+    part_connections : dict
+        part_connections[i][j] is the expected value
+        between parts of type i to parts of type j.
 
     Returns
     -------
-    [type]
-        [description]
+    filtered_matrix : ndarray
+        (n, n) array with a subset of values from the input matrix.
+        The filtered values are set to NaN.
 
     """
     filtered_matrix = np.zeros(input_matrix.shape)
@@ -420,17 +426,15 @@ def inside_spheres(dist_matrix, point_nums, r):
     dist_matrix : ndarray
         (n, n) distance matrix.
         Element (i, j) is distance from point i to point j.
-
     point_nums : array_like
         (m, ) list of points that are the sphere centres.
         Numbers are between 1 and n.
-
     r : float
         Radius of spheres.
 
     Returns
     -------
-    in_spheres : array_like
+    in_spheres : ndarray
         (n, ) array of bools.
         Element i is true if point i is in the set of spheres.
 
@@ -451,21 +455,26 @@ def inside_spheres(dist_matrix, point_nums, r):
 
 def inside_radii(dist_matrix, path_matrix, radii):
     """
-    [description]
+    Find the positions inside a set of spheres at various radii.
 
     Parameters
     ----------
-    dist_matrix : {[type]}
-        [description]
-    path_matrix : {[type]}
-        [description]
-    radii : {[type]}
-        [description]
+    dist_matrix : ndarray
+        (n, n) distance matrix for n position hypotheses.
+    path_matrix : ndarray
+        (n_paths, n_types) array.
+        Each row lists the nodes on a shortest path through the body part
+        types, i.e., from head to foot.
+    radii : list
+        List of radii for the spheres, e.g. [0, 5, 10, 15, 20].
 
     Returns
     -------
-    [type]
-        [description]
+    in_spheres_list
+        Each element is a list of length n wih boolean values,
+        corresponding to a sphere radius.
+        If element (i, j) is true, the position j is
+        within the sphere space of radius i.
 
     """
     in_spheres_list = []
@@ -484,23 +493,26 @@ def inside_radii(dist_matrix, path_matrix, radii):
 
 def select_best_feet(dist_matrix, score_matrix, path_matrix, radii):
     """
-    [description]
+    Select the best two feet from multiple hypotheses.
 
     Parameters
     ----------
-    dist_matrix : {[type]}
-        [description]
-    score_matrix : {[type]}
-        [description]
-    path_matrix : {[type]}
-        [description]
-    radii : {[type]}
-        [description]
+    dist_matrix : ndarray
+        (n, n) distance matrix for n position hypotheses.
+    score_matrix : ndarray
+        (n, n) score matrix.
+        The scores depend on the expected and actual lengths between positions.
+    path_matrix : ndarray
+        (n_paths, n_types) array.
+        Each row lists the nodes on a shortest path through the body part
+        types, i.e., from head to foot.
+    radii : list
+        List of radii for the spheres, e.g. [0, 5, 10, 15, 20].
 
     Returns
     -------
-    [type]
-        [description]
+    foot_1, foot_2 : int
+        Numbers of the best two feet.
 
     """
     n_paths = len(path_matrix)
@@ -535,7 +547,7 @@ def select_best_feet(dist_matrix, score_matrix, path_matrix, radii):
         radius_winners = combo_scores == max_score
 
         # Votes go to the winners
-        votes = votes + radius_winners
+        votes += radius_winners
 
     winning_combo = np.argmax(votes)
     foot_1, foot_2 = combos[winning_combo]
@@ -618,7 +630,7 @@ def process_frame(population, labels, label_adj_list, radii, cost_func,
     # (e.g. knee to calf, not knee to foot)
     cons_label_adj_list = only_consecutive_labels(label_adj_list)
 
-    # Run shortest path alogorithm on the body graph
+    # Run shortest path algorithm on the body graph
     prev, dist = pop_shortest_paths(population, labels,
                                     cons_label_adj_list, cost_func)
 
