@@ -3,6 +3,32 @@
 import numpy as np
 
 
+def ratio_nonzero(x):
+    """
+    Return the ratio of nonzero elements to all elements.
+
+    Parameters
+    ----------
+    x : array_like
+        Input array.
+
+    Returns
+    -------
+    float
+        Ratio of nonzero elements
+
+    Examples
+    --------
+    >>> ratio_nonzero([0, 1, 2, 3, 0])
+    0.6
+
+    >>> ratio_nonzero([True, True, True, False])
+    0.75
+
+    """
+    return np.count_nonzero(x) / len(x)
+
+
 def to_column(array_1d):
     """
     Convert a 1D numpy array to a 2D column.
