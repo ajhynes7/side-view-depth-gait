@@ -1,6 +1,8 @@
-import os
-import glob
+"""Transform raw data from the Kinect into a pandas DataFrame."""
+
 import copy
+import glob
+import os
 
 import pandas as pd
 import numpy as np
