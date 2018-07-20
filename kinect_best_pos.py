@@ -1,3 +1,5 @@
+"""Select the best body part positions from multiple hypotheses."""
+
 import glob
 import os
 
