@@ -110,9 +110,7 @@ def track_two_objects(points_1, points_2):
     point_series = accumulate(zip(points_1, points_2), correspond_points)
 
     # Unpack the points and convert to ndarray
-
     point_list_1, point_list_2 = zip(*point_series)
-
     points_assigned_1 = np.stack(point_list_1)
     points_assigned_2 = np.stack(point_list_2)
 

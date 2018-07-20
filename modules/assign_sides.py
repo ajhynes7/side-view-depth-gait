@@ -45,12 +45,16 @@ def evaluate_foot_side(head_points, foot_points_1, foot_points_2, direction):
 
 def assign_sides_portion(df_walk, direction):
     """
-    Assign correct sides to feet during a portion of a walking pass.
+    Assign correct sides to feet during a section of a walking pass.
+
+    The feet are assigned by establishing a motion correspondence for the
+    section of the walking pass, then calculating a value to assign one
+    tracked foot to left or right.
 
     Parameters
     ----------
     df_walk : DataFrame
-        Data for a portion of a walking pass.
+        Data for a section of a walking pass.
         Three columns: HEAD, L_FOOT, R_FOOT.
     direction : ndarray
         Vector for direction of motion.
@@ -69,15 +73,14 @@ def assign_sides_portion(df_walk, direction):
     foot_points_l, foot_points_r = pp.track_two_objects(foot_points_l,
                                                         foot_points_r)
 
-    side_values = evaluate_foot_side(head_points, foot_points_l,
-                                     foot_points_r, direction)
-
     df_assigned = df_walk.copy()
     df_assigned.L_FOOT = pf.series_of_rows(foot_points_l, index=df_walk.index)
     df_assigned.R_FOOT = pf.series_of_rows(foot_points_r, index=df_walk.index)
 
-    if np.sum(side_values) > 0:
+    side_values = evaluate_foot_side(head_points, foot_points_l,
+                                     foot_points_r, direction)
 
+    if np.sum(side_values) > 0:
         # The left foot should be labelled the right foot, and vice versa
         df_assigned = pf.swap_columns(df_assigned, 'L_FOOT', 'R_FOOT')
 
@@ -87,6 +90,10 @@ def assign_sides_portion(df_walk, direction):
 def assign_sides_pass(df_pass, direction_pass):
     """
     Assign correct sides to feet over a full walking pass.
+
+    The pass is split into multiple sections of frames. The splits occur when
+    the feet are together. The feet are assigned to left/right on each section
+    of frames.
 
     Parameters
     ----------
@@ -108,10 +115,10 @@ def assign_sides_pass(df_pass, direction_pass):
     foot_pos_r = np.stack(df_pass.R_FOOT)
     norms = np.apply_along_axis(norm, 1, foot_pos_l - foot_pos_r)
 
+    # Detect peaks in the inverted foot distance signal.
+    # These peaks are the frames when the feet are close together.
     signal = 1 - sig.normalize(norms)
-
     rms = sig.root_mean_square(signal)
-
     peak_frames, _ = sw.detect_peaks(frames, signal, window_length=3,
                                      min_height=rms)
 

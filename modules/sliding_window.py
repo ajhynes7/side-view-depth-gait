@@ -23,7 +23,7 @@ def generate_window(sequence, n=2):
     sequence : iterable
         Input sequence.
     n : int, optional
-        Width of sliding window (default 2)
+        Width of sliding window (default 2).
 
     Yields
     ------
@@ -154,9 +154,10 @@ def detect_peaks(x, y, *, window_length=3, min_height=0):
     (array([12]), array([10.]))
 
     """
-    # Ensure there are no gaps in the x-values (must be all consecutive)
+    # Ensure there are no gaps in the x-values (must be all consecutive).
     x, y = nf.expand_arrays(x, y)
 
+    # Initially assume that all elements are peaks.
     all_indices = [i for i, _ in enumerate(x)]
     peak_set = set(all_indices)
 
@@ -168,13 +169,15 @@ def detect_peaks(x, y, *, window_length=3, min_height=0):
         if np.all(np.isnan(values)):
             continue
 
+        # Index of the max value in the window.
         max_index = indices[np.nanargmax(values)]
 
+        # Mark all indices other than the max index as a non-peak.
         non_peaks = set(indices)
         non_peaks.remove(max_index)
         peak_set = peak_set - non_peaks
 
-    # Keep only indices of array values that reach min height
+    # Keep only indices of array values that reach min height.
     peak_set = {i for i in peak_set if y[i] >= min_height}
     peak_indices = sorted(peak_set)
 
