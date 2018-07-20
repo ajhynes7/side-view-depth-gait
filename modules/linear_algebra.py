@@ -532,10 +532,6 @@ def target_side_value(forward, up, target):
     """
     Return a signed value indicating the left/right direction of a target.
 
-    A positive value indicates right, while negative indicates left.
-    The magnitude of the value is greater when the target is further to
-    the left/right.
-
     The orientation is defined by specifying the forward and up directions.
 
     Parameters
@@ -551,6 +547,9 @@ def target_side_value(forward, up, target):
     -------
     float
         Signed value indicating left/right direction of a target.
+        A positive value indicates right, while negative indicates left.
+        The magnitude of the value is greater when the target is further to
+        the left/right.
 
     Examples
     --------
