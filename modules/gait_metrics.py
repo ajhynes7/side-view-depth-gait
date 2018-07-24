@@ -28,30 +28,51 @@ import modules.phase_detection as pde
 import modules.sliding_window as sw
 
 
-def stride_metrics(side_x_i, side_y, side_x_f, *, fps=30):
+def stride_metrics(foot_x_i, foot_y, foot_x_f, *, fps=30):
+    """
+    Calculate gait metrics from a single stride.
 
-    foot_x_i, foot_x_f = side_x_i.position, side_x_f.position
-    foot_y = side_y.position
+    Parameters
+    ----------
+    foot_x_i : namedtuple
+        Single result from pandas DataFrame.itertuples() method.
+        Includes fields of 'frame', 'position', 'number', and 'side'.
+        Represents the initial foot on side x.
+    foot_y : namedtuple
+        Represents the foot on side y.
+    foot_x_f : namedtuple
+        Represents the final foot on side x.
+    fps : int, optional
+        Camera frame rate in frames per second (default 30).
 
-    foot_y_proj = lin.project_point_line(foot_y, foot_x_i, foot_x_f)
+    Returns
+    -------
+    metrics : dict
+        Dictionary containing gait metric names and values.
 
-    stride_length = norm(foot_x_f - foot_x_i)
-    stride_time = norm(side_x_f.frame - side_x_i.frame) / fps
+    """
+    pos_x_i, pos_x_f = foot_x_i.position, foot_x_f.position
+    pos_y = foot_y.position
+
+    pos_y_proj = lin.project_point_line(pos_y, pos_x_i, pos_x_f)
+
+    stride_length = norm(pos_x_f - pos_x_i)
+    stride_time = (foot_x_f.frame - foot_x_i.frame) / fps
 
     stride_velocity = stride_length / stride_time
 
-    metrics = {'number': side_x_i.number,
-               'side': side_x_i.side,
+    metrics = {'number': foot_x_i.number,
+               'side': foot_x_i.side,
 
                'stride_length': stride_length,
                'stride_time': stride_time,
                'stride_velocity': stride_velocity,
 
-               'absolute_step_length': norm(foot_x_f - foot_y),
-               'step_length': norm(foot_x_f - foot_y_proj),
-               'stride_width': norm(foot_y - foot_y_proj),
+               'absolute_step_length': norm(pos_x_f - pos_y),
+               'step_length': norm(pos_x_f - pos_y_proj),
+               'stride_width': norm(pos_y - pos_y_proj),
 
-               'step_time': (side_x_f.frame - side_y.frame) / fps
+               'step_time': (foot_x_f.frame - foot_y.frame) / fps
                }
 
     return metrics
@@ -110,7 +131,23 @@ def foot_signal(foot_interest, foot_other, direction_pass):
 
 
 def foot_contacts_to_gait(df_contact):
+    """
+    Calculate gait metrics from all instances of the feet contacting the floor.
 
+    Parameters
+    ----------
+    df_contact : DataFrame
+        Each row represents an instance of a foot contacting the floor.
+        Columns are 'frame', 'position', 'number', 'side'.
+
+    Returns
+    -------
+    df_gait : DataFrame
+        Each row represents a set of gait metrics calculated from one stride.
+        Columns include gait metric names, e.g., stride_velocity.
+        Columns also include 'number' and 'side'.
+
+    """
     foot_tuples = df_contact.itertuples(index=False)
 
     def yield_metrics():
@@ -119,7 +156,9 @@ def foot_contacts_to_gait(df_contact):
 
             yield stride_metrics(*foot_tuple)
 
-    return pd.DataFrame(yield_metrics())
+    df_gait = pd.DataFrame(yield_metrics())
+
+    return df_gait
 
 
 def walking_pass_metrics(df_pass, direction_pass):
@@ -143,7 +182,6 @@ def walking_pass_metrics(df_pass, direction_pass):
 
     foot_l, foot_r = np.stack(df_pass.L_FOOT), np.stack(df_pass.R_FOOT)
     signal_l = foot_signal(foot_l, foot_r, direction_pass)
-
     series_l = pd.Series(signal_l, index=frames)
 
     split_frames = pde.frames_of_interest(series_l)
