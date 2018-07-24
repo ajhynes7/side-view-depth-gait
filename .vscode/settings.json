@@ -11,5 +11,11 @@
     "git.ignoreLimitWarning": true,
 
     "vim.enableNeovim": true,
-    "python.pythonPath": "/Users/andrewhynes/anaconda3/bin/python"
+    "python.pythonPath": "/Users/andrewhynes/anaconda3/bin/python",
+    "spellright.language": "en",
+    "spellright.documentTypes": [
+        "markdown",
+        "latex",
+        "plaintext"
+    ]
 }
