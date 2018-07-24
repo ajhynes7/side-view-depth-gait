@@ -124,7 +124,6 @@ def foot_signal(foot_interest, foot_other, direction_pass):
 
     """
     foot_difference = foot_interest - foot_other
-
     signal = np.apply_along_axis(np.dot, 1, foot_difference, direction_pass)
 
     return signal
@@ -180,14 +179,16 @@ def walking_pass_metrics(df_pass, direction_pass):
     """
     frames = df_pass.index.values
 
-    foot_l, foot_r = np.stack(df_pass.L_FOOT), np.stack(df_pass.R_FOOT)
-    signal_l = foot_signal(foot_l, foot_r, direction_pass)
-    series_l = pd.Series(signal_l, index=frames)
+    foot_pts_l, foot_pts_r = np.stack(df_pass.L_FOOT), np.stack(df_pass.R_FOOT)
 
-    split_frames = pde.frames_of_interest(series_l)
+    is_stance_l = pde.detect_phases(foot_pts_l, direction_pass)
+    is_stance_r = pde.detect_phases(foot_pts_r, direction_pass)
 
-    df_phase_l = pde.foot_phases(split_frames, direction_pass, df_pass.L_FOOT)
-    df_phase_r = pde.foot_phases(split_frames, direction_pass, df_pass.R_FOOT)
+    df_phase_l = pde.get_phase_dataframe(frames, is_stance_l)
+    df_phase_r = pde.get_phase_dataframe(frames, is_stance_r)
+
+    df_phase_l['position'] = df_pass.L_FOOT
+    df_phase_r['position'] = df_pass.R_FOOT
 
     df_grouped_l = pde.group_stance_frames(df_phase_l, '_L')
     df_grouped_r = pde.group_stance_frames(df_phase_r, '_R')

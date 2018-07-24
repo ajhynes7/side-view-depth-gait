@@ -82,62 +82,51 @@ def get_step_signal(direction_pass, foot_series_pass):
     return step_signal
 
 
-def detect_phases(step_signal, frames_interest):
+def detect_phases(foot_points, direction_pass):
     """
-    Return the phase (stance/swing) of each frame in a walking pass.
+    Detect the stance/swing phases of a foot during a walking pass.
 
     Parameters
     ----------
-    step_signal : Series
-        Signal with multiple steps.
-        Index values are frames.
-    frames_interest : ndarray
-        Sorted array of frames.
+    foot_points : ndarray
+        (n, 3) array of n foot positions.
+    direction_pass : ndarray
+        Vector for direction of a walking pass.
 
     Returns
     -------
-    frame_phases : Series
-        Indicates the walking phase of the corresponding frames.
-        Each element is either 'stance' or 'swing'.
+    is_stance : ndarray
+        (n, ) array of boolean values.
+        Element is True if the corresponding foot is in the stance phase.
 
     """
-    frames = step_signal.index.values
+    step_signal = lin.line_coordinate_system(np.zeros(3),
+                                             direction_pass, foot_points)
 
-    split_labels = nf.label_by_split(frames, frames_interest)
-    sub_signals = [*nf.group_by_label(step_signal.values, split_labels)]
-
-    variances = [*map(np.var, sub_signals)]
-    variance_array = np.array(variances).reshape(-1, 1)
+    variances = sw.apply_to_padded(step_signal, np.nanvar, r=5)
+    variance_array = nf.to_column(variances)
 
     k_means = KMeans(n_clusters=2, random_state=0).fit(variance_array)
-    variance_labels = k_means.labels_
-
-    sub_signal_lengths = [*map(len, sub_signals)]
-    expanded_labels = [*itf.repeat_by_list(variance_labels,
-                                           sub_signal_lengths)]
 
     stance_label = np.argmin(k_means.cluster_centers_)
-    swing_label = 1 - stance_label
-    phase_dict = {stance_label: 'stance', swing_label: 'swing'}
+    is_stance = k_means.labels_ == stance_label
 
-    phase_strings = itf.map_with_dict(expanded_labels, phase_dict)
-    frame_phases = pd.Series(phase_strings, index=frames)
-
-    return frame_phases
+    return is_stance
 
 
-def get_phase_dataframe(frame_phases):
+def get_phase_dataframe(frames, is_stance):
     """
     Return a DataFrame displaying the phase and phase number of each frame.
 
-    The phase number is a count of the phase occurence
+    The phase number is a count of the phase occurrence.
     (e.g., stance 0, 1, ...).
 
     Parameters
     ----------
-    frame_phases : Series
-        Indicates the walking phase of the corresponding frames.
-        Each element is either 'stance' or 'swing'.
+    frames : ndarray
+        Frames of the walking pass.
+    is_stance : ndarray
+        Element is True if the corresponding foot is in the stance phase.
 
     Returns
     -------
@@ -146,23 +135,26 @@ def get_phase_dataframe(frame_phases):
         Columns are 'phase', 'number'.
 
     """
-    df_phase = pd.DataFrame({'phase': frame_phases}, dtype='category')
-    df_phase.index.name = 'frame'
+    is_stance_series = pd.Series(is_stance, index=frames)
+    is_stance_series.replace({True: 'stance', False: 'swing'}, inplace=True)
 
-    phase_strings = frame_phases.values
-    phase_labels = np.array([*itf.label_repeated_elements(phase_strings)])
+    df_phase = pd.DataFrame({'phase': is_stance_series}, dtype='category')
 
-    is_stance = df_phase.phase == 'stance'
-    is_swing = df_phase.phase == 'swing'
+    # Unique label for each distinct phase in the walking pass.
+    # e.g. swing, stance, swing section get labelled 0, 1, 2.
+    phase_labels = np.array([*itf.label_repeated_elements(is_stance)])
 
-    stance_labels = [*itf.label_repeated_elements(phase_labels[is_stance])]
-    swing_labels = [*itf.label_repeated_elements(phase_labels[is_swing])]
+    is_swing = ~is_stance
 
-    frames = frame_phases.index
-    stance_series = pd.Series(stance_labels, index=frames[is_stance])
-    swing_series = pd.Series(swing_labels, index=frames[is_swing])
+    # Count of each phase in the walking pass.
+    stance_numbers = [*itf.label_repeated_elements(phase_labels[is_stance])]
+    swing_numbers = [*itf.label_repeated_elements(phase_labels[is_swing])]
 
+    stance_series = pd.Series(stance_numbers, index=frames[is_stance])
+    swing_series = pd.Series(swing_numbers, index=frames[is_swing])
     df_phase['number'] = pd.concat([stance_series, swing_series])
+
+    df_phase.index.name = 'frame'
 
     return df_phase
 
