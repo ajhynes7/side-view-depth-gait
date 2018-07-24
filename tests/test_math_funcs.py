@@ -1,35 +1,50 @@
+"""Test math functions."""
+import hypothesis.strategies as st
 import numpy as np
-import pytest
-
 import numpy.testing as npt
+import pytest
+from hypothesis import assume, given
 
 import modules.math_funcs as mf
 
 
-def test_gaussian():
+@given(st.floats(min_value=-1e10, max_value=1e10),
+       st.floats(min_value=1e-10, max_value=1e10),
+       st.floats(min_value=-1e10, max_value=1e10),
+       )
+def test_gaussian(x, sigma, mu):
+    """Test properties of the Gaussian function."""
+    mf.gaussian(x, mu=mu) == mf.gaussian(x, mu=mu+1) - 1
 
-    assert round(mf.gaussian(0), 4) == 0.3989
+    mf.gaussian(x, sigma=sigma) < mf.gaussian(x, sigma=sigma-1)
+    mf.gaussian(x, sigma=sigma) > mf.gaussian(x, sigma=sigma+1)
 
 
-def test_sigmoid():
+@given(st.floats(min_value=0, max_value=1e10),
+       st.floats(min_value=2, max_value=50),
+       )
+def test_sigmoid(x, a):
+    """Test properties of the sigmoid function."""
+    assert mf.sigmoid(x, a) <= mf.sigmoid(x, a - 1)
 
-    assert mf.sigmoid(0) == 0.5
 
-    assert mf.sigmoid(0, 10) == 0.5
+@given(st.floats(min_value=-500, max_value=500))
+def test_sigmoid_range(x):
+    """Output of sigmoid function should be in range [-1, 1]."""
+    y = mf.sigmoid(x)
+    assert y >= -1 and y <= 1
 
 
-def test_norm_ratio():
+@given(st.floats(min_value=0, max_value=1e10),
+       st.floats(min_value=0, max_value=1e10))
+def test_norm_ratio(a, b):
+    """The ratio must be greater than zero and less than or equal to one."""
+    assume(a != 0 and b != 0)
 
-    for i in range(10):
+    ratio = mf.norm_ratio(a, b)
 
-        a = np.random.randint(1, 10)
-        b = np.random.randint(1, 10)
-
-        r = mf.norm_ratio(a, b)
-
-        assert r > 0 and r <= 1
-
-    assert np.isnan(mf.norm_ratio(0, 5))
+    assert ratio > 0 and ratio <= 1
+    assert np.isclose(ratio * max([a, b]), min([a, b]))
 
 
 def test_centre_of_mass():
