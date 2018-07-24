@@ -29,14 +29,14 @@ def ratio_nonzero(x):
     return np.count_nonzero(x) / len(x)
 
 
-def to_column(array_1d):
+def to_column(x):
     """
-    Convert a 1D numpy array to a 2D column.
+    Convert a 1D array to a 2D column.
 
     Parameters
     ----------
-    array_1d : ndarray
-        (n, ) array.
+    x : array_like
+        Input array with n elements.
 
     Returns
     -------
@@ -54,7 +54,7 @@ def to_column(array_1d):
     (3, 1)
 
     """
-    return array_1d.reshape(-1, 1)
+    return np.array(x).reshape(-1, 1)
 
 
 def all_consecutive(array):
