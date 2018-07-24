@@ -184,3 +184,38 @@ def detect_peaks(x, y, *, window_length=3, min_height=0):
     x_peak, y_peak = x[peak_indices], y[peak_indices]
 
     return x_peak, y_peak
+
+
+def apply_to_padded(array, func, r=1):
+    """
+    Apply a function to a sliding window of a padded array.
+
+    Parameters
+    ----------
+    array : array_like
+        Input array.
+    func : function
+        Function to apply to each window.
+    r : int, optional
+        Radius of sliding window (default 1).
+
+    Returns
+    -------
+    list
+        Result of applying input function to each window.
+
+    Examples
+    --------
+    >>> array = [1, 1, 2, 5, 3, 4, 6, 8]
+    >>> apply_to_padded(array, np.nansum, r=1)
+    >>> apply_to_padded(, np.nansum, r=2)
+    [4.0, 9.0, 12.0, 15.0, 20.0, 26.0, 21.0, 18.0]
+
+    """
+    n = 2*r + 1
+    floats = np.array(array).astype(float)
+
+    padded = np.pad(floats, r, 'constant', constant_values=np.nan)
+    windows = [*generate_window(padded, n)]
+
+    return [func(x) for x in windows]
