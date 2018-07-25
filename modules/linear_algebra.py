@@ -4,10 +4,51 @@ import numpy as np
 from numpy.linalg import norm
 
 import modules.iterable_funcs as itf
-import modules.numpy_funcs as nf
 
 
-def is_perpendicular(u, v):
+def unit(v, **kwargs):
+    """
+    Return the unit vector of v.
+
+    Parameters
+    ----------
+    v : array_like
+        Input vector.
+    kwargs : dict, optional
+        Additional keywords passed to `np.isclose`.
+
+    Returns
+    -------
+    ndarray
+        Unit vector.
+
+    Raises
+    ------
+    ValueError
+        When the vector norm is zero.
+
+    Examples
+    --------
+    >>> unit([5, 0, 0])
+    array([1., 0., 0.])
+
+    >>> unit([0, -2])
+    array([ 0., -1.])
+
+    >>> unit([0, 0])
+    Traceback (most recent call last):
+    ValueError: The vector norm is zero.
+
+    """
+    length = norm(v)
+
+    if np.isclose(length, 0, **kwargs):
+        raise ValueError("The vector norm is zero.")
+
+    return v / length
+
+
+def is_perpendicular(u, v, **kwargs):
     """
     Check if two vectors are perpendicular.
 
@@ -17,6 +58,8 @@ def is_perpendicular(u, v):
     ----------
     u, v : array_like
         Input vectors
+    kwargs : dict, optional
+        Additional keywords passed to `np.isclose`.
 
     Returns
     -------
@@ -34,11 +77,16 @@ def is_perpendicular(u, v):
     >>> is_perpendicular([2, 0, 0], [0, 0, 2])
     True
 
+    The zero vector is perpendicular to all vectors.
+
+    >>> is_perpendicular([0, 0, 0], [1, 2, 3])
+    True
+
     """
-    return np.isclose(np.dot(u, v), 0)
+    return np.isclose(np.dot(u, v), 0, **kwargs)
 
 
-def is_parallel(u, v):
+def is_parallel(u, v, **kwargs):
     """
     Check if two vectors are parallel.
 
@@ -46,6 +94,8 @@ def is_parallel(u, v):
     ----------
     u, v : array_like
         Input vectors
+    kwargs : dict, optional
+        Additional keywords passed to `np.allclose`.
 
     Returns
     -------
@@ -64,10 +114,10 @@ def is_parallel(u, v):
     True
 
     """
-    return np.all(np.isclose(np.cross(u, v), 0))
+    return np.allclose(np.cross(u, v), 0, **kwargs)
 
 
-def is_collinear(point_a, point_b, point_c):
+def is_collinear(point_a, point_b, point_c, **kwargs):
     """
     Check if three points are collinear.
 
@@ -77,6 +127,8 @@ def is_collinear(point_a, point_b, point_c):
     ----------
     point_a, point_b, point_c : ndarray
         Input points.
+    kwargs : dict, optional
+        Additional keywords passed to `np.allclose`.
 
     Returns
     -------
@@ -95,33 +147,7 @@ def is_collinear(point_a, point_b, point_c):
     vector_ab = np.subtract(point_a, point_b)
     vector_ac = np.subtract(point_a, point_c)
 
-    return is_parallel(vector_ab, vector_ac)
-
-
-def unit(v):
-    """
-    Return the unit vector of v.
-
-    Parameters
-    ----------
-    v : array_like
-        Input vector.
-
-    Returns
-    -------
-    ndarray
-        Unit vector.
-
-    Examples
-    --------
-    >>> unit([5, 0, 0])
-    array([1., 0., 0.])
-
-    >>> unit([0, -2])
-    array([ 0., -1.])
-
-    """
-    return v / norm(v)
+    return is_parallel(vector_ab, vector_ac, **kwargs)
 
 
 def consecutive_dist(points):
@@ -190,72 +216,6 @@ def closest_point(candidate_points, target_point):
     close_point = candidate_points[close_index, :]
 
     return close_point, close_index
-
-
-def dist_point_line(point, line_point_1, line_point_2):
-    """
-    Distance from a point to a line.
-
-    Parameters
-    ----------
-    point : ndarray
-        Point in space.
-    line_point_1 : ndarray
-        Point A on line.
-    line_point_2 : ndarray
-        Point B on line.
-
-    Returns
-    -------
-    float
-        Distance from point to plane.
-
-    Examples
-    --------
-    >>> line_point_1, line_point_2 = np.array([0, 0]), np.array([1, 0])
-
-    >>> dist_point_line(np.array([0, 5]), line_point_1, line_point_2)
-    5.0
-
-    >>> dist_point_line(np.array([10, 0]), line_point_1, line_point_2)
-    0.0
-
-    """
-    num = norm(np.cross(point - line_point_1, point - line_point_2))
-    denom = norm(line_point_1 - line_point_2)
-
-    return nf.divide_no_error(num, denom)
-
-
-def dist_point_plane(point, plane_point, normal):
-    """
-    Distance from a point to a plane.
-
-    Parameters
-    ----------
-    point : ndarray
-        Point in space.
-    plane_point : ndarray
-        Point on plane.
-    normal : ndarray
-        Normal of plane.
-
-    Returns
-    -------
-    float
-        Distance from point to plane.
-
-    Examples
-    --------
-    >>> plane_point, normal = np.array([0, 0, 0]), np.array([0, 0, 1])
-
-    >>> dist_point_plane(np.array([10, 2, 5]), plane_point, normal)
-    5.0
-
-    """
-    n_hat = unit(normal)
-
-    return abs(np.dot(n_hat, point - plane_point))
 
 
 def dist_line_line(point_a, point_b, dir_a, dir_b):
@@ -340,17 +300,17 @@ def project_vector(u, v):
     return np.dot(u, unit_v) * unit_v
 
 
-def project_point_line(point, line_point_1, line_point_2):
+def project_point_line(point_p, line_point_a, line_point_b):
     """
     Project a point onto a line.
 
     Parameters
     ----------
-    point : ndarray
-        Point in space.
-    line_point_1 : ndarray
+    point_p : ndarray
+        Point P in space.
+    line_point_a : ndarray
         Point A on line.
-    line_point_2 : ndarray
+    line_point_b : ndarray
         Point B on line.
 
     Returns
@@ -358,23 +318,40 @@ def project_point_line(point, line_point_1, line_point_2):
     ndarray
         Projection of point P onto the line.
 
+    Raises
+    ------
+    ValueError
+        When the distance between line points A and B is zero.
+
     Examples
     --------
-    >>> line_point_1, line_point_2 = np.array([0, 0]), np.array([1, 0])
+    >>> line_point_a, line_point_b = np.array([0, 0]), np.array([1, 0])
 
-    >>> project_point_line(np.array([0, 5]), line_point_1, line_point_2)
+    >>> project_point_line(np.array([0, 5]), line_point_a, line_point_b)
     array([0., 0.])
 
+    >>> line_point_a, line_point_b = np.array([1, 1]), np.array([1, 1])
+    >>> project_point_line(np.array([0, 5]), line_point_a, line_point_b)
+    Traceback (most recent call last):
+    ValueError: Division by zero.
+
     """
-    vec_1 = point - line_point_1  # Vector from A to point
-    vec_1_2 = line_point_2 - line_point_1  # Vector from A to B
+    vec_ap = point_p - line_point_a  # Vector from A to P
+    vec_ab = line_point_b - line_point_a  # Vector from A to B
+
+    num = np.dot(vec_ap, vec_ab)
+    denom = np.dot(vec_ab, vec_ab)
+
+    if denom == 0:
+        raise ValueError("Division by zero.")
+
+    coeff = num / denom
 
     # Project point onto line
-    return line_point_1 + nf.divide_no_error(np.dot(vec_1, vec_1_2),
-                                             norm(vec_1_2)**2) * vec_1_2
+    return line_point_a + coeff * vec_ab
 
 
-def project_point_plane(point, plane_point, normal):
+def project_point_plane(point, point_plane, normal):
     """
     Project a point onto a plane.
 
@@ -382,7 +359,7 @@ def project_point_plane(point, plane_point, normal):
     ----------
     point : ndarray
         Point in space.
-    plane_point : ndarray
+    point_plane : ndarray
         Point on plane.
     normal : ndarray
         Normal vector of plane.
@@ -394,15 +371,15 @@ def project_point_plane(point, plane_point, normal):
 
     Examples
     --------
-    >>> plane_point, normal = np.array([0, 0, 0]), np.array([0, 0, 1])
+    >>> point_plane, normal = np.array([0, 0, 0]), np.array([0, 0, 1])
 
-    >>> project_point_plane(np.array([10, 2, 5]), plane_point, normal)
+    >>> project_point_plane(np.array([10, 2, 5]), point_plane, normal)
     array([10.,  2.,  0.])
 
     """
     unit_normal = unit(normal)
 
-    return point - np.dot(point - plane_point, unit_normal) * unit_normal
+    return point - np.dot(point - point_plane, unit_normal) * unit_normal
 
 
 def best_fit_line(points):
@@ -644,7 +621,7 @@ def angle_between(u, v, degrees=False):
     180.0
 
     >>> u, v = [1, 1, 1], [1, 1, 1]
-    angle_between(u, v)
+    >>> angle_between(u, v)
     0.0
 
     """
@@ -698,10 +675,10 @@ def line_coordinate_system(line_point, direction, points):
     array([10.,  3., -5.])
 
     """
-    line_point_2 = line_point + direction
+    line_point_b = line_point + direction
 
     projected_points = np.apply_along_axis(project_point_line, 1, points,
-                                           line_point, line_point_2)
+                                           line_point, line_point_b)
 
     vectors = projected_points - line_point
 
