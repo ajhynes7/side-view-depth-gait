@@ -207,8 +207,11 @@ def apply_to_padded(array, func, r=1):
     Examples
     --------
     >>> array = [1, 1, 2, 5, 3, 4, 6, 8]
+
     >>> apply_to_padded(array, np.nansum, r=1)
-    >>> apply_to_padded(, np.nansum, r=2)
+    [2.0, 4.0, 8.0, 10.0, 12.0, 13.0, 18.0, 14.0]
+
+    >>> apply_to_padded(array, np.nansum, r=2)
     [4.0, 9.0, 12.0, 15.0, 20.0, 26.0, 21.0, 18.0]
 
     """

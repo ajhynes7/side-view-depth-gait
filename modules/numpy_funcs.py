@@ -366,3 +366,34 @@ def expand_arrays(x, y):
     y_exp[x - min_x] = y
 
     return x_exp, y_exp
+
+
+def is_idempotent(f, x):
+    """
+    Verify that a function is idempotent.
+
+    For a function f:
+        f(x) == f(f(x))
+
+    Parameters
+    ----------
+    f : function
+        Function to test for idempotence.
+    x : any
+        Input to function.
+
+    Returns
+    -------
+    bool
+        True if function is idempotent.
+
+    Examples
+    --------
+    >>> is_idempotent(abs, -5)
+    True
+
+    >>> is_idempotent(lambda x: x + 10, 0)
+    False
+
+    """
+    return np.allclose(f(x), f(f(x)))

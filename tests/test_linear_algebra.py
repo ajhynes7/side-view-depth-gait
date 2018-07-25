@@ -1,3 +1,5 @@
+"""Tests for linear algebra module."""
+
 import hypothesis.strategies as st
 import numpy as np
 import numpy.testing as npt
@@ -9,36 +11,52 @@ from numpy.linalg import norm
 import modules.linear_algebra as lin
 
 
-def is_idempotent(f, x):
-    """
-    Verify that a function is idempotent.
+floats = st.floats(min_value=-1e10, max_value=1e10)
+ints = st.integers(min_value=-1e10, max_value=1e10)
 
-    For a function f:
-        f(x) == f(f(x))
+non_zero_vector = st.lists(ints, min_size=2, max_size=5).filter(lambda x:
+                                                                any(x))
 
-    Parameters
-    ----------
-    f : function
-        Function to test for idempotence.
-    x : any
-        Input to function.
-
-    Returns
-    -------
-    bool
-        True if function is idempotent.
-
-    """
-    return np.allclose(f(x), f(f(x)))
+cross_vector = st.lists(ints, min_size=3, max_size=3).filter(lambda x: any(x))
 
 
-@given(st.lists(st.floats(min_value=0, max_value=1e10), min_size=1))
+@given(non_zero_vector, non_zero_vector)
+def test_perpendicular(u, v):
+    """Two vectors must have an angle of 90 deg if they are perpendicular."""
+    assume(len(u) == len(v))
+
+    angle_90 = lin.angle_between(u, v, degrees=True) == 90
+
+    assert lin.is_perpendicular(u, v) == angle_90
+
+
+@given(cross_vector, cross_vector)
+def test_parallel(u, v):
+    """If two vectors are parallel, the angle between them must be 0 or 180."""
+    angle_uv = lin.angle_between(u, v, degrees=True)
+
+    angle_0 = np.isclose(angle_uv, 0)
+    angle_180 = np.isclose(angle_uv, 180)
+
+    if lin.is_parallel(u, v):
+        assert (angle_0 or angle_180)
+
+
+@given(non_zero_vector)
 def test_unit(vector):
+    """
+    Tests for converting a vector to a unit vector.
 
-    assume(any(x > 0 for x in vector))
-    npt.assert_allclose(norm(lin.unit(vector)), 1)
+    The unit vector must have a norm of one and the unit operation must be
+    idempotent.
 
-    assert is_idempotent(lin.unit, vector)
+    """
+    unit_vector = lin.unit(vector)
+
+    assert np.allclose(norm(unit_vector), 1)
+
+    # Unit function is idempotent
+    assert np.allclose(unit_vector, lin.unit(unit_vector))
 
 
 def test_consecutive_dist():

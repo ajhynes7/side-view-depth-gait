@@ -121,7 +121,7 @@ def unit(v):
     array([ 0., -1.])
 
     """
-    return nf.divide_no_error(v, norm(v))
+    return v / norm(v)
 
 
 def consecutive_dist(points):
@@ -644,10 +644,7 @@ def angle_between(u, v, degrees=False):
     180.0
 
     """
-    dot_product = np.dot(u, v)
-
-    cos_theta = nf.divide_no_error(dot_product, (norm(u) * norm(v)))
-
+    cos_theta = np.dot(unit(u), unit(v))
     theta = np.arccos(cos_theta)
 
     if degrees:
