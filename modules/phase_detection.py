@@ -43,7 +43,7 @@ def detect_phases(foot_points, direction_pass):
     return is_stance
 
 
-def get_phase_dataframe(frames, is_stance):
+def get_phase_dataframe(foot_series, direction_pass):
     """
     Return a DataFrame displaying the phase and phase number of each frame.
 
@@ -64,10 +64,16 @@ def get_phase_dataframe(frames, is_stance):
         Columns are 'phase', 'number'.
 
     """
+    frames = foot_series.index.values
+    foot_points = np.stack(foot_series)
+
+    is_stance = detect_phases(foot_points, direction_pass)
+
     is_stance_series = pd.Series(is_stance, index=frames)
     is_stance_series.replace({True: 'stance', False: 'swing'}, inplace=True)
 
     df_phase = pd.DataFrame({'phase': is_stance_series}, dtype='category')
+    df_phase['position'] = foot_series
 
     # Unique label for each distinct phase in the walking pass.
     # e.g. swing, stance, swing section get labelled 0, 1, 2.
@@ -128,3 +134,10 @@ def group_stance_frames(df_phase, suffix):
     df_grouped.index = df_grouped.index.astype('str') + suffix
 
     return df_grouped
+
+
+def get_stance_phases(foot_series, direction_pass, suffix):
+
+    df_phase = get_phase_dataframe(foot_series, direction_pass)
+
+    return group_stance_frames(df_phase, suffix)

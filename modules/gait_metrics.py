@@ -177,26 +177,14 @@ def walking_pass_metrics(df_pass, direction_pass):
         See module docstring.
 
     """
-    frames = df_pass.index.values
+    df_contact_l = pde.get_stance_phases(df_pass.L_FOOT, direction_pass, '_L')
+    df_contact_r = pde.get_stance_phases(df_pass.R_FOOT, direction_pass, '_R')
 
-    foot_pts_l, foot_pts_r = np.stack(df_pass.L_FOOT), np.stack(df_pass.R_FOOT)
+    contact_dfs = [df_contact_l, df_contact_r]
 
-    is_stance_l = pde.detect_phases(foot_pts_l, direction_pass)
-    is_stance_r = pde.detect_phases(foot_pts_r, direction_pass)
+    df_stacked = pd.concat(contact_dfs).sort_values('frame').reset_index()
 
-    df_phase_l = pde.get_phase_dataframe(frames, is_stance_l)
-    df_phase_r = pde.get_phase_dataframe(frames, is_stance_r)
-
-    df_phase_l['position'] = df_pass.L_FOOT
-    df_phase_r['position'] = df_pass.R_FOOT
-
-    df_grouped_l = pde.group_stance_frames(df_phase_l, '_L')
-    df_grouped_r = pde.group_stance_frames(df_phase_r, '_R')
-    grouped_dfs = [df_grouped_l, df_grouped_r]
-
-    df_concat = pd.concat(grouped_dfs).sort_values('frame').reset_index()
-
-    df_contact = pf.split_column(df_concat, column='index', delim='_',
+    df_contact = pf.split_column(df_stacked, column='index', delim='_',
                                  new_columns=['number', 'side'])
 
     df_gait = foot_contacts_to_gait(df_contact)
