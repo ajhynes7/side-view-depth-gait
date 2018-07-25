@@ -8,78 +8,7 @@ import modules.iterable_funcs as itf
 import modules.linear_algebra as lin
 import modules.numpy_funcs as nf
 import modules.pandas_funcs as pf
-import modules.signals as sig
 import modules.sliding_window as sw
-
-
-def frames_of_interest(foot_signal):
-    """
-    Return frames of interest from a foot signal.
-
-    These frames are peaks and troughs in the foot signal.
-
-    Parameters
-    ----------
-    foot_signal : Series
-        Signal from foot data that resembles a sinusoid.
-
-    Returns
-    -------
-    frames_interest : ndarray
-        Sorted array of frames.
-
-    """
-    frames = foot_signal.index.values
-
-    signal_1 = sig.normalize(foot_signal.values)
-    signal_2 = 1 - signal_1
-
-    rms_1 = sig.root_mean_square(signal_1)
-    rms_2 = sig.root_mean_square(signal_2)
-
-    frames_1, _ = sw.detect_peaks(frames, signal_1, window_length=3,
-                                  min_height=rms_1)
-    frames_2, _ = sw.detect_peaks(frames, signal_2, window_length=3,
-                                  min_height=rms_2)
-
-    frames_interest = np.sort(np.append(frames_1, frames_2))
-
-    return frames_interest
-
-
-def get_step_signal(direction_pass, foot_series_pass):
-    """
-    Return a signal that resembles multiple upwards steps.
-
-    This is achieved by representing foot points as 1D values along the
-    direction of the walking pass.
-
-    The signal is used to detect the stance and swing phases of the foot.
-
-    Parameters
-    ----------
-    direction_pass : ndarray
-        Vector for direction of a walking pass.
-    foot_series_pass : Series
-        Positions of a foot during a walking pass.
-        Index values are frames.
-        Values are foot positions.
-
-    Returns
-    -------
-    step_signal : Series
-        Signal with multiple steps.
-        Index values are frames.
-
-    """
-    line_point = np.array([0, 0, 0])
-    points = np.stack(foot_series_pass)
-
-    x_values = lin.line_coordinate_system(line_point, direction_pass, points)
-
-    step_signal = pd.Series(x_values, index=foot_series_pass.index)
-
-    return step_signal
 
 
 def detect_phases(foot_points, direction_pass):
@@ -155,37 +84,6 @@ def get_phase_dataframe(frames, is_stance):
     df_phase['number'] = pd.concat([stance_series, swing_series])
 
     df_phase.index.name = 'frame'
-
-    return df_phase
-
-
-def foot_phases(frames_interest, direction_pass, foot_series_pass):
-    """
-    Return a DataFrame with stride phases for one foot during a walking pass.
-
-    Parameters
-    ----------
-    frames_interest : ndarray
-        Sorted array of frames.
-    direction_pass : ndarray
-        Vector for direction of a walking pass.
-    foot_series_pass : Series
-        Positions of a foot during a walking pass.
-        Index values are frames.
-        Values are foot positions.
-
-    Returns
-    -------
-    df_phase : DataFrame
-        Index is 'frame'.
-        Columns are 'phase', 'number', 'position'.
-
-    """
-    step_signal = get_step_signal(direction_pass, foot_series_pass)
-    frame_phases = detect_phases(step_signal, frames_interest)
-
-    df_phase = get_phase_dataframe(frame_phases)
-    df_phase['position'] = foot_series_pass
 
     return df_phase
 
