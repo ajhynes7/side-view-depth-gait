@@ -2,11 +2,9 @@
 
 import hypothesis.strategies as st
 import numpy as np
-import numpy.testing as npt
 import pytest
 from hypothesis import assume, given
 from hypothesis.extra.numpy import arrays
-
 from numpy.linalg import norm
 
 import modules.linear_algebra as lin
@@ -91,21 +89,6 @@ def test_collinear(point_a, point_b, point_c):
         non_max_dists = dists[:max_index] + dists[max_index+1:]
 
         assert np.isclose(max_dist, sum(non_max_dists))
-
-
-def test_consecutive_dist():
-
-    lengths = [*lin.consecutive_dist(points)]
-
-    npt.assert_array_equal(np.round(lengths, 4), [2.2361, 9.0554, 8.1854])
-
-
-def test_closest_point():
-
-    target = [2, 3, 4]
-    close_point, close_index = lin.closest_point(np.array(points), target)
-
-    assert close_index == 3
 
 
 @given(point_3, point_3, point_3)
@@ -232,6 +215,3 @@ def test_angle_between_examples(a, b, expected):
     angle = lin.angle_between(a, b)
 
     assert np.allclose(angle, expected)
-
-
-points = [[1, 2, 3], [2, 2, 5], [-1, 10, 2], [2, 3, 5]]

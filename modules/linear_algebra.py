@@ -3,8 +3,6 @@
 import numpy as np
 from numpy.linalg import norm
 
-import modules.iterable_funcs as itf
-
 
 def unit(v, **kwargs):
     """
@@ -148,74 +146,6 @@ def is_collinear(point_a, point_b, point_c, **kwargs):
     vector_ac = np.subtract(point_a, point_c)
 
     return is_parallel(vector_ab, vector_ac, **kwargs)
-
-
-def consecutive_dist(points):
-    """
-    Calculate the distance between each consecutive pair of points.
-
-    Parameters
-    ----------
-    points : array_like
-        List of points.
-
-    Yields
-    ------
-    float
-        Distance between two consecutive points.
-
-    Examples
-    --------
-    >>> points = [[1, 1], [2, 1], [0, 1]]
-    >>> [*consecutive_dist(points)]
-    [1.0, 2.0]
-
-    """
-    for point_1, point_2 in itf.pairwise(points):
-
-        vector = np.subtract(point_1, point_2)
-        yield norm(vector)
-
-
-def closest_point(candidate_points, target_point):
-    """
-    Return the closest point to a target from a set of candidates.
-
-    Parameters
-    ----------
-    candidate_points : ndarray
-        (n, dim) array of n points.
-    target_point : array_like
-        Target position
-
-    Returns
-    -------
-    close_point : ndarray
-        Closest point from the set of candidates.
-    close_index : int
-        Row index of the closest point in the candidates array.
-
-    Examples
-    --------
-    >>> candidates = np.array([[3, 4, 5], [2, 1, 5]])
-    >>> target = [2, 1, 4]
-
-    >>> close_point, close_index = closest_point(candidates, target)
-
-    >>> close_point
-    array([2, 1, 5])
-
-    >>> close_index
-    1
-
-    """
-    vectors_to_target = candidate_points - target_point
-    distances_to_target = norm(vectors_to_target, axis=1)
-
-    close_index = np.argmin(distances_to_target)
-    close_point = candidate_points[close_index, :]
-
-    return close_point, close_index
 
 
 def dist_line_line(point_a, point_b, dir_a, dir_b):

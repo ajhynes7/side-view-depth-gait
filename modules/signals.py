@@ -3,9 +3,9 @@
 import numpy as np
 import pandas as pd
 
-import modules.linear_algebra as lin
 import modules.mean_shift as ms
 import modules.sliding_window as sw
+import modules.point_processing as pp
 
 
 def filter_by_function(signal, func):
@@ -110,7 +110,7 @@ def mean_shift_peaks(signal, **kwargs):
     peak_frames = [signal[labels == i].idxmax() for i in range(k)]
 
     # Find the frames closest to the mean shift centroids
-    mid_frames = [lin.closest_point(frames, x)[0].item()
+    mid_frames = [pp.closest_point(frames, x)[0].item()
                   for x in centroids]
 
     return np.unique(peak_frames), np.unique(mid_frames)

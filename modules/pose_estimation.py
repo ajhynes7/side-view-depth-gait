@@ -11,7 +11,7 @@ from scipy.spatial.distance import cdist
 
 import modules.graphs as gr
 import modules.iterable_funcs as itf
-import modules.linear_algebra as lin
+import modules.point_processing as pp
 
 
 def only_consecutive_labels(label_adj_list):
@@ -116,7 +116,7 @@ def estimate_lengths(pop_series, label_series, cost_func, n_frames, eps=0.01):
 
             min_pop = population[min_path]
 
-            length_array[i, :] = [*lin.consecutive_dist(min_pop)]
+            length_array[i, :] = [*pp.consecutive_dist(min_pop)]
 
         # Update lengths
         lengths = np.median(length_array, axis=0)
