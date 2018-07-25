@@ -161,6 +161,9 @@ def test_project_point_plane(point, point_plane, normal):
 @given(points_2_3, st.sampled_from([lin.best_fit_line, lin.best_fit_plane]))
 def test_best_fit(points, best_fit_func):
     """Tests for the line of best fit in multidimensional space."""
+    n_unique = len(np.unique(points, axis=0))
+    assume(n_unique >= 3)
+
     centroid, direction = best_fit_func(points)
 
     points_reversed = np.flip(points, axis=0)

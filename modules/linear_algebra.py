@@ -402,6 +402,11 @@ def best_fit_line(points):
         Right singular vector which corresponds to the largest
         singular value of A.
 
+    Raises
+    ------
+    ValueError
+        When fewer than two points are input (line would be underdefined).
+
     Examples
     --------
     >>> points = np.array([[1, 0], [2, 0], [3, 0]])
@@ -418,6 +423,10 @@ def best_fit_line(points):
     array([-1,  0])
 
     """
+    n_points, _ = points.shape
+    if n_points < 2:
+        raise ValueError('At least two points required.')
+
     # Ensure that points have no nan values
     points = points[~np.isnan(points).any(axis=1)]
 
@@ -446,6 +455,11 @@ def best_fit_plane(points):
     normal : ndarray
         Normal vector of plane.
 
+    Raises
+    ------
+    ValueError
+        When fewer than three points are input (plane would be underdefined).
+
     Examples
     --------
     >>> points = np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0]])
@@ -459,6 +473,10 @@ def best_fit_plane(points):
     array([0., 0., 1.])
 
     """
+    n_points, _ = points.shape
+    if n_points < 3:
+        raise ValueError('At least three points required.')
+
     centroid = np.mean(points, axis=0)
     centroid_out = points - centroid
 
