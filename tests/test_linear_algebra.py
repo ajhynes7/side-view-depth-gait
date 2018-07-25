@@ -35,10 +35,10 @@ def test_parallel(u, v):
     """If two vectors are parallel, the angle between them must be 0 or 180."""
     angle_uv = lin.angle_between(u, v, degrees=True)
 
-    angle_0 = np.isclose(angle_uv, 0)
-    angle_180 = np.isclose(angle_uv, 180)
-
     if lin.is_parallel(u, v):
+        angle_0 = np.isclose(angle_uv, 0, atol=1e-5)
+        angle_180 = np.isclose(angle_uv, 180)
+
         assert (angle_0 or angle_180)
 
 

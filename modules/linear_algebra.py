@@ -643,8 +643,19 @@ def angle_between(u, v, degrees=False):
     >>> round(angle_between(u, v, degrees=True))
     180.0
 
+    >>> u, v = [1, 1, 1], [1, 1, 1]
+    angle_between(u, v)
+    0.0
+
     """
     cos_theta = np.dot(unit(u), unit(v))
+
+    # The allowed domain for arccos is [-1, 1]
+    if cos_theta > 1:
+        cos_theta = 1
+    elif cos_theta < -1:
+        cos_theta = -1
+
     theta = np.arccos(cos_theta)
 
     if degrees:
