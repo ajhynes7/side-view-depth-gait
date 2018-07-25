@@ -21,11 +21,11 @@ def test_gaussian(x, sigma, mu):
 
 
 @given(st.floats(min_value=0, max_value=1e10),
-       st.floats(min_value=2, max_value=50),
+       st.floats(min_value=1, max_value=50),
        )
 def test_sigmoid(x, a):
     """Test properties of the sigmoid function."""
-    assert mf.sigmoid(x, a) <= mf.sigmoid(x, a - 1)
+    assert mf.sigmoid(x, a) >= mf.sigmoid(x, a - 1)
 
 
 @given(st.floats(min_value=-500, max_value=500))
