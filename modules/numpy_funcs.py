@@ -24,7 +24,7 @@ def remove_nan(array):
     >>> array = np.array([1, 2, 3, np.nan, 4])
 
     >>> remove_nan(array)
-    array([1.0, 2.0, 3.0, 4.0])
+    array([1., 2., 3., 4.])
 
     """
     return array[~np.isnan(array)]
@@ -478,7 +478,7 @@ def label_consecutive_true(bool_array):
     --------
     >>> x = [True, True, False, False, False, True, True, False, False, True]
 
-    >>> label_consecutive_true(bool_array)
+    >>> label_consecutive_true(x)
     array([ 0.,  0., nan, nan, nan,  1.,  1., nan, nan,  2.])
 
     """
