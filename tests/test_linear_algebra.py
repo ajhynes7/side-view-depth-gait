@@ -141,16 +141,16 @@ def test_project_point_plane(point, point_plane, normal):
                                         atol=0.1)
 
 
-@given(points_2_3, st.sampled_from([lin.best_fit_line, lin.best_fit_plane]))
-def test_best_fit(points, best_fit_func):
+@given(points_2_3)
+def test_best_fit(points):
     """Tests for the line of best fit in multidimensional space."""
     n_unique = len(np.unique(points, axis=0))
     assume(n_unique >= 3)
 
-    centroid, direction = best_fit_func(points)
+    centroid, direction = lin.best_fit_line(points)
 
     points_reversed = np.flip(points, axis=0)
-    centroid_rev, direction_rev = best_fit_func(points_reversed)
+    centroid_rev, direction_rev = lin.best_fit_line(points_reversed)
 
     assert np.allclose(centroid, centroid_rev)
     assert np.isclose(norm(direction), 1)
@@ -188,20 +188,6 @@ def test_best_fit_line_examples(points, centroid, direction):
 
     assert np.allclose(centroid, np.round(centroid_calc, 2))
     assert np.allclose(direction, direction_calc)
-
-
-@pytest.mark.parametrize("points, centroid, normal", [
-    (np.array([[0, 0, 0], [1, 0, 0], [0, 0, 1]]), np.array([0.33, 0, 0.33]),
-     np.array([0, -1, 0])),
-    (np.array([[0, 0, 0], [3, 0, 0], [0, 3, 0]]), np.array([1, 1, 0]),
-     np.array([0, 0, 1])),
-])
-def test_best_fit_plane_examples(points, centroid, normal):
-    """Test specific examples of best fit plane."""
-    centroid_calc, normal_calc = lin.best_fit_plane(points)
-
-    assert np.allclose(centroid, np.round(centroid_calc, 2))
-    assert np.allclose(normal, normal_calc)
 
 
 @pytest.mark.parametrize("a, b, expected", [
