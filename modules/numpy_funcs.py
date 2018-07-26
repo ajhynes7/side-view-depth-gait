@@ -2,6 +2,33 @@
 
 import numpy as np
 
+import modules.iterable_funcs as itf
+
+
+def remove_nan(array):
+    """
+    Remove nan values from an array.
+
+    Parameters
+    ----------
+    array : ndarray
+        Input array.
+
+    Returns
+    -------
+    ndarray
+        Array with nan elements removed.
+
+    Examples
+    --------
+    >>> array = np.array([1, 2, 3, np.nan, 4])
+
+    >>> remove_nan(array)
+    array([1.0, 2.0, 3.0, 4.0])
+
+    """
+    return array[~np.isnan(array)]
+
 
 def ratio_nonzero(x):
     """
@@ -397,3 +424,38 @@ def is_idempotent(f, x):
 
     """
     return np.allclose(f(x), f(f(x)))
+
+
+def label_consecutive_true(bool_array):
+    """
+    Assign a unique label to each group of consecutive True values in an array.
+
+    Parameters
+    ----------
+    bool_array : array_like
+        Array of `n` boolean values.
+
+    Returns
+    -------
+    ndarray
+        (n,) array of labels.
+        Each True element receives a label while each False element
+        is set to nan.
+
+    Examples
+    --------
+    >>> x = [True, True, False, False, False, True, True, False, False, True]
+
+    >>> label_consecutive_true(bool_array)
+    array([ 0.,  0., nan, nan, nan,  1.,  1., nan, nan,  2.])
+
+    """
+    labels = np.fromiter(itf.label_repeated_elements(bool_array), 'float')
+    labels[~np.array(bool_array)] = np.nan
+
+    unique = np.unique(remove_nan(labels))
+    n_unique = len(unique)
+
+    map_dict = {k: v for k, v in zip(unique, range(n_unique))}
+
+    return np.array(itf.map_with_dict(labels, map_dict), dtype='float')
