@@ -186,7 +186,7 @@ def detect_peaks(x, y, *, window_length=3, min_height=0):
     return x_peak, y_peak
 
 
-def apply_to_padded(array, func, r=1):
+def apply_to_padded(array, func, *args, **kwargs):
     """
     Apply a function to a sliding window of a padded array.
 
@@ -206,19 +206,19 @@ def apply_to_padded(array, func, r=1):
 
     Examples
     --------
-    >>> array = [1, 1, 2, 5, 3, 4, 6, 8]
+    >>> x = [1, 1, 2, 5, 3, 4, 6, 8]
+    >>> x = [float(i) for i in x]
 
-    >>> apply_to_padded(array, np.nansum, r=1)
-    [2.0, 4.0, 8.0, 10.0, 12.0, 13.0, 18.0, 14.0]
-
-    >>> apply_to_padded(array, np.nansum, r=2)
+    >>> apply_to_padded(x, np.nansum, 2, 'constant', constant_values=np.nan)
     [4.0, 9.0, 12.0, 15.0, 20.0, 26.0, 21.0, 18.0]
 
+    >>> apply_to_padded(x, np.nansum, 3, 'constant', constant_values=np.nan)
+    [9.0, 12.0, 16.0, 22.0, 29.0, 28.0, 26.0, 21.0]
+
     """
-    n = 2*r + 1
-    floats = np.array(array).astype(float)
+    pad_width = args[0]
+    n = 2 * pad_width + 1
 
-    padded = np.pad(floats, r, 'constant', constant_values=np.nan)
-    windows = [*generate_window(padded, n)]
+    padded = np.pad(array, *args, **kwargs)
 
-    return [func(x) for x in windows]
+    return [func(x) for x in generate_window(padded, n)]
