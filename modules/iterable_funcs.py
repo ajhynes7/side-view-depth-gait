@@ -2,8 +2,6 @@
 
 from itertools import chain, repeat
 
-import modules.numpy_funcs as nf
-
 
 def pairwise(x):
     """
@@ -89,38 +87,6 @@ def map_with_dict(seq, mapping):
 
     """
     return [*map(mapping.get, seq)]
-
-
-def map_sort(x):
-    """
-    Map elements in an array to whole numbers in order (0, 1, 2, ...).
-
-    Parameters
-    ----------
-    x : array_like
-        Input array of numbers.
-
-    Returns
-    -------
-    list
-        List of sorted labels.
-
-    Examples
-    --------
-    >>> map_sort([1, 1, 1, 0, 0, 2, 2, 3, 3, 3])
-    [0, 0, 0, 1, 1, 2, 2, 3, 3, 3]
-
-    >>> map_sort([3, 3, 5, 5, 5, 10, 2])
-    [0, 0, 1, 1, 1, 2, 3]
-
-    """
-    unique = nf.unique_no_sort(x)
-
-    output_values = [i for i, _ in enumerate(unique)]
-
-    mapping = {k: v for k, v in zip(unique, output_values)}
-
-    return map_with_dict(x, mapping)
 
 
 def repeat_by_list(array, repeat_nums):

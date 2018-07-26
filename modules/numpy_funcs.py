@@ -236,6 +236,38 @@ def unique_no_sort(x):
     return unique[np.argsort(return_ind)]
 
 
+def map_sort(x):
+    """
+    Map elements in an array to whole numbers in order (0, 1, 2, ...).
+
+    Parameters
+    ----------
+    x : array_like
+        Input array of numbers.
+
+    Returns
+    -------
+    list
+        List of sorted labels.
+
+    Examples
+    --------
+    >>> map_sort([1, 1, 1, 0, 0, 2, 2, 3, 3, 3])
+    [0, 0, 0, 1, 1, 2, 2, 3, 3, 3]
+
+    >>> map_sort([3, 3, 5, 5, 5, 10, 2])
+    [0, 0, 1, 1, 1, 2, 3]
+
+    """
+    unique = unique_no_sort(x)
+
+    output_values = [i for i, _ in enumerate(unique)]
+
+    mapping = {k: v for k, v in zip(unique, output_values)}
+
+    return itf.map_with_dict(x, mapping)
+
+
 def find_indices(array, elems_to_find):
     """
     Return the indices of array elements that match those in another array.
