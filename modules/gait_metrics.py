@@ -177,8 +177,8 @@ def walking_pass_metrics(df_pass, direction_pass):
         See module docstring.
 
     """
-    df_contact_l = pde.get_stance_phases(df_pass.L_FOOT, direction_pass, '_L')
-    df_contact_r = pde.get_stance_phases(df_pass.R_FOOT, direction_pass, '_R')
+    df_contact_l = pde.get_contacts(df_pass.L_FOOT, direction_pass, '_L')
+    df_contact_r = pde.get_contacts(df_pass.R_FOOT, direction_pass, '_R')
 
     contact_dfs = [df_contact_l, df_contact_r]
 

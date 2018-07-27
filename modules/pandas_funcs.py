@@ -464,7 +464,7 @@ def column_to_suffixes(df, *, groupby_col=0, merge_col=1):
     1       1        2      NaN
 
     """
-    (value_1, df_1),  (value_2, df_2) = df.groupby(groupby_col)
+    (value_1, df_1), (value_2, df_2) = df.groupby(groupby_col)
 
     suffixes = ['_' + str(x) for x in (value_1, value_2)]
 
