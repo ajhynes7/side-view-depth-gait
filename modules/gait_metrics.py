@@ -188,8 +188,11 @@ def walking_pass_metrics(df_pass, direction_pass):
                                  new_columns=['number', 'side'])
 
     df_gait = foot_contacts_to_gait(df_contact)
-    df_gait = pf.column_to_suffixes(df_gait, groupby_col='side',
-                                    merge_col='number')
+
+    if not df_gait.empty:
+
+        df_gait = pf.split_and_merge(df_gait, merge_col='number',
+                                     split_col='side', split_vals=('L', 'R'))
 
     return df_gait
 
