@@ -105,30 +105,6 @@ def direction_of_pass(df_pass):
     return line_point, direction_pass
 
 
-def foot_signal(foot_interest, foot_other, direction_pass):
-    """
-    Return a signal from foot data that is used to detect contact frames.
-
-    Parameters
-    ----------
-    foot_interest, foot_other : ndarray
-        Rows are foot positions.
-        The first array is the foot of interest (left or right).
-    direction_pass : ndarray
-        Direction of motion for the walking pass.
-
-    Returns
-    -------
-    signal : ndarray
-        Signal from foot data.
-
-    """
-    foot_difference = foot_interest - foot_other
-    signal = np.apply_along_axis(np.dot, 1, foot_difference, direction_pass)
-
-    return signal
-
-
 def foot_contacts_to_gait(df_contact):
     """
     Calculate gait metrics from all instances of the feet contacting the floor.
