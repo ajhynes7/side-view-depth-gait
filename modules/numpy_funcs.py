@@ -491,3 +491,43 @@ def label_consecutive_true(bool_array):
     map_dict = {k: v for k, v in zip(unique, range(n_unique))}
 
     return np.array(itf.map_with_dict(labels, map_dict), dtype='float')
+
+
+def filter_consecutive_true(bool_array, min_length=2):
+    """
+    Remove sequences of consecutive True values that are too short.
+
+    Consecutive sequences of True with a length less than the specified minimum
+    are set to False.
+
+    Parameters
+    ----------
+    bool_array : array_like
+        Array of booleans.
+    min_length : int, optional
+        Minimum allowed length of consecutive True values (default 2).
+
+    Returns
+    -------
+    filt_array : ndarray
+        Filtered array with short groups of consecutive True set to False.
+
+    Examples
+    --------
+    >>> array = [True, True, True, False, True, True, False, False, True]
+
+    >>> filter_consecutive_true(array, min_length=3)
+    array([ True,  True,  True, False, False, False, False, False, False])
+
+    """
+    filt_array = np.array(bool_array)
+
+    group_labels = np.fromiter(itf.label_repeated_elements(bool_array), 'int')
+    unique_labels, unique_counts = np.unique(group_labels, return_counts=True)
+
+    for label, count in zip(unique_labels, unique_counts):
+
+        if np.all(filt_array[group_labels == label]) and count < min_length:
+            filt_array[group_labels == label] = False
+
+    return filt_array
