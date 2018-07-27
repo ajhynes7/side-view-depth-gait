@@ -27,7 +27,7 @@ def detect_phases(step_signal):
         Element is True if the corresponding foot is in the stance phase.
 
     """
-    pad_width = 3
+    pad_width = 5
     cluster_values = sw.apply_to_padded(step_signal, np.var, pad_width,
                                         'reflect', reflect_type='odd')
 
@@ -64,7 +64,7 @@ def get_phase_dataframe(foot_series, direction_pass):
     -------
     df_phase : DataFrame
         Index is 'frame'.
-        Columns are 'phase', 'number'.
+        Columns are 'phase', 'position', 'number'.
 
     """
     frames = foot_series.index.values
@@ -137,6 +137,7 @@ def group_stance_frames(df_phase, suffix):
     df_grouped = pf.apply_to_grouped(df_stance, 'number', column_funcs)
 
     df_grouped.position = df_grouped.position.apply(np.median, axis=0)
+
     df_grouped.index = df_grouped.index.astype('str') + suffix
 
     return df_grouped
