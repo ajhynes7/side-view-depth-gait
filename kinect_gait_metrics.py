@@ -8,7 +8,6 @@ import pandas as pd
 from sklearn.cluster import KMeans
 
 import modules.gait_metrics as gm
-import modules.iterable_funcs as itf
 import modules.numpy_funcs as nf
 
 
@@ -38,7 +37,7 @@ def main():
         k_means = KMeans(n_clusters=4, random_state=0).fit(frames)
 
         # Sort labels so that the frames are in temporal order
-        labels = itf.map_sort(k_means.labels_)
+        labels = nf.map_sort(k_means.labels_)
 
         # DataFrames for each walking pass in a trial
         pass_dfs = nf.group_by_label(df_head_feet, labels)
