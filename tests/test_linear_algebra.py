@@ -142,10 +142,12 @@ def test_project_point_plane(point, point_plane, normal):
 
 
 @given(points_2_3)
-def test_best_fit(points):
+def test_best_fit_line(points):
     """Tests for the line of best fit in multidimensional space."""
-    n_unique = len(np.unique(points, axis=0))
-    assume(n_unique >= 3)
+    points = np.unique(points, axis=0)
+
+    # At least two unique points needed to define a line.
+    assume(len(points) >= 2)
 
     centroid, direction = lin.best_fit_line(points)
 
