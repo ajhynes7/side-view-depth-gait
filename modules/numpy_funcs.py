@@ -383,116 +383,6 @@ def label_by_split(array, split_vals):
     return labels
 
 
-def expand_arrays(x, y):
-    """
-    Expand arrays so that x is all consecutive numbers and y aligns with x.
-
-    Parameters
-    ----------
-    x, y : array_like
-        Input arrays.
-
-    Returns
-    -------
-    x_exp, y_exp : ndarray
-        Expanded arrays.
-
-    Examples
-    --------
-    >>> x = [0, 1, 2, 5, 8, 9]
-    >>> y = [7, 6, 3, 4, 1, 5]
-    >>> x_exp, y_exp = expand_arrays(x, y)
-
-    >>> x_exp
-    array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-
-    >>> y_exp
-    array([ 7.,  6.,  3., nan, nan,  4., nan, nan,  1.,  5.])
-
-    >>> x_exp, y_exp = expand_arrays([5, 8, 15], [7, 6, 3])
-
-    >>> x_exp
-    array([ 5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15])
-
-    >>> y_exp
-    array([ 7., nan, nan,  6., nan, nan, nan, nan, nan, nan,  3.])
-
-    """
-    min_x, max_x = np.min(x), np.max(x)
-    x_exp = np.arange(min_x, max_x + 1)
-
-    y_exp = np.full(x_exp.size, np.nan)
-    y_exp[x - min_x] = y
-
-    return x_exp, y_exp
-
-
-def is_idempotent(f, x):
-    """
-    Verify that a function is idempotent.
-
-    For a function f:
-        f(x) == f(f(x))
-
-    Parameters
-    ----------
-    f : function
-        Function to test for idempotence.
-    x : any
-        Input to function.
-
-    Returns
-    -------
-    bool
-        True if function is idempotent.
-
-    Examples
-    --------
-    >>> is_idempotent(abs, -5)
-    True
-
-    >>> is_idempotent(lambda x: x + 10, 0)
-    False
-
-    """
-    return np.allclose(f(x), f(f(x)))
-
-
-def label_consecutive_true(bool_array):
-    """
-    Assign a unique label to each group of consecutive True values in an array.
-
-    Parameters
-    ----------
-    bool_array : array_like
-        Array of `n` boolean values.
-
-    Returns
-    -------
-    ndarray
-        (n,) array of labels.
-        Each True element receives a label while each False element
-        is set to nan.
-
-    Examples
-    --------
-    >>> x = [True, True, False, False, False, True, True, False, False, True]
-
-    >>> label_consecutive_true(x)
-    array([ 0.,  0., nan, nan, nan,  1.,  1., nan, nan,  2.])
-
-    """
-    labels = np.fromiter(itf.label_repeated_elements(bool_array), 'float')
-    labels[~np.array(bool_array)] = np.nan
-
-    unique = np.unique(remove_nan(labels))
-    n_unique = len(unique)
-
-    map_dict = {k: v for k, v in zip(unique, range(n_unique))}
-
-    return np.array(itf.map_with_dict(labels, map_dict), dtype='float')
-
-
 def filter_consecutive_true(bool_array, min_length=2):
     """
     Remove sequences of consecutive True values that are too short.
@@ -531,3 +421,98 @@ def filter_consecutive_true(bool_array, min_length=2):
             filt_array[group_labels == label] = False
 
     return filt_array
+
+
+def make_consecutive(array):
+    """
+    Convert an array to one with consecutive numbers.
+
+    The numbers are consecutive from the the min to the max of the input array.
+
+    Parameters
+    ----------
+    array : array_like
+        Input array.
+
+    Returns
+    -------
+    consecutive : ndarray
+        Array of consecutive numbers.
+    index : ndarray
+        Index to the consecutive array.
+        consecutive[index] returns the unique values of the input array.
+
+    Examples
+    --------
+    >>> array = [1, 3, 4, 6, 7, 9]
+
+    >>> consecutive, index = make_consecutive(array)
+    >>> consecutive
+    array([1, 2, 3, 4, 5, 6, 7, 8, 9])
+    >>> index
+    array([0, 2, 3, 5, 6, 8])
+    >>> consecutive[index]
+    array([1, 3, 4, 6, 7, 9])
+
+    >>> consecutive, index = make_consecutive([1, 1, 2, 5])
+    >>> consecutive
+    array([1, 2, 3, 4, 5])
+    >>> index
+    array([0, 1, 4])
+
+    """
+    min_val, max_val = np.min(array), np.max(array)
+    consecutive = np.arange(min_val, max_val + 1)
+
+    index = np.nonzero(np.in1d(consecutive, array))[0]
+
+    return consecutive, index
+
+
+def expand_arrays(x, y):
+    """
+    Expand arrays so that x is all consecutive numbers and y aligns with x.
+
+    The input x values must be unique.
+
+    Parameters
+    ----------
+    x, y : array_like
+        Input arrays.
+
+    Returns
+    -------
+    x_expanded, y_expanded : ndarray
+        Expanded arrays.
+
+    Raises
+    ------
+    ValueError
+        When there are duplicate x values.
+
+    Examples
+    --------
+    >>> x = [0, 1, 2, 5, 8, 9]
+    >>> y = [7, 6, 3, 4, 1, 5]
+    >>> x_expanded, y_expanded = expand_arrays(x, y)
+    >>> x_expanded
+    array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    >>> y_expanded
+    array([ 7.,  6.,  3., nan, nan,  4., nan, nan,  1.,  5.])
+
+    >>> x_expanded, y_expanded = expand_arrays([5, 8, 15], [7, 6, 3])
+    >>> x_expanded
+    array([ 5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15])
+    >>> y_expanded
+    array([ 7., nan, nan,  6., nan, nan, nan, nan, nan, nan,  3.])
+
+    """
+    if not np.array_equal(x, np.unique(x)):
+        raise ValueError('x values are not unique.')
+
+    x_expanded, index = make_consecutive(x)
+
+    y_expanded = np.full(len(x_expanded), np.nan)
+    y_expanded[index] = y
+
+    return x_expanded, y_expanded
