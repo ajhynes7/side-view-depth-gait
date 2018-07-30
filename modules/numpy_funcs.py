@@ -516,3 +516,41 @@ def expand_arrays(x, y):
     y_expanded[index] = y
 
     return x_expanded, y_expanded
+
+
+def fill_with_previous(array):
+    """
+    Fill nan values in an array with the most recent non-nan value.
+
+    Parameters
+    ----------
+    array : array_like
+        Input array.
+
+    Returns
+    -------
+    array_filled : array_like
+        Array with nan values filled.
+
+    Examples
+    --------
+    >>> fill_with_previous([0, 0, np.nan, 1, 1, 2, np.nan, 3]
+    [0, 0, 0, 1, 1, 2, 2, 3]
+
+    >>> fill_with_previous([np.nan, 0, 1, 2])
+    [nan, 0, 1, 2]
+
+    """
+    array_filled = array.copy()
+    previous_number = np.nan
+
+    is_nan = np.isnan(array)
+
+    for i, value in enumerate(array):
+
+        if is_nan[i]:
+            array_filled[i] = previous_number
+        else:
+            previous_number = value
+
+    return array_filled
