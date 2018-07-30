@@ -11,12 +11,14 @@ import modules.pandas_funcs as pf
 import modules.sliding_window as sw
 
 
-def detect_phases(step_signal):
+def detect_phases(frames, step_signal):
     """
     Detect the stance/swing phases of a foot during a walking pass.
 
     Parameters
     ----------
+    frames : ndarray
+        (n, ) array of frame numbers.
     step_signal : ndarray
         (n, ) array of values indicating the motion of one foot.
 
@@ -27,16 +29,20 @@ def detect_phases(step_signal):
         Element is True if the corresponding foot is in the stance phase.
 
     """
+    frames_exp, step_signal_exp = nf.expand_arrays(frames, step_signal)
+
     pad_width = 5
-    cluster_values = sw.apply_to_padded(step_signal, np.var, pad_width,
+    cluster_values = sw.apply_to_padded(step_signal_exp, np.nanvar, pad_width,
                                         'reflect', reflect_type='odd')
 
-    cluster_array = nf.to_column(cluster_values)
-
-    k_means = KMeans(n_clusters=2, random_state=0).fit(cluster_array)
+    points = nf.to_column(cluster_values)
+    k_means = KMeans(n_clusters=2, random_state=0).fit(points)
 
     stance_label = np.argmin(k_means.cluster_centers_)
-    is_stance = k_means.labels_ == stance_label
+    is_stance_exp = k_means.labels_ == stance_label
+
+    # Collapse vector to original length of the frames list.
+    is_stance = is_stance_exp[~np.isnan(step_signal_exp)]
 
     # Remove small groups of consecutive stance frames, because these could
     # be false positives.
@@ -73,7 +79,7 @@ def get_phase_dataframe(foot_series, direction_pass):
     step_signal = lin.line_coordinate_system(np.zeros(3), direction_pass,
                                              foot_points)
 
-    is_stance = detect_phases(step_signal)
+    is_stance = detect_phases(frames, step_signal)
 
     is_stance_series = pd.Series(is_stance, index=frames)
     is_stance_series.replace({True: 'stance', False: 'swing'}, inplace=True)
