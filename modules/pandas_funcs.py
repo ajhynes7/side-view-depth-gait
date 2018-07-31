@@ -486,7 +486,30 @@ def split_and_merge(df, merge_col=None, split_col=None, split_vals=None):
 
 
 def make_index_consecutive(df):
+    """
+    Make the values of a DataFrame index all consecutive.
 
+    Parameters
+    ----------
+    df : DataFrame
+        Input DataFrame.
+
+    Returns
+    -------
+    df_consec : DataFrame
+        DataFrame with a consecutive index.
+
+    Examples
+    --------
+    >>> df = pd.DataFrame({'Col': [5, 6, 7]}, index=[1, 2, 4])
+    >>> make_index_consecutive(df)
+       Col
+    1    5
+    2    6
+    3  NaN
+    4    7
+
+    """
     index_vals = df.index.values
 
     index_consec, _ = nf.make_consecutive(index_vals)

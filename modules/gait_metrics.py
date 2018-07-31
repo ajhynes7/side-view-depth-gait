@@ -30,7 +30,19 @@ import modules.sliding_window as sw
 
 
 def iterpolate_points(df_pass):
+    """
+    Interpolate points for missing frames in a walking pass.
 
+    Parameters
+    ----------
+    df_pass : See module docstring.
+
+    Returns
+    -------
+    df_interp : DataFrame
+        DataFrame for walking pass with no gaps in the frames.
+
+    """
     # Make a dataframe of the walking pass with no missing frames
     df_consec = pf.make_index_consecutive(df_pass)
     df_consec = df_consec.applymap(lambda x: x if isinstance(x, np.ndarray)
