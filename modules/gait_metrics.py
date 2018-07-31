@@ -29,7 +29,7 @@ import modules.phase_detection as pde
 import modules.sliding_window as sw
 
 
-def iterpolate_points(df_pass):
+def interpolate_points(df_pass):
     """
     Interpolate points for missing frames in a walking pass.
 
@@ -89,37 +89,6 @@ def direction_of_pass(df_pass):
     return line_point, direction_pass
 
 
-def foot_contacts_to_gait(df_contact):
-    """
-    Calculate gait metrics from all instances of the feet contacting the floor.
-
-    Parameters
-    ----------
-    df_contact : DataFrame
-        Each row represents an instance of a foot contacting the floor.
-        Columns are 'frame', 'position', 'number', 'side'.
-
-    Returns
-    -------
-    df_gait : DataFrame
-        Each row represents a set of gait metrics calculated from one stride.
-        Columns include gait metric names, e.g., stride_velocity.
-        Columns also include 'number' and 'side'.
-
-    """
-    foot_tuples = df_contact.itertuples(index=False)
-
-    def yield_metrics():
-
-        for foot_tuple in sw.generate_window(foot_tuples, n=3):
-
-            yield stride_metrics(*foot_tuple)
-
-    df_gait = pd.DataFrame(yield_metrics())
-
-    return df_gait
-
-
 def stride_metrics(foot_x_i, foot_y, foot_x_f, *, fps=30):
     """
     Calculate gait metrics from a single stride.
@@ -153,21 +122,71 @@ def stride_metrics(foot_x_i, foot_y, foot_x_f, *, fps=30):
 
     stride_velocity = stride_length / stride_time
 
-    metrics = {'number': foot_x_i.number,
-               'side': foot_x_i.side,
+    metrics = {
+        'number': foot_x_i.number,
+        'side': foot_x_i.side,
 
-               'stride_length': stride_length,
-               'stride_time': stride_time,
-               'stride_velocity': stride_velocity,
+        'stride_length': stride_length,
+        'stride_time': stride_time,
+        'stride_velocity': stride_velocity,
 
-               'absolute_step_length': norm(pos_x_f - pos_y),
-               'step_length': norm(pos_x_f - pos_y_proj),
-               'stride_width': norm(pos_y - pos_y_proj),
+        'absolute_step_length': norm(pos_x_f - pos_y),
+        'step_length': norm(pos_x_f - pos_y_proj),
+        'stride_width': norm(pos_y - pos_y_proj),
 
-               'step_time': (foot_x_f.frame - foot_y.frame) / fps
-               }
+        'step_time': (foot_x_f.frame - foot_y.frame) / fps
+        }
 
     return metrics
+
+
+def stance_metrics(is_stance_l, is_stance_r):
+
+    is_stance_both = is_stance_l & is_stance_r
+
+    metric_names = [
+        'stance_percentage_L',
+        'stance_percentage_R',
+        'double_stance_percentage',
+    ]
+
+    stance_vectors = [is_stance_l, is_stance_r, is_stance_both]
+
+    metrics = {name: nf.ratio_nonzero(x) * 100 for name, x in
+               zip(metric_names, stance_vectors)}
+
+    return metrics
+
+
+def foot_contacts_to_gait(df_contact):
+    """
+    Calculate gait metrics from all instances of the feet contacting the floor.
+
+    Parameters
+    ----------
+    df_contact : DataFrame
+        Each row represents an instance of a foot contacting the floor.
+        Columns are 'frame', 'position', 'number', 'side'.
+
+    Returns
+    -------
+    df_gait : DataFrame
+        Each row represents a set of gait metrics calculated from one stride.
+        Columns include gait metric names, e.g., stride_velocity.
+        Columns also include 'number' and 'side'.
+
+    """
+    foot_tuples = df_contact.itertuples(index=False)
+
+    def yield_metrics():
+
+        for foot_tuple in sw.generate_window(foot_tuples, n=3):
+
+            yield stride_metrics(*foot_tuple)
+
+    df_gait = pd.DataFrame(yield_metrics())
+
+    return df_gait
 
 
 def walking_pass_metrics(df_pass, direction_pass):
@@ -183,12 +202,19 @@ def walking_pass_metrics(df_pass, direction_pass):
 
     Returns
     -------
-    df_gait
-        See module docstring.
+    df_pass_metrics : DataFrame
+        All metrics for a walking pass.
+        Columns are metric names.
 
     """
-    # df_phase_l = pde.get_phase_dataframe(df_pass.L_FOOT, direction_pass)
-    # df_phase_r = pde.get_phase_dataframe(df_pass.R_FOOT, direction_pass)
+    df_phase_l = pde.get_phase_dataframe(df_pass.L_FOOT, direction_pass)
+    df_phase_r = pde.get_phase_dataframe(df_pass.R_FOOT, direction_pass)
+
+    is_stance_l = df_phase_l.phase.values == 'stance'
+    is_stance_r = df_phase_r.phase.values == 'stance'
+
+    stance_dict = stance_metrics(is_stance_l, is_stance_r)
+    df_stance = pd.DataFrame.from_records([stance_dict])
 
     df_contact_l = pde.get_contacts(df_pass.L_FOOT, direction_pass, '_L')
     df_contact_r = pde.get_contacts(df_pass.R_FOOT, direction_pass, '_R')
@@ -203,11 +229,12 @@ def walking_pass_metrics(df_pass, direction_pass):
     df_gait = foot_contacts_to_gait(df_contact)
 
     if not df_gait.empty:
-
         df_gait = pf.split_and_merge(df_gait, merge_col='number',
                                      split_col='side', split_vals=('L', 'R'))
 
-    return df_gait
+    df_pass_metrics = df_gait.reset_index(drop=True).join(df_stance)
+
+    return df_pass_metrics
 
 
 def combine_walking_passes(pass_dfs):
@@ -230,20 +257,18 @@ def combine_walking_passes(pass_dfs):
     df_list = []
     for i, df_pass in enumerate(pass_dfs):
 
-        df_pass = iterpolate_points(df_pass)
-
         # Ensure there are no missing frames in the walking pass
-        df_pass = pf.make_index_consecutive(df_pass)
+        df_pass = interpolate_points(df_pass)
 
         _, direction_pass = direction_of_pass(df_pass)
 
         # Assign correct sides to feet
         df_assigned = asi.assign_sides_pass(df_pass, direction_pass)
 
-        df_gait = walking_pass_metrics(df_assigned, direction_pass)
-        df_gait['pass'] = i  # Add column to record the walking pass
+        df_pass_metrics = walking_pass_metrics(df_assigned, direction_pass)
+        df_pass_metrics['pass'] = i  # Add column to record the walking pass
 
-        df_list.append(df_gait)
+        df_list.append(df_pass_metrics)
 
     df_combined = pd.concat(df_list, sort=True)
 
