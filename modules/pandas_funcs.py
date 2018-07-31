@@ -4,6 +4,7 @@ from functools import reduce
 
 import pandas as pd
 
+import modules.numpy_funcs as nf
 import modules.string_funcs as sf
 
 
@@ -482,3 +483,15 @@ def split_and_merge(df, merge_col=None, split_col=None, split_vals=None):
     df_merge = df_merge.set_index(merge_col)
 
     return df_merge
+
+
+def make_index_consecutive(df):
+
+    index_vals = df.index.values
+
+    index_consec, _ = nf.make_consecutive(index_vals)
+
+    df_consec = pd.DataFrame(index=index_consec, columns=df.columns)
+    df_consec.update(df)
+
+    return df_consec
