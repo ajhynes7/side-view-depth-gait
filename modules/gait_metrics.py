@@ -23,59 +23,31 @@ from numpy.linalg import norm
 
 import modules.assign_sides as asi
 import modules.linear_algebra as lin
+import modules.numpy_funcs as nf
 import modules.pandas_funcs as pf
 import modules.phase_detection as pde
 import modules.sliding_window as sw
 
 
-def stride_metrics(foot_x_i, foot_y, foot_x_f, *, fps=30):
-    """
-    Calculate gait metrics from a single stride.
+def iterpolate_points(df_pass):
 
-    Parameters
-    ----------
-    foot_x_i : namedtuple
-        Single result from pandas DataFrame.itertuples() method.
-        Includes fields of 'frame', 'position', 'number', and 'side'.
-        Represents the initial foot on side x.
-    foot_y : namedtuple
-        Represents the foot on side y.
-    foot_x_f : namedtuple
-        Represents the final foot on side x.
-    fps : int, optional
-        Camera frame rate in frames per second (default 30).
+    # Make a dataframe of the walking pass with no missing frames
+    df_consec = pf.make_index_consecutive(df_pass)
+    df_consec = df_consec.applymap(lambda x: x if isinstance(x, np.ndarray)
+                                   else np.full(3, np.nan))
 
-    Returns
-    -------
-    metrics : dict
-        Dictionary containing gait metric names and values.
+    df_interp = df_consec.copy()
 
-    """
-    pos_x_i, pos_x_f = foot_x_i.position, foot_x_f.position
-    pos_y = foot_y.position
+    for column_name in df_consec:
 
-    pos_y_proj = lin.project_point_line(pos_y, pos_x_i, pos_x_f)
+        points = np.stack(df_consec[column_name])
+        points_interp = np.apply_along_axis(nf.interp_nan, 0, points)
 
-    stride_length = norm(pos_x_f - pos_x_i)
-    stride_time = (foot_x_f.frame - foot_x_i.frame) / fps
+        points_series = pf.series_of_rows(points_interp, index=df_consec.index)
 
-    stride_velocity = stride_length / stride_time
+        df_interp[column_name] = points_series
 
-    metrics = {'number': foot_x_i.number,
-               'side': foot_x_i.side,
-
-               'stride_length': stride_length,
-               'stride_time': stride_time,
-               'stride_velocity': stride_velocity,
-
-               'absolute_step_length': norm(pos_x_f - pos_y),
-               'step_length': norm(pos_x_f - pos_y_proj),
-               'stride_width': norm(pos_y - pos_y_proj),
-
-               'step_time': (foot_x_f.frame - foot_y.frame) / fps
-               }
-
-    return metrics
+    return df_interp
 
 
 def direction_of_pass(df_pass):
@@ -136,6 +108,56 @@ def foot_contacts_to_gait(df_contact):
     return df_gait
 
 
+def stride_metrics(foot_x_i, foot_y, foot_x_f, *, fps=30):
+    """
+    Calculate gait metrics from a single stride.
+
+    Parameters
+    ----------
+    foot_x_i : namedtuple
+        Single result from pandas DataFrame.itertuples() method.
+        Includes fields of 'frame', 'position', 'number', and 'side'.
+        Represents the initial foot on side x.
+    foot_y : namedtuple
+        Represents the foot on side y.
+    foot_x_f : namedtuple
+        Represents the final foot on side x.
+    fps : int, optional
+        Camera frame rate in frames per second (default 30).
+
+    Returns
+    -------
+    metrics : dict
+        Dictionary containing gait metric names and values.
+
+    """
+    pos_x_i, pos_x_f = foot_x_i.position, foot_x_f.position
+    pos_y = foot_y.position
+
+    pos_y_proj = lin.project_point_line(pos_y, pos_x_i, pos_x_f)
+
+    stride_length = norm(pos_x_f - pos_x_i)
+    stride_time = (foot_x_f.frame - foot_x_i.frame) / fps
+
+    stride_velocity = stride_length / stride_time
+
+    metrics = {'number': foot_x_i.number,
+               'side': foot_x_i.side,
+
+               'stride_length': stride_length,
+               'stride_time': stride_time,
+               'stride_velocity': stride_velocity,
+
+               'absolute_step_length': norm(pos_x_f - pos_y),
+               'step_length': norm(pos_x_f - pos_y_proj),
+               'stride_width': norm(pos_y - pos_y_proj),
+
+               'step_time': (foot_x_f.frame - foot_y.frame) / fps
+               }
+
+    return metrics
+
+
 def walking_pass_metrics(df_pass, direction_pass):
     """
     Calculate gait metrics from a single walking pass in front of the camera.
@@ -153,6 +175,9 @@ def walking_pass_metrics(df_pass, direction_pass):
         See module docstring.
 
     """
+    # df_phase_l = pde.get_phase_dataframe(df_pass.L_FOOT, direction_pass)
+    # df_phase_r = pde.get_phase_dataframe(df_pass.R_FOOT, direction_pass)
+
     df_contact_l = pde.get_contacts(df_pass.L_FOOT, direction_pass, '_L')
     df_contact_r = pde.get_contacts(df_pass.R_FOOT, direction_pass, '_R')
 
@@ -192,6 +217,11 @@ def combine_walking_passes(pass_dfs):
     """
     df_list = []
     for i, df_pass in enumerate(pass_dfs):
+
+        df_pass = iterpolate_points(df_pass)
+
+        # Ensure there are no missing frames in the walking pass
+        df_pass = pf.make_index_consecutive(df_pass)
 
         _, direction_pass = direction_of_pass(df_pass)
 
