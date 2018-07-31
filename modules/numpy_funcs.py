@@ -1,6 +1,7 @@
 """Functions related to numpy arrays or operations."""
 
 import numpy as np
+from scipy.interpolate import interp1d
 
 import modules.iterable_funcs as itf
 
@@ -534,7 +535,7 @@ def fill_with_previous(array):
 
     Examples
     --------
-    >>> fill_with_previous([0, 0, np.nan, 1, 1, 2, np.nan, 3]
+    >>> fill_with_previous([0, 0, np.nan, 1, 1, 2, np.nan, 3])
     [0, 0, 0, 1, 1, 2, 2, 3]
 
     >>> fill_with_previous([np.nan, 0, 1, 2])
@@ -554,3 +555,45 @@ def fill_with_previous(array):
             previous_number = value
 
     return array_filled
+
+
+def interp_nan(array):
+    """
+    Fill nan values of a 1D array using linear interpolation.
+
+    Parameters
+    ----------
+    array : ndarray
+        (n, ) input array.
+
+    Returns
+    -------
+    ndarray
+        (n, ) array with interpolated values.
+
+    Examples
+    --------
+    >>> interp_nan(np.array([1, np.nan, np.nan, np.nan, 3]))
+    array([1. , 1.5, 2. , 2.5, 3. ])
+
+    >>> array = np.array([1, 1, 3, np.nan, np.nan, 5, np.nan, 8, 10])
+    >>> np.round(interp_nan(array), 2)
+    array([ 1.  ,  1.  ,  3.  ,  3.67,  4.33,  5.  ,  6.5 ,  8.  , 10.  ])
+
+    >>> interp_nan(np.array([1, 2, 3]))
+    array([1., 2., 3.])
+
+    NaN values on the ends are not interpolated.
+
+    >>> interp_nan(np.array([np.nan, 1, 2, 3, np.nan]))
+    array([nan,  1.,  2.,  3., nan])
+
+    """
+    not_nan = ~np.isnan(array)
+
+    indices = np.arange(len(array))
+
+    x, y = indices[not_nan], array[not_nan]
+    f = interp1d(x, y, bounds_error=False)
+
+    return np.where(not_nan, array, f(indices))
