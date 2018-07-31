@@ -29,20 +29,15 @@ def detect_phases(frames, step_signal):
         Element is True if the corresponding foot is in the stance phase.
 
     """
-    frames_exp, step_signal_exp = nf.expand_arrays(frames, step_signal)
-
     pad_width = 5
-    cluster_values = sw.apply_to_padded(step_signal_exp, np.nanvar, pad_width,
+    cluster_values = sw.apply_to_padded(step_signal, np.nanvar, pad_width,
                                         'reflect', reflect_type='odd')
 
     points = nf.to_column(cluster_values)
     k_means = KMeans(n_clusters=2, random_state=0).fit(points)
 
     stance_label = np.argmin(k_means.cluster_centers_)
-    is_stance_exp = k_means.labels_ == stance_label
-
-    # Collapse vector to original length of the frames list.
-    is_stance = is_stance_exp[~np.isnan(step_signal_exp)]
+    is_stance = k_means.labels_ == stance_label
 
     # Remove small groups of consecutive stance frames, because these could
     # be false positives.
