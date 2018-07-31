@@ -17,9 +17,9 @@ list_lengths = st.integers(min_value=1, max_value=50)
 def same_len_lists(draw):
 
     n = draw(st.integers(min_value=1, max_value=50))
-    fixed_length_list = draw(st.lists(regular_ints, min_size=n, max_size=n))
+    fixed_length_list = st.lists(regular_ints, min_size=n, max_size=n)
 
-    return (fixed_length_list, fixed_length_list)
+    return (draw(fixed_length_list), draw(fixed_length_list))
 
 
 def test_divide_no_error():
@@ -56,6 +56,8 @@ def test_make_consecutive(array):
 def test_expand_arrays(lists):
 
     x, y = lists
+
+    assert x is not y
 
     if not np.array_equal(x, np.unique(x)):
 
