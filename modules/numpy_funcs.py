@@ -297,7 +297,7 @@ def find_indices(array, elems_to_find):
     array([], dtype=int64)
 
     """
-    return np.in1d(array, elems_to_find).nonzero()[0]
+    return np.nonzero(np.in1d(array, elems_to_find))[0]
 
 
 def group_by_label(array, labels):
@@ -424,6 +424,51 @@ def filter_consecutive_true(bool_array, min_length=2):
     return filt_array
 
 
+def filter_boolean_groups(array_bool, labels, min_length=2):
+    """
+    Filter out groups of values that have too few True elements.
+
+    Groups that are filtered have all elements set to False.
+
+    Parameters
+    ----------
+    array_bool : array_like
+        Input array.
+    labels : ndarray
+        Label of each element in boolean array.
+        The labels define the groups of elements.
+    min_length : int, optional
+        Minimum allowed number of True elements in a group.
+
+    Returns
+    -------
+    array_filt : ndarray
+        Boolean array after setting some elements set to False.
+
+    Examples
+    --------
+    >>> array = np.array([True, True, True, False, False, True, False])
+    >>> labels = np.array([0, 1, 2, 1, 1, 2, 0])
+    >>> filter_boolean_groups(array, labels)
+    array([False, False,  True, False, False,  True, False])
+
+    >>> filter_boolean_groups(array, labels, min_length=5)
+    array([False, False, False, False, False, False, False])
+
+    """
+    unique_labels, unique_counts = np.unique(labels, return_counts=True)
+
+    array_filt = array_bool.copy()
+
+    for label, count in zip(unique_labels, unique_counts):
+        is_label = labels == label
+
+        if np.sum(array_bool[is_label]) < min_length:
+            array_filt[is_label] = False
+
+    return array_filt
+
+
 def make_consecutive(array):
     """
     Convert an array to one with consecutive numbers.
@@ -432,7 +477,7 @@ def make_consecutive(array):
 
     Parameters
     ----------
-    array : array_like
+    array : ndarray
         Input array.
 
     Returns
@@ -445,7 +490,7 @@ def make_consecutive(array):
 
     Examples
     --------
-    >>> array = [1, 3, 4, 6, 7, 9]
+    >>> array = np.array([1, 3, 4, 6, 7, 9])
 
     >>> consecutive, index = make_consecutive(array)
     >>> consecutive
