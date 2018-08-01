@@ -39,9 +39,17 @@ def detect_phases(frames, step_signal):
     stance_label = np.argmin(k_means.cluster_centers_)
     is_stance = k_means.labels_ == stance_label
 
-    # Remove small groups of consecutive stance frames, because these could
-    # be false positives.
-    is_stance = nf.filter_consecutive_true(is_stance, min_length=10)
+    # Filter groups of stance frames that are too small
+
+    labels = np.fromiter(itf.label_repeated_elements(is_stance), 'int')
+
+    is_real = ~np.isnan(step_signal)
+    good_labels = nf.large_boolean_groups(is_stance & is_real, labels,
+                                          min_length=10)
+
+    good_elements = np.in1d(labels, list(good_labels))
+
+    is_stance &= good_elements
 
     return is_stance
 
@@ -137,7 +145,7 @@ def group_stance_frames(df_phase, suffix):
     column_funcs = {'frame': np.median, 'position': np.stack}
     df_grouped = pf.apply_to_grouped(df_stance, 'number', column_funcs)
 
-    df_grouped.position = df_grouped.position.apply(np.median, axis=0)
+    df_grouped.position = df_grouped.position.apply(np.nanmedian, axis=0)
 
     df_grouped.index = df_grouped.index.astype('str') + suffix
 
