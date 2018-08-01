@@ -424,11 +424,9 @@ def filter_consecutive_true(bool_array, min_length=2):
     return filt_array
 
 
-def filter_boolean_groups(array_bool, labels, min_length=2):
+def large_boolean_groups(array_bool, labels, min_length=2):
     """
-    Filter out groups of values that have too few True elements.
-
-    Groups that are filtered have all elements set to False.
+    Find groups of values in a boolean array that have enough True elements.
 
     Parameters
     ----------
@@ -442,31 +440,29 @@ def filter_boolean_groups(array_bool, labels, min_length=2):
 
     Returns
     -------
-    array_filt : ndarray
-        Boolean array after setting some elements set to False.
+    good_labels : set
+        Set of labels corresponding to groups with enough True elements.
 
     Examples
     --------
     >>> array = np.array([True, True, True, False, False, True, False])
     >>> labels = np.array([0, 1, 2, 1, 1, 2, 0])
-    >>> filter_boolean_groups(array, labels)
-    array([False, False,  True, False, False,  True, False])
+    >>> large_boolean_groups(array, labels)
+    {2}
 
-    >>> filter_boolean_groups(array, labels, min_length=5)
-    array([False, False, False, False, False, False, False])
+    >>> large_boolean_groups(array, labels, min_length=5)
+    {}
 
     """
-    unique_labels, unique_counts = np.unique(labels, return_counts=True)
+    good_labels = set()
 
-    array_filt = array_bool.copy()
+    for label in set(labels):
 
-    for label, count in zip(unique_labels, unique_counts):
-        is_label = labels == label
+        if np.sum(array_bool[labels == label]) >= min_length:
 
-        if np.sum(array_bool[is_label]) < min_length:
-            array_filt[is_label] = False
+            good_labels.add(label)
 
-    return array_filt
+    return good_labels
 
 
 def make_consecutive(array):
