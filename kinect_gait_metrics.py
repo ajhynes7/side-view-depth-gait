@@ -5,7 +5,7 @@ import os
 
 import numpy as np
 import pandas as pd
-from sklearn.cluster import KMeans
+from sklearn.cluster import MeanShift
 
 import modules.gait_metrics as gm
 import modules.numpy_funcs as nf
@@ -32,12 +32,13 @@ def main():
         # so they can be easily input to linear algebra functions
         df_head_feet = df_head_feet.applymap(pd.to_numeric)
 
-        # Cluster frames with k means to locate the 4 walking passes
-        frames = df_head_feet.index.values.reshape(-1, 1)
-        k_means = KMeans(n_clusters=4, random_state=0).fit(frames)
+        # Cluster frames with mean shift to locate the walking passes
+        frames = df_head_feet.index
+        mean_shift = MeanShift(bandwidth=60).fit(nf.to_column(frames))
+        labels = mean_shift.labels_
 
         # Sort labels so that the frames are in temporal order
-        labels = nf.map_sort(k_means.labels_)
+        labels = nf.map_sort(labels)
 
         # DataFrames for each walking pass in a trial
         pass_dfs = nf.group_by_label(df_head_feet, labels)
