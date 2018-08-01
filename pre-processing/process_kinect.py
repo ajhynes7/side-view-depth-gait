@@ -10,13 +10,13 @@ import numpy as np
 
 def main():
 
-    load_dir = os.path.join('..', 'data', 'kinect', 'raw')
+    load_dir = os.path.join('data', 'kinect', 'raw')
 
     # Directories for all hypothetical points and highest confidence points
-    save_dir_hypo = os.path.join('..', 'data', 'kinect', 'processed',
+    save_dir_hypo = os.path.join('data', 'kinect', 'processed',
                                  'hypothesis')
 
-    save_dir_conf = os.path.join('..', 'data', 'kinect', 'processed',
+    save_dir_conf = os.path.join('data', 'kinect', 'processed',
                                  'confidence')
 
     # All files with .txt extension
