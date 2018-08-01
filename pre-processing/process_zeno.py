@@ -9,18 +9,20 @@ import pandas as pd
 
 def main():
 
-    load_dir = os.path.join('..', 'data', 'zeno', 'raw')
-    save_dir = os.path.join('..', 'data', 'results')
+    load_dir = os.path.join('data', 'zeno', 'raw')
+    save_dir = os.path.join('data', 'results')
 
     save_name = 'zeno_gait_metrics.csv'
 
     labels = ['Step Length (cm.)', 'Stride Length (cm.)',
               'Stride Width (cm.)', 'Stride Velocity (cm./sec.)',
-              'Absolute Step Length (cm.)', 'Stride Time (sec.)']
+              'Absolute Step Length (cm.)', 'Stride Time (sec.)',
+              'Stance %', 'Total D. Support %']
 
     new_labels = ['step_length', 'stride_length',
                   'stride_width', 'stride_velocity',
-                  'absolute_step_length', 'stride_time']
+                  'absolute_step_length', 'stride_time',
+                  'stance_percentage', 'double_stance_percentage']
 
     label_dict = {k: v for k, v in zip(labels, new_labels)}
 
