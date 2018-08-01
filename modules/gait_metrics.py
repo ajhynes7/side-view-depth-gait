@@ -29,39 +29,6 @@ import modules.phase_detection as pde
 import modules.sliding_window as sw
 
 
-def interpolate_points(df_pass):
-    """
-    Interpolate points for missing frames in a walking pass.
-
-    Parameters
-    ----------
-    df_pass : See module docstring.
-
-    Returns
-    -------
-    df_interp : DataFrame
-        DataFrame for walking pass with no gaps in the frames.
-
-    """
-    # Make a dataframe of the walking pass with no missing frames
-    df_consec = pf.make_index_consecutive(df_pass)
-    df_consec = df_consec.applymap(lambda x: x if isinstance(x, np.ndarray)
-                                   else np.full(3, np.nan))
-
-    df_interp = df_consec.copy()
-
-    for column_name in df_consec:
-
-        points = np.stack(df_consec[column_name])
-        points_interp = np.apply_along_axis(nf.interp_nan, 0, points)
-
-        points_series = pf.series_of_rows(points_interp, index=df_consec.index)
-
-        df_interp[column_name] = points_series
-
-    return df_interp
-
-
 def direction_of_pass(df_pass):
     """
     Return vector representing overall direction of motion for a walking pass.
@@ -257,15 +224,17 @@ def combine_walking_passes(pass_dfs):
     df_list = []
     for i, df_pass in enumerate(pass_dfs):
 
-        # Ensure there are no missing frames in the walking pass
-        df_pass = interpolate_points(df_pass)
-
         _, direction_pass = direction_of_pass(df_pass)
 
         # Assign correct sides to feet
-        df_assigned = asi.assign_sides_pass(df_pass, direction_pass)
+        df_pass = asi.assign_sides_pass(df_pass, direction_pass)
 
-        df_pass_metrics = walking_pass_metrics(df_assigned, direction_pass)
+        # Ensure there are no missing frames in the walking pass
+        df_pass = pf.make_index_consecutive(df_pass)
+        df_pass = df_pass.applymap(lambda x: x if isinstance(x, np.ndarray)
+                                   else np.full(3, np.nan))
+
+        df_pass_metrics = walking_pass_metrics(df_pass, direction_pass)
         df_pass_metrics['pass'] = i  # Add column to record the walking pass
 
         df_list.append(df_pass_metrics)
