@@ -39,9 +39,7 @@ def real_to_proj(point_real, x_res, y_res, f_xz, f_yz):
     x_real, y_real, z_real = point_real
 
     x_proj = f_coeff_x * x_real / z_real + 0.5 * x_res
-
     y_proj = 0.5 * y_res - f_coeff_y * y_real / z_real
-
     z_proj = z_real
 
     point_proj = np.array([x_proj, y_proj, z_proj])
@@ -86,7 +84,6 @@ def proj_to_real(point_proj, x_res, y_res, f_xz, f_yz):
 
     x_real = f_normalized_x * z_proj * f_xz
     y_real = f_normalized_y * z_proj * f_yz
-
     z_real = z_proj
 
     point_real = np.array([x_real, y_real, z_real])
@@ -165,14 +162,12 @@ def image_to_points(img):
 
     """
     n_rows, n_cols = img.shape
-
     points = np.full((img.size, 3), np.nan)
 
     count = 0
 
     for x in range(n_cols):
         for y in range(n_rows):
-
             z = img[y, x]
             points[count] = [x, y, z]
 
@@ -207,14 +202,18 @@ def points_to_image(points):
            [ 3.,  4.]])
 
     """
-    # Number of rows and columns in the output image.
-    img_shape = np.max(points[:, [1, 0]], axis=0) + 1
+    z_values = points[:, -1]  # Save the float z-values
 
+    # Convert to int so that x and y can be indices to the image array
+    points = points.astype(int)
+
+    img_shape = np.max(points[:, [1, 0]], axis=0) + 1
     img = np.full(img_shape, np.nan)
 
-    for point in points:
+    for i, _ in enumerate(points):
+        x, y = points[i, :2]
+        z = z_values[i]
 
-        x, y, z = point
         img[y, x] = z
 
     return img

@@ -1,35 +1,44 @@
+"""Tests for images."""
+
+import hypothesis.strategies as st
 import numpy as np
-import numpy.testing as npt
+from hypothesis import assume, given
+from hypothesis.extra.numpy import arrays
 
 import modules.images as im
 
+floats = st.floats(min_value=-1e6, max_value=1e6)
+pos_floats = st.floats(min_value=0.1, max_value=1e6)
 
-def test_coordinate_conversion():
+point_3d = arrays('float', (3,), st.integers(min_value=-1e6, max_value=1e6))
 
-    x_res, y_res = 640, 480
 
-    x_to_z = 1.11146664619446
-    y_to_z = 0.833599984645844
+@st.composite
+def array_2d(draw):
+    """Generate a 2D numpy array."""
+    a = draw(st.integers(min_value=2, max_value=50))
+    b = draw(st.integers(min_value=2, max_value=50))
 
-    point_real = np.array([10, 5, 3])
+    return draw(arrays('float', (a, b), st.floats(allow_nan=False)))
 
-    point_proj = im.real_to_proj(point_real, x_res, y_res, x_to_z, y_to_z)
 
-    point_real_new = im.proj_to_real(point_proj, x_res, y_res, x_to_z, y_to_z)
+@given(point_3d, pos_floats, pos_floats, pos_floats, pos_floats)
+def test_coordinate_conversion(point_real, x_res, y_res, f_xz, f_yz):
+        """Test converting between real and projected coordinates."""
+        assume(point_real[-1] != 0)
 
-    npt.assert_allclose(point_real, point_real_new)
-
-    np.random.seed(0)
-
-    for _ in range(10):
-        x_res, y_res = np.random.randint(10, 1000), np.random.randint(10, 1000)
-        x_to_z, y_to_z = np.random.rand(), np.random.rand()
-
-        point_real = np.random.randint(-100, 100, size=(3,))
-
-        point_proj = im.real_to_proj(point_real, x_res, y_res, x_to_z, y_to_z)
+        point_proj = im.real_to_proj(point_real, x_res, y_res, f_xz, f_yz)
 
         point_real_new = im.proj_to_real(point_proj, x_res, y_res,
-                                         x_to_z, y_to_z)
+                                         f_xz, f_yz)
 
-        npt.assert_allclose(point_real, point_real_new)
+        assert np.allclose(point_real, point_real_new, rtol=1e-3)
+
+
+@given(array_2d())
+def test_image_points_conversion(img):
+    """Test converting between an image and a set of points."""
+    points = im.image_to_points(img)
+    img_new = im.points_to_image(points)
+
+    assert np.array_equal(img, img_new)
