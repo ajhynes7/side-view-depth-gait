@@ -457,12 +457,7 @@ def line_coordinate_system(line_point, direction, points):
     array([10.,  3., -5.])
 
     """
-    line_point_b = line_point + direction
-
-    projected_points = np.apply_along_axis(project_point_line, 1, points,
-                                           line_point, line_point_b)
-
-    vectors = projected_points - line_point
+    vectors = points - line_point
 
     coordinates = np.apply_along_axis(np.dot, 1, vectors, direction)
 
