@@ -3,14 +3,14 @@
 from itertools import chain, repeat
 
 
-def pairwise(x):
+def pairwise(seq):
     """
-    Return a zip object that contains consecutive pairs in an iterable.
+    Return a zip object that contains consecutive pairs of a sequence.
 
     Parameters
     ----------
-    x : iterable
-        Any iterable.
+    seq : sequence
+        Any sequence type (e.g. list, tuple, range, string).
 
     Returns
     -------
@@ -25,17 +25,17 @@ def pairwise(x):
     3 4
 
     """
-    return zip(x[:-1], x[1:])
+    return zip(seq[:-1], seq[1:])
 
 
-def iterable_to_dict(x):
+def iterable_to_dict(it):
     """
     Convert an iterable to a dictionary.
 
     Parameters
     ----------
-    x : iterable
-        Any iterable.
+    it : iterable
+        Any iterable (e.g. set, dict, generator, sequence type).
 
     Returns
     -------
@@ -50,10 +50,10 @@ def iterable_to_dict(x):
     {0: 1, 1: 1, 2: 2, 3: 4, 4: 5, 5: 10, 6: 20}
 
     """
-    return {i: value for i, value in enumerate(x)}
+    return {i: value for i, value in enumerate(it)}
 
 
-def map_with_dict(seq, mapping):
+def map_with_dict(it, mapping):
     """
     Map items in a sequence using a dictionary.
 
@@ -61,8 +61,8 @@ def map_with_dict(seq, mapping):
 
     Parameters
     ----------
-    seq : iterable
-        Input sequence.
+    it : iterable
+        Any iterable (e.g. set, dict, generator, sequence type).
     mapping : dict
         Dictionary used for mapping.
 
@@ -73,20 +73,17 @@ def map_with_dict(seq, mapping):
 
     Examples
     --------
-    >>> seq = ['R', 'L', 'R']
-    >>> mapping = {'R': 'Right', 'L': 'Left'}
-
-    >>> map_with_dict(seq, mapping)
+    >>> map_with_dict(['R', 'L', 'R'], {'R': 'Right', 'L': 'Left'})
     ['Right', 'Left', 'Right']
 
-    >>> seq = [0, 0, 1]
-    >>> mapping = {0: 10, 1: 5, 2: 8}
-
-    >>> map_with_dict(seq, mapping)
+    >>> map_with_dict([0, 0, 1], {0: 10, 1: 5, 2: 8})
     [10, 10, 5]
 
+    >>> map_with_dict((i for i in range(5)), {1: 2, 2: 3})
+    [None, 2, 3, None, None]
+
     """
-    return [*map(mapping.get, seq)]
+    return [*map(mapping.get, it)]
 
 
 def repeat_by_list(array, repeat_nums):
