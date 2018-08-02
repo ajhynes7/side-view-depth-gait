@@ -7,7 +7,6 @@ from hypothesis.extra.numpy import arrays
 
 import modules.images as im
 
-floats = st.floats(min_value=-1e6, max_value=1e6)
 pos_floats = st.floats(min_value=0.1, max_value=1e6)
 
 point_3d = arrays('float', (3,), st.integers(min_value=-1e6, max_value=1e6))
