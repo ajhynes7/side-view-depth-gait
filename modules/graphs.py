@@ -159,7 +159,7 @@ def min_shortest_path(prev, dist, node_labels, l):
     Returns
     -------
     list
-        Minimum shortest path to nodes with label l
+        Minimum shortest path to nodes with label l.
 
     Examples
     --------

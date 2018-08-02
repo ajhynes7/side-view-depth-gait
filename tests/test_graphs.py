@@ -1,25 +1,33 @@
+"""Tests for functions dealing with graphs."""
+
+import hypothesis.strategies as st
 import pytest
 import numpy as np
-import numpy.testing as npt
+from hypothesis import given
+from hypothesis.extra.numpy import arrays
 
 import modules.graphs as gr
 
+floats = st.floats(min_value=-1e6, max_value=1e6, allow_nan=True)
+ints = st.integers(min_value=-1e6, max_value=1e6)
 
-def test_adj_list_conversion():
 
-    G = {0: {1: 5},
-         1: {2: -4},
-         2: {1: 3}
-         }
+@st.composite
+def square_array(draw):
+    """Generate a square numpy array."""
+    n = draw(st.integers(min_value=1, max_value=50))
 
-    M = np.array([[np.nan, 5, np.nan],
-                  [np.nan, np.nan, -4],
-                  [np.nan, 3, np.nan]])
+    return draw(arrays('float', (n, n), st.floats(allow_nan=False)))
 
-    npt.assert_array_equal(gr.adj_list_to_matrix(G), M)
 
-    G_converted = gr.adj_matrix_to_list(M)
-    assert G == G_converted
+@given(square_array())
+def test_adj_list_conversion(adj_matrix):
+    """Test converting between adjacency list and matrix."""
+    adj_list = gr.adj_matrix_to_list(adj_matrix)
+
+    adj_matrix_new = gr.adj_list_to_matrix(adj_list)
+
+    assert np.array_equal(adj_matrix, adj_matrix_new)
 
 
 @pytest.mark.parametrize("test_input, expected", [
