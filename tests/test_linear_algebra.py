@@ -9,7 +9,6 @@ from numpy.linalg import norm
 
 import modules.linear_algebra as lin
 
-
 floats = st.floats(min_value=-1e6, max_value=1e6)
 ints = st.integers(min_value=-1e6, max_value=1e6)
 

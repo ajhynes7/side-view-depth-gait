@@ -1,8 +1,8 @@
 """Tests for functions dealing with graphs."""
 
 import hypothesis.strategies as st
-import pytest
 import numpy as np
+import pytest
 from hypothesis import given
 from hypothesis.extra.numpy import arrays
 

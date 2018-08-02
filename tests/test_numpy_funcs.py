@@ -1,9 +1,8 @@
 """Tests for functions using numpy."""
 
 import hypothesis.strategies as st
-import pytest
 import numpy as np
-import numpy.testing as npt
+import pytest
 from hypothesis import given
 
 import modules.numpy_funcs as nf
@@ -40,7 +39,7 @@ def test_dict_to_array():
     x = nf.dict_to_array(d)
     y = [1, np.nan, np.nan, np.nan, 10]
 
-    npt.assert_array_equal(x, y)
+    assert np.array_equal(x, y)
 
 
 @given(st.lists(list_lengths, min_size=1))
