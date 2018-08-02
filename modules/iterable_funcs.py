@@ -44,10 +44,11 @@ def iterable_to_dict(it):
 
     Examples
     --------
-    >>> x = [1, 1, 2, 4, 5, 10, 20]
-
-    >>> iterable_to_dict(x)
+    >>> iterable_to_dict([1, 1, 2, 4, 5, 10, 20])
     {0: 1, 1: 1, 2: 2, 3: 4, 4: 5, 5: 10, 6: 20}
+
+    >>> iterable_to_dict((i + 1 for i in range(3)))
+    {0: 1, 1: 2, 2: 3}
 
     """
     return {i: value for i, value in enumerate(it)}
@@ -86,16 +87,16 @@ def map_with_dict(it, mapping):
     return [*map(mapping.get, it)]
 
 
-def repeat_by_list(array, repeat_nums):
+def repeat_by_element(it, repeat_nums):
     """
-    Repeat each element in an array by a corresponding number.
+    Repeat each element in an iterable by a corresponding element value.
 
     Parameters
     ----------
-    array : iterable
-        Input iterable.
+    it : iterable
+        Any iterable (e.g. set, dict, generator, sequence type).
     repeat_nums : iterable
-        Iterable of numbers.
+        Iterable of integers.
 
     Returns
     -------
@@ -104,29 +105,35 @@ def repeat_by_list(array, repeat_nums):
 
     Examples
     --------
-    >>> [*repeat_by_list([1, 2, 3], [2, 2, 3])]
+    >>> [*repeat_by_element([1, 2, 3], [2, 2, 3])]
     [1, 1, 2, 2, 3, 3, 3]
 
-    >>> [*repeat_by_list([1, 2, 3], [0, 2, 3])]
+    >>> [*repeat_by_element([1, 2, 3], [0, 2, 3])]
     [2, 2, 3, 3, 3]
 
-    >>> [*repeat_by_list("abc", (2, 0, 3, 4))]
+    >>> [*repeat_by_element((i for i in range(5)), (i for i in range(10)))]
+    [1, 2, 2, 3, 3, 3, 4, 4, 4, 4]
+
+    >>> [*repeat_by_element("abc", (2, 0, 3, 4))]
     ['a', 'a', 'c', 'c', 'c']
 
+    >>> [*repeat_by_element("abc", (i for i in range(10)))]
+    ['b', 'c', 'c']
+
     """
-    repeated = (repeat(x, n) for x, n in zip(array, repeat_nums))
+    repeated = (repeat(x, n) for x, n in zip(it, repeat_nums))
 
     return chain(*repeated)
 
 
-def label_repeated_elements(array):
+def label_repeated_elements(seq):
     """
-    Assign a label to each group of repeated elements in an iterable.
+    Assign a label to each group of consecutive repeated elements.
 
     Parameters
     ----------
-    array : iterable
-        Input iterable.
+    seq : sequence
+        Any sequence type (e.g. list, tuple, range, string).
 
     Yields
     ------
@@ -135,18 +142,17 @@ def label_repeated_elements(array):
 
     Examples
     --------
-    >>> array = [0, 0, 1, 0, 0, 1]
-    >>> [*label_repeated_elements(array)]
+    >>> seq = [0, 0, 1, 0, 0, 1]
+    >>> [*label_repeated_elements(seq)]
     [0, 0, 1, 2, 2, 3]
 
     >>> [*label_repeated_elements("abbbddg")]
     [0, 1, 1, 1, 2, 2, 3]
 
     """
-    current_value, count = array[0], 0
+    current_value, count = seq[0], 0
 
-    for x in array:
-
+    for x in seq:
         if x != current_value:
             current_value = x
             count += 1
