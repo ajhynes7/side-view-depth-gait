@@ -11,14 +11,12 @@ import modules.pandas_funcs as pf
 import modules.sliding_window as sw
 
 
-def detect_phases(frames, step_signal):
+def detect_phases(step_signal):
     """
     Detect the stance/swing phases of a foot during a walking pass.
 
     Parameters
     ----------
-    frames : ndarray
-        (n, ) array of frame numbers.
     step_signal : ndarray
         (n, ) array of values indicating the motion of one foot.
 
@@ -82,7 +80,7 @@ def get_phase_dataframe(foot_series, direction_pass):
     step_signal = lin.line_coordinate_system(np.zeros(3), direction_pass,
                                              foot_points)
 
-    is_stance = detect_phases(frames, step_signal)
+    is_stance = detect_phases(step_signal)
 
     is_stance_series = pd.Series(is_stance, index=frames)
     is_stance_series.replace({True: 'stance', False: 'swing'}, inplace=True)
