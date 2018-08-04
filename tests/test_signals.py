@@ -26,12 +26,12 @@ def test_root_mean_square(array):
 
 
 @given(st.lists(ints_or_nan, min_size=1, max_size=50))
-def test_normalize(array):
+def test_nan_normalize(array):
     """Test that all real values are in range [0, 1]."""
     assume(~np.all(np.isnan(array)))
     assume(np.nanmax(array) - np.nanmin(array) > 0)
 
-    normalized = sig.normalize(array)
+    normalized = sig.nan_normalize(array)
     real_values = normalized[~np.isnan(normalized)]
 
     assert np.logical_and(np.all(real_values >= 0), np.all(real_values <= 1))

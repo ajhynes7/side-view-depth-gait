@@ -117,7 +117,7 @@ def assign_sides_pass(df_pass, direction_pass):
 
     # Detect peaks in the inverted foot distance signal.
     # These peaks are the frames when the feet are close together.
-    signal = 1 - sig.normalize(norms)
+    signal = 1 - sig.nan_normalize(norms)
     rms = sig.root_mean_square(signal)
     peak_frames, _ = sw.detect_peaks(frames, signal, window_length=3,
                                      min_height=rms)

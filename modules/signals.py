@@ -27,9 +27,11 @@ def root_mean_square(array):
     return np.sqrt(sum(array ** 2) / array.size)
 
 
-def normalize(array):
+def nan_normalize(array):
     """
     Map all values in an array to the range [0, 1].
+
+    The array can contain nan values.
 
     Parameters
     ----------
@@ -50,10 +52,10 @@ def normalize(array):
     Examples
     --------
     >>> array = [i for i in range(5)]
-    >>> np.array_equal(normalize(array), [0, 0.25, 0.5, 0.75, 1])
+    >>> np.array_equal(nan_normalize(array), [0, 0.25, 0.5, 0.75, 1])
     True
 
-    >>> normalize([1, 2, np.nan, 3])
+    >>> nan_normalize([1, 2, np.nan, 3])
     array([0. , 0.5, nan, 1. ])
 
     """
