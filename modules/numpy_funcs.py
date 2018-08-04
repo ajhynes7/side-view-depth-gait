@@ -5,57 +5,6 @@ import numpy as np
 import modules.iterable_funcs as itf
 
 
-def remove_nan(array):
-    """
-    Remove nan values from an array.
-
-    Parameters
-    ----------
-    array : ndarray
-        Input array.
-
-    Returns
-    -------
-    ndarray
-        Array with nan elements removed.
-
-    Examples
-    --------
-    >>> array = np.array([1, 2, 3, np.nan, 4])
-
-    >>> remove_nan(array)
-    array([1., 2., 3., 4.])
-
-    """
-    return array[~np.isnan(array)]
-
-
-def ratio_nonzero(x):
-    """
-    Return the ratio of nonzero elements to all elements.
-
-    Parameters
-    ----------
-    x : array_like
-        Input array.
-
-    Returns
-    -------
-    float
-        Ratio of nonzero elements
-
-    Examples
-    --------
-    >>> ratio_nonzero([0, 1, 2, 3, 0])
-    0.6
-
-    >>> ratio_nonzero([True, True, True, False])
-    0.75
-
-    """
-    return np.count_nonzero(x) / len(x)
-
-
 def to_column(x):
     """
     Convert a 1D array to a 2D column.
@@ -82,6 +31,86 @@ def to_column(x):
 
     """
     return np.array(x).reshape(-1, 1)
+
+
+def remove_nan(array):
+    """
+    Remove nan values from an array.
+
+    Parameters
+    ----------
+    array : ndarray
+        Input array.
+
+    Returns
+    -------
+    ndarray
+        Array with nan elements removed.
+
+    Examples
+    --------
+    >>> array = np.array([1, 2, 3, np.nan, 4])
+
+    >>> remove_nan(array)
+    array([1., 2., 3., 4.])
+
+    """
+    return array[~np.isnan(array)]
+
+
+def ratio_nonzero(array):
+    """
+    Return the ratio of nonzero elements to all elements.
+
+    Parameters
+    ----------
+    array : array_like
+        Input array.
+
+    Returns
+    -------
+    float
+        Ratio of nonzero elements.
+
+    Examples
+    --------
+    >>> ratio_nonzero([0, 1, 2, 3, 0])
+    0.6
+
+    >>> ratio_nonzero([True, True, True, False])
+    0.75
+
+    """
+    return np.count_nonzero(array) / len(array)
+
+
+def is_sorted(array):
+    """
+    Check if array is sorted in ascending order.
+
+    Parameters
+    ----------
+    array : array_like
+        Input array.
+
+    Returns
+    -------
+    bool
+        True if array is in ascending order.
+
+    Examples
+    --------
+    >>> is_sorted([1, 2, 3])
+    True
+
+    >>> is_sorted([-10, -5, 0, 8])
+    True
+
+    >>> is_sorted([-5, 0, 4, 3, 6, 8])
+    False
+
+    """
+    return np.all(np.diff(array) >= 0)
 
 
 def all_consecutive(array):
@@ -113,7 +142,7 @@ def all_consecutive(array):
     return np.all(np.diff(array) == 1)
 
 
-def unique_no_sort(x):
+def unique_no_sort(array):
     """
     Return array of unique elements with order preserved.
 
@@ -122,13 +151,13 @@ def unique_no_sort(x):
 
     Parameters
     ----------
-    x : array_like
+    array : array_like
         Input array.
 
     Returns
     -------
     ndarray
-        Unique elements of x with original order preserved.
+        Unique elements of array with original order preserved.
 
     Examples
     --------
@@ -139,18 +168,18 @@ def unique_no_sort(x):
     array([1, 0, 5, 3])
 
     """
-    unique, return_ind = np.unique(x, return_index=True)
+    unique, return_ind = np.unique(array, return_index=True)
 
     return unique[np.argsort(return_ind)]
 
 
-def map_sort(x):
+def map_to_whole(array):
     """
     Map elements in an array to whole numbers in order (0, 1, 2, ...).
 
     Parameters
     ----------
-    x : array_like
+    array : array_like
         Input array of numbers.
 
     Returns
@@ -160,20 +189,19 @@ def map_sort(x):
 
     Examples
     --------
-    >>> map_sort([1, 1, 1, 0, 0, 2, 2, 3, 3, 3])
+    >>> map_to_whole([1, 1, 1, 0, 0, 2, 2, 3, 3, 3])
     [0, 0, 0, 1, 1, 2, 2, 3, 3, 3]
 
-    >>> map_sort([3, 3, 5, 5, 5, 10, 2])
+    >>> map_to_whole([3, 3, 5, 5, 5, 10, 2])
     [0, 0, 1, 1, 1, 2, 3]
 
     """
-    unique = unique_no_sort(x)
-
+    unique = unique_no_sort(array)
     output_values = [i for i, _ in enumerate(unique)]
 
     mapping = {k: v for k, v in zip(unique, output_values)}
 
-    return itf.map_with_dict(x, mapping)
+    return itf.map_with_dict(array, mapping)
 
 
 def group_by_label(array, labels):

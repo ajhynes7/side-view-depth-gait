@@ -38,7 +38,7 @@ def main():
         labels = mean_shift.labels_
 
         # Sort labels so that the frames are in temporal order
-        labels = nf.map_sort(labels)
+        labels = nf.map_to_whole(labels)
 
         # DataFrames for each walking pass in a trial
         pass_dfs = nf.group_by_label(df_head_feet, labels)
