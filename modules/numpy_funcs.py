@@ -451,7 +451,7 @@ def large_boolean_groups(array_bool, labels, min_length=2):
     {2}
 
     >>> large_boolean_groups(array, labels, min_length=5)
-    {}
+    set()
 
     """
     good_labels = set()

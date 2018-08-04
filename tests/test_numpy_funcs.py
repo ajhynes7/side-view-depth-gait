@@ -39,7 +39,7 @@ def test_dict_to_array():
     x = nf.dict_to_array(d)
     y = [1, np.nan, np.nan, np.nan, 10]
 
-    assert np.array_equal(x, y)
+    assert np.allclose(x, y, equal_nan=True)
 
 
 @given(st.lists(list_lengths, min_size=1))

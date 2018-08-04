@@ -454,7 +454,7 @@ def line_coordinate_system(line_point, direction, points):
     >>> points = np.array([[10, 2], [3, 4], [-5, 5]])
 
     >>> line_coordinate_system(line_point, direction, points)
-    array([10.,  3., -5.])
+    array([10,  3, -5])
 
     """
     vectors = points - line_point
