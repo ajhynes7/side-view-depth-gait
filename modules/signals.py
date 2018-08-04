@@ -3,13 +3,13 @@
 import numpy as np
 
 
-def root_mean_square(x):
+def root_mean_square(array):
     """
     Return the root mean square of an array.
 
     Parameters
     ----------
-    x : ndarray
+    array : ndarray
         Input array.
 
     Returns
@@ -19,21 +19,21 @@ def root_mean_square(x):
 
     Examples
     --------
-    >>> x = np.array([0, 1])
-    >>> root_mean_square(x) == np.sqrt(2) / 2
+    >>> array = np.array([0, 1])
+    >>> root_mean_square(array) == np.sqrt(2) / 2
     True
 
     """
-    return np.sqrt(sum(x**2) / x.size)
+    return np.sqrt(sum(array ** 2) / array.size)
 
 
-def normalize(x):
+def normalize(array):
     """
     Map all values in an array to the range [0, 1].
 
     Parameters
     ----------
-    x : array_like
+    array : array_like
         Input array.
         Max and min values should be different to avoid division by zero.
 
@@ -42,14 +42,27 @@ def normalize(x):
     ndarray
         Normalized array.
 
+    Raises
+    ------
+    ValueError
+        When minimum and maximum values are the same.
+
     Examples
     --------
-    >>> x = [i for i in range(5)]
-    >>> np.array_equal(normalize(x), [0, 0.25, 0.5, 0.75, 1])
+    >>> array = [i for i in range(5)]
+    >>> np.array_equal(normalize(array), [0, 0.25, 0.5, 0.75, 1])
     True
 
-    """
-    max_value = np.nanmax(x)
-    min_value = np.nanmin(x)
+    >>> normalize([1, 2, np.nan, 3])
+    array([0. , 0.5, nan, 1. ])
 
-    return (x - min_value) / (max_value - min_value)
+    """
+    max_value = np.nanmax(array)
+    min_value = np.nanmin(array)
+
+    array_range = max_value - min_value
+
+    if array_range == 0:
+        raise ValueError("Division by zero.")
+
+    return (array - min_value) / array_range
