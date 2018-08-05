@@ -3,24 +3,37 @@
 import hypothesis.strategies as st
 import numpy as np
 import pytest
-from hypothesis import given
+from hypothesis import assume, given
+from hypothesis.extra.numpy import arrays
 
 import modules.numpy_funcs as nf
 
-regular_ints = st.integers(min_value=-1e6, max_value=1e6)
+ints = st.integers(min_value=-1e6, max_value=1e6)
 positive_ints = st.integers(min_value=1, max_value=1e6)
-list_lengths = st.integers(min_value=1, max_value=50)
+array_lengths = st.integers(min_value=1, max_value=50)
 
-array_like_1d = st.lists(regular_ints, min_size=1, max_size=50)
+# Generates either an integer or a nan
+ints_or_nan = st.one_of(ints, st.just(np.nan))
+
+array_like_1d = st.lists(ints, min_size=1, max_size=50)
 
 
 @st.composite
 def same_len_lists(draw):
     """Generate two lists with the same length."""
-    n = draw(st.integers(min_value=1, max_value=50))
-    fixed_length_list = st.lists(regular_ints, min_size=n, max_size=n)
+    n = draw(array_lengths)
+    fixed_length_list = st.lists(ints, min_size=n, max_size=n)
 
     return (draw(fixed_length_list), draw(fixed_length_list))
+
+
+@st.composite
+def same_len_arrays(draw):
+    """Generate two 1D numpy arrays with the same length."""
+    n = draw(array_lengths)
+    fixed_length_array = arrays('int', n, ints)
+
+    return (draw(fixed_length_array), draw(fixed_length_array))
 
 
 @given(array_like_1d)
@@ -30,6 +43,16 @@ def test_to_column(array):
     n_rows, n_cols = column_array.shape
 
     assert n_rows == len(array) and n_cols == 1
+
+
+@given(arrays('float', array_lengths, st.floats(allow_nan=True)))
+def test_remove_nan(array):
+    """Test removing nans from an array."""
+    # Assume the the input has at least one nan.
+    assume(np.any(np.isnan(array)))
+
+    removed = nf.remove_nan(array)
+    assert not np.any(np.isnan(removed))
 
 
 @given(array_like_1d)
@@ -77,6 +100,17 @@ def test_map_to_whole(array):
 
     assert np.array_equal(unique_mapped, whole_nums)
     assert set(counts_mapped) == set(counts)
+
+
+@given(same_len_arrays())
+def test_group_by_label(arrays):
+    """Test splitting an array into groups using the labels of the elements."""
+    array, labels = arrays
+
+    groups = list(nf.group_by_label(array, labels))
+
+    # There is a group for each label
+    assert len(groups) == len(np.unique(labels))
 
 
 @given(same_len_lists())

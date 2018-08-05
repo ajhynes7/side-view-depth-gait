@@ -5,13 +5,13 @@ import numpy as np
 import modules.iterable_funcs as itf
 
 
-def to_column(x):
+def to_column(array):
     """
     Convert a 1D array to a 2D column.
 
     Parameters
     ----------
-    x : array_like
+    array : array_like
         Input array with n elements.
 
     Returns
@@ -21,16 +21,16 @@ def to_column(x):
 
     Examples
     --------
-    >>> x = np.array([1, 2, 3])
-    >>> x.shape
+    >>> array = np.array([1, 2, 3])
+    >>> array.shape
     (3,)
 
-    >>> column = to_column(x)
+    >>> column = to_column(array)
     >>> column.shape
     (3, 1)
 
     """
-    return np.array(x).reshape(-1, 1)
+    return np.array(array).reshape(-1, 1)
 
 
 def remove_nan(array):
@@ -56,6 +56,37 @@ def remove_nan(array):
 
     """
     return array[~np.isnan(array)]
+
+
+def find_indices(array, elems_to_find):
+    """
+    Return the indices of array elements that match those in another array.
+
+    Parameters
+    ----------
+    array : array_like
+        Input array.
+    elems_to_find : array_like
+        Array of elements to find in the first array.
+
+    Returns
+    -------
+    ndarray
+        Indices to array.
+
+    Examples
+    --------
+    >>> array = [1, 2, 3, 5, 10]
+    >>> elems_to_find = [2, 3, 15]
+
+    >>> find_indices(array, elems_to_find)
+    array([1, 2])
+
+    >>> find_indices(array, [8, 11])
+    array([], dtype=int64)
+
+    """
+    return np.nonzero(np.in1d(array, elems_to_find))[0]
 
 
 def ratio_nonzero(array):
@@ -241,37 +272,6 @@ def group_by_label(array, labels):
     """
     for label in np.unique(labels):
         yield array[labels == label]
-
-
-def find_indices(array, elems_to_find):
-    """
-    Return the indices of array elements that match those in another array.
-
-    Parameters
-    ----------
-    array : array_like
-        Input array.
-    elems_to_find : array_like
-        Array of elements to find in the first array.
-
-    Returns
-    -------
-    ndarray
-        Indices to array.
-
-    Examples
-    --------
-    >>> array = [1, 2, 3, 5, 10]
-    >>> elems_to_find = [2, 3, 15]
-
-    >>> find_indices(array, elems_to_find)
-    array([1, 2])
-
-    >>> find_indices(array, [8, 11])
-    array([], dtype=int64)
-
-    """
-    return np.nonzero(np.in1d(array, elems_to_find))[0]
 
 
 def label_by_split(array, split_vals):
