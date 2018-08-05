@@ -18,24 +18,6 @@ ints_or_nan = st.one_of(ints, st.just(np.nan))
 array_like_1d = st.lists(ints, min_size=1, max_size=50)
 
 
-@st.composite
-def same_len_lists(draw):
-    """Generate two lists with the same length."""
-    n = draw(array_lengths)
-    fixed_length_list = st.lists(ints, min_size=n, max_size=n)
-
-    return (draw(fixed_length_list), draw(fixed_length_list))
-
-
-@st.composite
-def same_len_arrays(draw):
-    """Generate two 1D numpy arrays with the same length."""
-    n = draw(array_lengths)
-    fixed_length_array = arrays('int', n, ints)
-
-    return (draw(fixed_length_array), draw(fixed_length_array))
-
-
 @given(array_like_1d)
 def test_to_column(array):
     """Test converting an array_like to a column ndarray."""
@@ -102,10 +84,13 @@ def test_map_to_whole(array):
     assert set(counts_mapped) == set(counts)
 
 
-@given(same_len_arrays())
-def test_group_by_label(arrays):
+@given(st.data())
+def test_group_by_label(data):
     """Test splitting an array into groups using the labels of the elements."""
-    array, labels = arrays
+    n = data.draw(array_lengths)
+
+    array = data.draw(arrays('int', n, ints))
+    labels = data.draw(arrays('int', n, ints))
 
     groups = list(nf.group_by_label(array, labels))
 
@@ -113,12 +98,25 @@ def test_group_by_label(arrays):
     assert len(groups) == len(np.unique(labels))
 
 
-@given(same_len_lists())
-def test_expand_arrays(lists):
-    """Test expanding arrays x, y so that x is all consecutive."""
-    x, y = lists
+@given(array_like_1d)
+def test_make_consecutive(array):
+    """Test making an array have consecutive values from min to max."""
+    array_consec, index = nf.make_consecutive(array)
 
-    assert x is not y
+    assert np.array_equal(array_consec[index], np.unique(array))
+    assert nf.all_consecutive(array_consec)
+
+
+@given(st.data())
+def test_expand_arrays(data):
+    """Test expanding arrays x, y so that x is all consecutive."""
+    n = data.draw(array_lengths)
+
+    x = data.draw(st.lists(ints, min_size=n, max_size=n))
+    y = data.draw(st.lists(ints, min_size=n, max_size=n))
+
+    assume(not np.array_equal(x, y))
+    assert len(x) == len(y)
 
     if not np.array_equal(x, np.unique(x)):
 

@@ -368,7 +368,7 @@ def make_consecutive(array):
 
     Parameters
     ----------
-    array : ndarray
+    array : array_like
         Input array.
 
     Returns
@@ -381,9 +381,7 @@ def make_consecutive(array):
 
     Examples
     --------
-    >>> array = np.array([1, 3, 4, 6, 7, 9])
-
-    >>> consecutive, index = make_consecutive(array)
+    >>> consecutive, index = make_consecutive([1, 3, 4, 6, 7, 9)
     >>> consecutive
     array([1, 2, 3, 4, 5, 6, 7, 8, 9])
     >>> index
