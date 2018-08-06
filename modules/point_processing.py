@@ -104,7 +104,7 @@ def track_two_objects(points_1, points_2):
 
     Parameters
     ----------
-    points_1, points_2 : ndarray
+    points_1, points_2 : array_like
         (n, d) array of n points with dimension d.
         The points represent the position of an object at consective frames.
 
@@ -116,8 +116,8 @@ def track_two_objects(points_1, points_2):
 
     Examples
     --------
-    >>> points_1 = np.array([[-1, 1], [0, 1], [12, 11], [3, 5], [5, 6]])
-    >>> points_2 = np.array([[11, 10], [12, 12], [1, 3], [14, 13], [15, 15]])
+    >>> points_1 = [[-1, 1], [0, 1], [12, 11], [3, 5], [5, 6]]
+    >>> points_2 = [[11, 10], [12, 12], [1, 3], [14, 13], [15, 15]]
 
     >>> points_new_1, points_new_2 = track_two_objects(points_1, points_2)
 
