@@ -382,7 +382,7 @@ def make_consecutive(array):
 
     Examples
     --------
-    >>> consecutive, index = make_consecutive([1, 3, 4, 6, 7, 9)
+    >>> consecutive, index = make_consecutive([1, 3, 4, 6, 7, 9])
     >>> consecutive
     array([1, 2, 3, 4, 5, 6, 7, 8, 9])
     >>> index
