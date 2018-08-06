@@ -103,9 +103,9 @@ def test_map_to_whole(array):
 def test_group_by_label(data):
     """Test splitting an array into groups using the labels of the elements."""
     n = data.draw(array_lengths)
+    int_arrays = arrays(int, n, ints)
 
-    array = data.draw(arrays(int, n, ints))
-    labels = data.draw(arrays(int, n, ints))
+    array, labels = data.draw(int_arrays), data.draw(int_arrays)
 
     groups = list(nf.group_by_label(array, labels))
 
@@ -164,9 +164,9 @@ def test_make_consecutive(array):
 def test_expand_arrays(data):
     """Test expanding arrays x, y so that x is all consecutive."""
     n = data.draw(array_lengths)
+    lists = st.lists(ints, min_size=n, max_size=n)
 
-    x = data.draw(st.lists(ints, min_size=n, max_size=n))
-    y = data.draw(st.lists(ints, min_size=n, max_size=n))
+    x, y = data.draw(lists), data.draw(lists)
 
     assume(not np.array_equal(x, y))
     assert len(x) == len(y)
