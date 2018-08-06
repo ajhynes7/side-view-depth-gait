@@ -15,6 +15,7 @@ array_lengths = st.integers(min_value=1, max_value=50)
 # Generates either an integer or a nan
 ints_or_nan = st.one_of(ints, st.just(np.nan))
 
+array_1d = arrays(int, array_lengths, ints)
 array_like_1d = st.lists(ints, min_size=1, max_size=50)
 
 
@@ -27,7 +28,7 @@ def test_to_column(array):
     assert n_rows == len(array) and n_cols == 1
 
 
-@given(arrays('float', array_lengths, st.floats(allow_nan=True)))
+@given(arrays(float, array_lengths, st.floats(allow_nan=True)))
 def test_remove_nan(array):
     """Test removing nans from an array."""
     # Assume the the input has at least one nan.
@@ -35,6 +36,20 @@ def test_remove_nan(array):
 
     removed = nf.remove_nan(array)
     assert not np.any(np.isnan(removed))
+
+
+@given(st.data())
+def test_find_indices(data):
+    """Test finding the indices of elements in an array."""
+    array = data.draw(array_1d)
+
+    # Random subset of the array
+    n = data.draw(st.integers(min_value=1, max_value=len(array)))
+    values_to_find = np.random.choice(array, n)
+
+    indices = nf.find_indices(array, values_to_find)
+
+    assert set(values_to_find) == set(array[indices])
 
 
 @given(array_like_1d)
@@ -89,13 +104,51 @@ def test_group_by_label(data):
     """Test splitting an array into groups using the labels of the elements."""
     n = data.draw(array_lengths)
 
-    array = data.draw(arrays('int', n, ints))
-    labels = data.draw(arrays('int', n, ints))
+    array = data.draw(arrays(int, n, ints))
+    labels = data.draw(arrays(int, n, ints))
 
     groups = list(nf.group_by_label(array, labels))
 
     # There is a group for each label
     assert len(groups) == len(np.unique(labels))
+
+
+@given(st.data())
+def test_label_by_split(data):
+    """Test labelling an array with values used to split the labels."""
+    n_1 = data.draw(array_lengths)
+    n_2 = data.draw(array_lengths)
+
+    array = data.draw(arrays(int, n_1, ints))
+    split_vals = data.draw(arrays(int, n_2, ints))
+
+    labels = nf.label_by_split(array, split_vals)
+
+    assert len(labels) == len(array)
+    assert max(labels) == np.sum(np.in1d(array, split_vals))
+
+
+@given(st.data())
+def test_large_boolean_groups(data):
+    """Test finding groups of elements with enough True values."""
+    n = data.draw(array_lengths)
+
+    array_bool = data.draw(arrays(bool, n, st.booleans()))
+    labels = data.draw(arrays(int, n, ints))
+
+    min_length_1, min_length_2 = np.random.choice(n), np.random.choice(n)
+
+    good_labels_1 = nf.large_boolean_groups(array_bool, labels, min_length_1)
+    good_labels_2 = nf.large_boolean_groups(array_bool, labels, min_length_2)
+
+    if min_length_1 > min_length_2:
+        assert good_labels_1 <= good_labels_2
+
+    elif min_length_1 < min_length_2:
+        assert good_labels_1 >= good_labels_2
+
+    if good_labels_1 < good_labels_2:
+        assert min_length_1 > min_length_2
 
 
 @given(array_like_1d)

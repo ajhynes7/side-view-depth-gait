@@ -1,5 +1,7 @@
 """Functions related to numpy arrays or operations."""
 
+from itertools import chain
+
 import numpy as np
 
 import modules.iterable_funcs as itf
@@ -295,28 +297,27 @@ def label_by_split(array, split_vals):
     Examples
     --------
     >>> label_by_split([1, 2, 3, 4, 5], [2, 4])
-    array([0, 1, 1, 2, 2])
+    [0.0, 1.0, 1.0, 2.0, 2.0]
 
     >>> label_by_split([10, 2, 3, -1, 5], [2, 4])
-    array([0, 1, 1, 1, 1])
+    [0.0, 1.0, 1.0, 1.0, 1.0]
 
     >>> label_by_split([10, 2, 3, -1, 5], [2, 5])
-    array([0, 1, 1, 1, 2])
+    [0.0, 1.0, 1.0, 1.0, 2.0]
 
     >>> label_by_split([1, 2, 3], [8, 5])
-    array([0, 0, 0])
+    [0.0, 0.0, 0.0]
+
+    >>> label_by_split([10, 2, 2, 2, 3, 2, -1, 5], [2, 4])
+    [0.0, 1.0, 2.0, 3.0, 3.0, 4.0, 4.0, 4.0]
 
     """
     split_indices = find_indices(array, split_vals)
     sub_arrays = np.split(array, split_indices)
 
-    labels = np.zeros(len(array), dtype=int)
+    sub_labels = [i * np.ones(len(sub)) for i, sub in enumerate(sub_arrays)]
 
-    for i, sub_array in enumerate(sub_arrays):
-
-        labels[np.in1d(array, sub_array)] = i
-
-    return labels
+    return [*chain(*sub_labels)]
 
 
 def large_boolean_groups(array_bool, labels, min_length=2):
@@ -325,8 +326,8 @@ def large_boolean_groups(array_bool, labels, min_length=2):
 
     Parameters
     ----------
-    array_bool : array_like
-        Input array.
+    array_bool : ndarray
+        Input array of booleans.
     labels : ndarray
         Label of each element in boolean array.
         The labels define the groups of elements.
@@ -351,7 +352,7 @@ def large_boolean_groups(array_bool, labels, min_length=2):
     """
     good_labels = set()
 
-    for label in set(labels):
+    for label in np.unique(labels):
 
         if np.sum(array_bool[labels == label]) >= min_length:
 
