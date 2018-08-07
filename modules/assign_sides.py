@@ -1,8 +1,8 @@
 """Functions for assigning correct sides to the feet."""
 
 import numpy as np
-import pandas as pd
 from numpy.linalg import norm
+import pandas as pd
 
 import modules.linear_algebra as lin
 import modules.numpy_funcs as nf
@@ -38,7 +38,7 @@ def evaluate_foot_side(head_points, foot_points_1, foot_points_2, direction):
     targets = foot_points_1 - mean_foot_points
 
     side_values = np.array([lin.target_side_value(direction, up, target)
-                           for up, target in zip(up_vectors, targets)])
+                            for up, target in zip(up_vectors, targets)])
 
     return side_values
 
