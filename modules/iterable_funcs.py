@@ -1,7 +1,5 @@
 """Functions related to iterables."""
 
-from itertools import chain, repeat
-
 
 def pairwise(seq):
     """
@@ -85,45 +83,6 @@ def map_with_dict(it, mapping):
 
     """
     return [*map(mapping.get, it)]
-
-
-def repeat_by_element(it, repeat_nums):
-    """
-    Repeat each element in an iterable by a corresponding element value.
-
-    Parameters
-    ----------
-    it : iterable
-        Any iterable (e.g. set, dict, generator, sequence type).
-    repeat_nums : iterable
-        Iterable of integers.
-
-    Returns
-    -------
-    itertools.chain
-        Iterator with repeated elements.
-
-    Examples
-    --------
-    >>> [*repeat_by_element([1, 2, 3], [2, 2, 3])]
-    [1, 1, 2, 2, 3, 3, 3]
-
-    >>> [*repeat_by_element([1, 2, 3], [0, 2, 3])]
-    [2, 2, 3, 3, 3]
-
-    >>> [*repeat_by_element((i for i in range(5)), (i for i in range(10)))]
-    [1, 2, 2, 3, 3, 3, 4, 4, 4, 4]
-
-    >>> [*repeat_by_element("abc", (2, 0, 3, 4))]
-    ['a', 'a', 'c', 'c', 'c']
-
-    >>> [*repeat_by_element("abc", (i for i in range(10)))]
-    ['b', 'c', 'c']
-
-    """
-    repeated = (repeat(x, n) for x, n in zip(it, repeat_nums))
-
-    return chain(*repeated)
 
 
 def label_repeated_elements(seq):
