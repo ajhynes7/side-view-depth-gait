@@ -169,6 +169,3 @@ texinfo_documents = [
      author, 'Kinectgaitmetrics', 'One line description of project.',
      'Miscellaneous'),
 ]
-
-
-
