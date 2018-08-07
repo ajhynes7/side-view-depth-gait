@@ -331,47 +331,6 @@ def target_side_value(forward, up, target):
     return np.dot(perpendicular, unit_up)
 
 
-def target_side(forward, up, target):
-    """
-    Return the direction (left, right, or straight) of a target.
-
-    An orientation is defined by specifying the forward and up directions.
-
-    Parameters
-    ----------
-    forward : array_like
-        Vector for forward direction.
-    up : array_like
-        Vector for up direction.
-    target : array_like
-        Vector to a target.
-
-    Returns
-    -------
-    str
-        'left', 'right', or 'straight'
-
-    Examples
-    --------
-    >>> up, fwd = [8, 125, 3], [1, 0, 0]
-
-    >>> target_side([0, 0, 20], fwd, up)
-    'left'
-
-    >>> target_side([0, 0, -20], fwd, up)
-    'right'
-
-    >>> target_side([2, 0, 0], fwd, up)
-    'straight'
-
-    """
-    results_dict = {-1: 'left', 1: 'right', 0: 'straight'}
-
-    signed = np.sign(target_side_value(forward, up, target))
-
-    return results_dict[signed]
-
-
 def angle_between(u, v, degrees=False):
     """
     Compute the angle between vectors u and v.

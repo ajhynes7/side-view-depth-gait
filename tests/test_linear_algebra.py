@@ -1,13 +1,16 @@
 """Tests for linear algebra module."""
 
-import hypothesis.strategies as st
 import numpy as np
-import pytest
-from hypothesis import assume, given
-from hypothesis.extra.numpy import arrays
 from numpy.linalg import norm
 
+import hypothesis.strategies as st
+from hypothesis import assume, given
+from hypothesis.extra.numpy import arrays
+
+import pytest
+
 import modules.linear_algebra as lin
+
 
 floats = st.floats(min_value=-1e6, max_value=1e6)
 ints = st.integers(min_value=-1e6, max_value=1e6)
@@ -28,7 +31,6 @@ cross_vector = st.lists(ints, min_size=3, max_size=3).filter(lambda x: any(x))
 
 point_3 = arrays('int', (3,), ints)
 
-points = arrays('int', shapes, ints)
 points_2_3 = arrays('int', shapes_2_3, ints)
 
 
@@ -110,7 +112,7 @@ def test_project_point_line(point_p, point_a, point_b):
 
         # The order of the line points should not matter
         point_proj_2 = lin.project_point_line(point_p, point_b, point_a)
-        assert(np.allclose(point_proj, point_proj_2))
+        assert np.allclose(point_proj, point_proj_2)
 
 
 @given(point_3, point_3, point_3)
@@ -159,22 +161,7 @@ def test_best_fit_line(points):
     assert lin.is_parallel(direction, direction_rev)
 
 
-"""Parameterized tests"""
-
-
-@pytest.mark.parametrize("test_input, expected", [
-    (np.array([1, 1, 0]), 'straight'),
-    (np.array([-1, 5, 0]), 'straight'),
-    (np.array([0, 5, 1]), 'left'),
-    (np.array([0, -5, -10]), 'right'),
-    (np.array([4, 2, 1]), 'left'),
-])
-def test_target_side(test_input, expected):
-    """Test specific examples of determining the side of a target."""
-    forward = np.array([1, 0, 0])
-    up = np.array([0, 1, 0])
-
-    assert lin.target_side(test_input, forward, up) == expected
+# Parameterized tests
 
 
 @pytest.mark.parametrize("points, centroid, direction", [
