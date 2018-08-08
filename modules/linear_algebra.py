@@ -311,7 +311,6 @@ def target_side_value(forward, up, target):
     float
         Signed value indicating left/right direction of a target.
 
-
     Examples
     --------
     >>> forward, up = [0, 1, 0], [0, 0, 1]
