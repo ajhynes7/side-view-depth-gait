@@ -135,6 +135,48 @@ def connect_two_sets(points_1, points_2, **kwargs):
             connect_points(point_1, point_2, **kwargs)
 
 
+def connect_points_3(ax, point_1, point_2, **kwargs):
+    """
+    Connect two 3D points.
+
+    Parameters
+    ----------
+    ax : Axes3D object
+        Axis for plotting.
+    point_1, point_2 : array_like
+        Points to connect.
+    kwargs : dict, optional
+        Additional keywords passed to `plot`.
+
+    """
+    x1, y1, z1 = point_1
+    x2, y2, z2 = point_2
+
+    return ax.plot([x1, x2], [y1, y2], [z1, z2], **kwargs)
+
+
+def plot_vector_3(ax, point, direction, **kwargs):
+    """
+    Plot a 3D vector.
+
+    Parameters
+    ----------
+    ax : Axes3D object
+        Axis for plotting.
+    point : array_like
+        Position of the vector tail.
+    direction : array_like
+        Direction of the vector.
+    kwargs : dict, optional
+        Additional keywords passed to `quiver3D`.
+
+    """
+    x, y, z = point
+    u, v, w = direction
+
+    ax.quiver3D(x, y, z, u, v, w, **kwargs)
+
+
 def plot_groups(data_groups, plot_func, **kwargs):
     """
     Apply a plotting function to each group of data in an iterable.
