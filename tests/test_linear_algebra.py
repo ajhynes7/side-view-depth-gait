@@ -14,6 +14,7 @@ import modules.linear_algebra as lin
 
 floats = st.floats(min_value=-1e6, max_value=1e6)
 ints = st.integers(min_value=-1e6, max_value=1e6)
+ints_nonzero = ints.filter(lambda x: x != 0)
 
 n_points = st.one_of(st.integers(min_value=2, max_value=10))
 
@@ -27,7 +28,8 @@ shapes = st.tuples(st.integers(min_value=2, max_value=10),
 shapes_2_3 = st.tuples(st.integers(min_value=2, max_value=10),
                        st.integers(min_value=2, max_value=3))
 
-cross_vector = st.lists(ints, min_size=3, max_size=3).filter(lambda x: any(x))
+array_like_nonzero = st.lists(ints, min_size=3, max_size=3).filter(lambda x:
+                                                                   any(x))
 
 point_3 = arrays('int', (3,), ints)
 
@@ -61,7 +63,7 @@ def test_perpendicular(u, v):
     assert lin.is_perpendicular(u, v) == angle_90
 
 
-@given(cross_vector, cross_vector)
+@given(array_like_nonzero, array_like_nonzero)
 def test_parallel(u, v):
     """If two vectors are parallel, the angle between them must be 0 or 180."""
     angle_uv = lin.angle_between(u, v, degrees=True)
@@ -73,7 +75,7 @@ def test_parallel(u, v):
         assert (angle_0 or angle_180)
 
 
-@given(cross_vector, cross_vector, cross_vector)
+@given(array_like_nonzero, array_like_nonzero, array_like_nonzero)
 def test_collinear(point_a, point_b, point_c):
     """Test function that checks for collinearity."""
     dist_ab = norm(np.subtract(point_a, point_b))
@@ -161,7 +163,34 @@ def test_best_fit_line(points):
     assert lin.is_parallel(direction, direction_rev)
 
 
-# Parameterized tests
+@given(array_like_nonzero, array_like_nonzero, array_like_nonzero,
+       ints_nonzero)
+def test_target_side_value(forward, up, target, c):
+    """Test evaluating the side (left/right) of a target."""
+    assume(not lin.is_parallel(forward, up))
+
+    value = lin.target_side_value(forward, up, target)
+    value_scaled = lin.target_side_value(forward, up, c * np.array(target))
+
+    if value != 0:
+        # The target is to the left or right of forward
+
+        if abs(c) > 1:
+            assert abs(value_scaled) > abs(value)
+        elif abs(c) < 1:
+            assert abs(value_scaled) < abs(value)
+
+    scaled_forward = lin.target_side_value(c * np.array(forward), up, target)
+    scaled_up = lin.target_side_value(forward, c * np.array(up), target)
+
+    # Scaling the forward or up vectors does not change the
+    # magnitude of the result.
+    if c > 0:
+        assert np.isclose(value, scaled_forward)
+        assert np.isclose(value, scaled_up)
+    else:
+        assert np.isclose(value, -scaled_forward)
+        assert np.isclose(value, -scaled_up)
 
 
 @pytest.mark.parametrize("points, centroid, direction", [

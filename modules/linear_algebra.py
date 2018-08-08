@@ -312,23 +312,28 @@ def target_side_value(forward, up, target):
 
     Examples
     --------
-    >>> forward, up = [1, 0, 0], [0, 1, 0]
+    >>> forward, up = [0, 1, 0], [0, 0, 1]
 
-    >>> target_side_value(forward, up, [0, 0, -1])
+    >>> target_side_value(forward, up, [1, 10, 0])
     1.0
 
-    >>> target_side_value(forward, up, [0, 0, 5])
-    -5.0
+    >>> target_side_value([0, -1, 0], up, [1, 10, 0])
+    -1.0
 
-    >>> target_side_value(forward, [0, 2, 0], [0, 0, 5])
-    -5.0
+    The magnitude of the forward and up vectors does not affect the value.
+    >>> target_side_value([0, 5, 0], [0, 0, 3], [1, 10, 0])
+    1.0
+
+    >>> target_side_value(forward, up, [3, 10, 0])
+    3.0
+
+    >>> target_side_value(forward, up, [-4, 5, 5])
+    -4.0
 
     """
-    unit_forward, unit_up = unit(forward), unit(up)
+    normal = unit(np.cross(forward, up))
 
-    perpendicular = np.cross(unit_forward, target)
-
-    return np.dot(perpendicular, unit_up)
+    return np.dot(normal, target)
 
 
 def angle_between(u, v, degrees=False):
