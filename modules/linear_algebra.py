@@ -293,6 +293,10 @@ def target_side_value(forward, up, target):
 
     The orientation is defined by specifying the forward and up directions.
 
+    A positive value indicates right, negative indicates left, and zero
+    indicates straight. The magnitude of the value is greater when the target
+    is further to the left or right.
+
     Parameters
     ----------
     forward : array_like
@@ -306,9 +310,7 @@ def target_side_value(forward, up, target):
     -------
     float
         Signed value indicating left/right direction of a target.
-        A positive value indicates right, while negative indicates left.
-        The magnitude of the value is greater when the target is further to
-        the left/right.
+
 
     Examples
     --------
@@ -319,6 +321,9 @@ def target_side_value(forward, up, target):
 
     >>> target_side_value([0, -1, 0], up, [1, 10, 0])
     -1.0
+
+    >>> target_side_value(forward, up, [0, 2, 0])
+    0.0
 
     The magnitude of the forward and up vectors does not affect the value.
     >>> target_side_value([0, 5, 0], [0, 0, 3], [1, 10, 0])
