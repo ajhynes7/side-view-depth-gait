@@ -63,18 +63,18 @@ class BlandAltman:
     """
 
     def __init__(self, x_new, x_valid, percent=False):
-
+        """Bland Altman needs sets of new and validated measurements."""
         self.x_new, self.x_valid = x_new, x_valid
         self.percent = percent
 
     @property
     def means(self):
-
+        """Return means of the two measurement sets."""
         return (self.x_new + self.x_valid) / 2
 
     @property
     def differences(self):
-
+        """Return differences of the two measurement sets."""
         diffs = relative_difference(self.x_new, self.x_valid)
 
         if self.percent:
@@ -84,12 +84,12 @@ class BlandAltman:
 
     @property
     def bias(self):
-
+        """Return the mean of the differences, also called the bias."""
         return self.differences.mean()
 
     @property
     def limits_of_agreement(self):
-
+        """Return the limits of agreement using the standard deviation."""
         standard_dev = self.differences.std()
 
         lower_lim, upper_lim = mf.limits(self.bias, 1.96 * standard_dev)
@@ -98,7 +98,7 @@ class BlandAltman:
 
     @property
     def range(self):
-
+        """Return the difference of the limits of agreement."""
         lower_lim, upper_lim = self.limits_of_agreement
 
         return upper_lim - lower_lim

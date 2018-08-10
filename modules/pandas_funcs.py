@@ -371,6 +371,7 @@ def apply_to_grouped(df, groupby_column, column_funcs):
     groupby_object = df.groupby(groupby_column)
 
     def yield_groups():
+        """Inner function to yield results of applying func to the column."""
         for column, func in column_funcs.items():
             yield groupby_object[column].apply(func).to_frame()
 

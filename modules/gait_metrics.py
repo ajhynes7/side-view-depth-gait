@@ -18,8 +18,8 @@ df_gait : DataFrame
 
 """
 import numpy as np
-import pandas as pd
 from numpy.linalg import norm
+import pandas as pd
 
 import modules.assign_sides as asi
 import modules.linear_algebra as lin
@@ -108,7 +108,24 @@ def stride_metrics(foot_x_i, foot_y, foot_x_f, *, fps=30):
 
 
 def stance_metrics(is_stance_l, is_stance_r):
+    """
+    Calculate gait metrics involved with the stance to swing ratio.
 
+    Parameters
+    ----------
+    is_stance_l : ndarray
+        Vector of booleans.
+        Element is True if corresponding left foot is in the stance phase.
+    is_stance_r : bool
+        Vector of booleans.
+        Element is True if corresponding right foot is in the stance phase.
+
+    Returns
+    -------
+    metrics : dict
+        Dictionary with stance metrics, e.g. double stance percentage.
+
+    """
     is_stance_both = is_stance_l & is_stance_r
 
     metric_names = [
@@ -146,7 +163,7 @@ def foot_contacts_to_gait(df_contact):
     foot_tuples = df_contact.itertuples(index=False)
 
     def yield_metrics():
-
+        """Inner function to yield metrics for each stride."""
         for foot_tuple in sw.generate_window(foot_tuples, n=3):
 
             yield stride_metrics(*foot_tuple)
