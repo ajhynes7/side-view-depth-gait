@@ -11,7 +11,7 @@
     "git.ignoreLimitWarning": true,
 
     "vim.enableNeovim": true,
-    "python.pythonPath": "/Users/andrewhynes/anaconda3/bin/python",
+    "python.pythonPath": "/home/andrew/.virtualenvs/depth_gait_env/bin/python",
     "spellright.language": "en",
     "spellright.documentTypes": [
         "markdown",
