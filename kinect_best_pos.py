@@ -6,10 +6,10 @@ import os
 import numpy as np
 import pandas as pd
 
-import modules.math_funcs as mf
-import modules.pose_estimation as pe
-import modules.stats as st
+import analysis.math_funcs as mf
+import analysis.stats as st
 import modules.string_funcs as sf
+import modules.pose_estimation as pe
 
 
 def main():

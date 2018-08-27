@@ -3,7 +3,7 @@
 import numpy as np
 from statsmodels import robust
 
-import modules.math_funcs as mf
+import analysis.math_funcs as mf
 
 
 class BlandAltman:

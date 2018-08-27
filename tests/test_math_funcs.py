@@ -5,7 +5,7 @@ import numpy.testing as npt
 import pytest
 from hypothesis import assume, given
 
-import modules.math_funcs as mf
+import analysis.math_funcs as mf
 
 
 @given(st.floats(min_value=-1e10, max_value=1e10),

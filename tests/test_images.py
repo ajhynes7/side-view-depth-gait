@@ -5,7 +5,7 @@ import numpy as np
 from hypothesis import assume, given
 from hypothesis.extra.numpy import arrays
 
-import modules.images as im
+import analysis.images as im
 
 pos_floats = st.floats(min_value=0.1, max_value=1e6)
 
