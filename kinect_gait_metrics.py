@@ -24,7 +24,7 @@ def main():
 
     df_metrics = pd.read_csv(save_path, index_col=0)
 
-    for file_path in file_paths:
+    for file_path in file_paths[:1]:
 
         df_head_feet = pd.read_pickle(file_path)
 

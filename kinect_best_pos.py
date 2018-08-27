@@ -46,8 +46,8 @@ def main():
 
     # %% Select best positions from each Kinect data file
 
-    for file_path in file_paths:
-
+    for file_path in file_paths[:1]:
+        
         df = pd.read_pickle(file_path)
 
         base_name = os.path.basename(file_path)     # File with extension

@@ -30,7 +30,7 @@ def main():
 
     # %% Calculate lengths for each file
 
-    for file_path in file_paths:
+    for file_path in file_paths[:1]:
 
         df = pd.read_pickle(file_path)
 
