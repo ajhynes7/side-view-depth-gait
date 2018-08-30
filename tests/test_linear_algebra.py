@@ -36,6 +36,159 @@ point_3 = arrays('int', (3,), ints)
 points_2_3 = arrays('int', shapes_2_3, ints)
 
 
+def is_perpendicular(u, v, **kwargs):
+    """
+    Check if two vectors are perpendicular.
+
+    The vectors are perpendicular if their dot product is zero.
+
+    Parameters
+    ----------
+    u, v : array_like
+        Input vectors
+    kwargs : dict, optional
+        Additional keywords passed to `np.isclose`.
+
+    Returns
+    -------
+    bool
+        True if vectors are perpendicular.
+
+    Examples
+    --------
+    >>> is_perpendicular([0, 1], [1, 0])
+    True
+
+    >>> is_perpendicular([-1, 5], [3, 4])
+    False
+
+    >>> is_perpendicular([2, 0, 0], [0, 0, 2])
+    True
+
+    The zero vector is perpendicular to all vectors.
+
+    >>> is_perpendicular([0, 0, 0], [1, 2, 3])
+    True
+
+    """
+    return np.isclose(np.dot(u, v), 0, **kwargs)
+
+
+def is_parallel(u, v, **kwargs):
+    """
+    Check if two vectors are parallel.
+
+    Parameters
+    ----------
+    u, v : array_like
+        Input vectors
+    kwargs : dict, optional
+        Additional keywords passed to `np.allclose`.
+
+    Returns
+    -------
+    bool
+        True if vectors are parallel.
+
+    Examples
+    --------
+    >>> is_parallel([0, 1], [1, 0])
+    False
+
+    >>> is_parallel([-1, 5], [2, -10])
+    True
+
+    >>> is_parallel([1, 2, 3], [3, 6, 9])
+    True
+
+    """
+    return np.allclose(np.cross(u, v), 0, **kwargs)
+
+
+def is_collinear(point_a, point_b, point_c, **kwargs):
+    """
+    Check if three points are collinear.
+
+    Points A, B, C are collinear if AB is parallel to AC.
+
+    Parameters
+    ----------
+    point_a, point_b, point_c : ndarray
+        Input points.
+    kwargs : dict, optional
+        Additional keywords passed to `np.allclose`.
+
+    Returns
+    -------
+    bool
+        True if points are collinear.
+
+    Examples
+    --------
+    >>> is_collinear([0, 1], [1, 0], [1, 2])
+    False
+
+    >>> is_collinear([1, 1], [2, 2], [5, 5])
+    True
+
+    """
+    vector_ab = np.subtract(point_a, point_b)
+    vector_ac = np.subtract(point_a, point_c)
+
+    return is_parallel(vector_ab, vector_ac, **kwargs)
+
+
+def angle_between(u, v, degrees=False):
+    """
+    Compute the angle between vectors u and v.
+
+    Parameters
+    ----------
+    u, v : array_like
+        Input vectors
+
+    degrees : bool, optional
+        Set to true for angle in degrees rather than radians.
+
+    Returns
+    -------
+    theta : float
+        Angle between vectors.
+
+    Examples
+    --------
+    >>> angle_between([1, 0], [1, 0])
+    0.0
+
+    >>> u, v = [1, 0], [1, 1]
+    >>> round(angle_between(u, v, degrees=True))
+    45.0
+
+    >>> u, v = [1, 0], [-2, 0]
+    >>> round(angle_between(u, v, degrees=True))
+    180.0
+
+    >>> u, v = [1, 1, 1], [1, 1, 1]
+    >>> angle_between(u, v)
+    0.0
+
+    """
+    cos_theta = np.dot(lin.unit(u), lin.unit(v))
+
+    # The allowed domain for arccos is [-1, 1]
+    if cos_theta > 1:
+        cos_theta = 1
+    elif cos_theta < -1:
+        cos_theta = -1
+
+    theta = np.arccos(cos_theta)
+
+    if degrees:
+        theta = np.rad2deg(theta)
+
+    return theta
+
+
 @given(non_zero_vector)
 def test_unit(vector):
     """
@@ -58,17 +211,17 @@ def test_perpendicular(u, v):
     """Two vectors must have an angle of 90 deg if they are perpendicular."""
     assume(len(u) == len(v))
 
-    angle_90 = lin.angle_between(u, v, degrees=True) == 90
+    angle_90 = angle_between(u, v, degrees=True) == 90
 
-    assert lin.is_perpendicular(u, v) == angle_90
+    assert is_perpendicular(u, v) == angle_90
 
 
 @given(array_like_nonzero, array_like_nonzero)
 def test_parallel(u, v):
     """If two vectors are parallel, the angle between them must be 0 or 180."""
-    angle_uv = lin.angle_between(u, v, degrees=True)
+    angle_uv = angle_between(u, v, degrees=True)
 
-    if lin.is_parallel(u, v):
+    if is_parallel(u, v):
         angle_0 = np.isclose(angle_uv, 0, atol=1e-5)
         angle_180 = np.isclose(angle_uv, 180)
 
@@ -84,7 +237,7 @@ def test_collinear(point_a, point_b, point_c):
 
     dists = [dist_ab, dist_bc, dist_ac]
 
-    if lin.is_collinear(point_a, point_b, point_c):
+    if is_collinear(point_a, point_b, point_c):
 
         max_index = np.argmax(dists)
 
@@ -109,39 +262,12 @@ def test_project_point_line(point_p, point_a, point_b):
         vector_ab = np.subtract(point_a, point_b)
         vector_proj = np.subtract(point_p, point_proj)
 
-        assert lin.is_collinear(point_a, point_b, point_proj, atol=0.1)
-        assert lin.is_perpendicular(vector_ab, vector_proj, atol=0.1)
+        assert is_collinear(point_a, point_b, point_proj, atol=0.1)
+        assert is_perpendicular(vector_ab, vector_proj, atol=0.1)
 
         # The order of the line points should not matter
         point_proj_2 = lin.project_point_line(point_p, point_b, point_a)
         assert np.allclose(point_proj, point_proj_2)
-
-
-@given(point_3, point_3, point_3)
-def test_project_point_plane(point, point_plane, normal):
-    """Tests for projecting a point onto a plane."""
-    if norm(normal) == 0:
-
-        with pytest.raises(Exception):
-            lin.project_point_plane(point, point_plane, normal)
-
-    else:
-
-        point_proj = lin.project_point_plane(point, point_plane, normal)
-
-        vector_proj_point = point - point_proj
-        vector_proj_plane = point_plane - point_proj
-
-        dist_proj_point = norm(vector_proj_point)
-        dist_proj_plane = norm(vector_proj_plane)
-
-        assert lin.is_parallel(normal, vector_proj_point, atol=1e-3)
-
-        if not (np.isclose(dist_proj_point, 0) or
-                np.isclose(dist_proj_plane, 0)):
-
-            assert lin.is_perpendicular(vector_proj_plane, vector_proj_point,
-                                        atol=0.1)
 
 
 @given(points_2_3)
@@ -160,14 +286,14 @@ def test_best_fit_line(points):
     assert np.allclose(centroid, centroid_rev)
     assert np.isclose(norm(direction), 1)
 
-    assert lin.is_parallel(direction, direction_rev)
+    assert is_parallel(direction, direction_rev)
 
 
 @given(array_like_nonzero, array_like_nonzero, array_like_nonzero,
        ints_nonzero)
 def test_target_side_value(forward, up, target, c):
     """Test evaluating the side (left/right) of a target."""
-    assume(not lin.is_parallel(forward, up))
+    assume(not is_parallel(forward, up))
 
     value = lin.target_side_value(forward, up, target)
     value_scaled = lin.target_side_value(forward, up, c * np.array(target))
@@ -215,6 +341,6 @@ def test_best_fit_line_examples(points, centroid, direction):
 ])
 def test_angle_between_examples(a, b, expected):
     """Test specific examples of the angle between two vectors."""
-    angle = lin.angle_between(a, b)
+    angle = angle_between(a, b)
 
     assert np.allclose(angle, expected)

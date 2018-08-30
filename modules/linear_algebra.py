@@ -46,108 +46,6 @@ def unit(v, **kwargs):
     return v / length
 
 
-def is_perpendicular(u, v, **kwargs):
-    """
-    Check if two vectors are perpendicular.
-
-    The vectors are perpendicular if their dot product is zero.
-
-    Parameters
-    ----------
-    u, v : array_like
-        Input vectors
-    kwargs : dict, optional
-        Additional keywords passed to `np.isclose`.
-
-    Returns
-    -------
-    bool
-        True if vectors are perpendicular.
-
-    Examples
-    --------
-    >>> is_perpendicular([0, 1], [1, 0])
-    True
-
-    >>> is_perpendicular([-1, 5], [3, 4])
-    False
-
-    >>> is_perpendicular([2, 0, 0], [0, 0, 2])
-    True
-
-    The zero vector is perpendicular to all vectors.
-
-    >>> is_perpendicular([0, 0, 0], [1, 2, 3])
-    True
-
-    """
-    return np.isclose(np.dot(u, v), 0, **kwargs)
-
-
-def is_parallel(u, v, **kwargs):
-    """
-    Check if two vectors are parallel.
-
-    Parameters
-    ----------
-    u, v : array_like
-        Input vectors
-    kwargs : dict, optional
-        Additional keywords passed to `np.allclose`.
-
-    Returns
-    -------
-    bool
-        True if vectors are parallel.
-
-    Examples
-    --------
-    >>> is_parallel([0, 1], [1, 0])
-    False
-
-    >>> is_parallel([-1, 5], [2, -10])
-    True
-
-    >>> is_parallel([1, 2, 3], [3, 6, 9])
-    True
-
-    """
-    return np.allclose(np.cross(u, v), 0, **kwargs)
-
-
-def is_collinear(point_a, point_b, point_c, **kwargs):
-    """
-    Check if three points are collinear.
-
-    Points A, B, C are collinear if AB is parallel to AC.
-
-    Parameters
-    ----------
-    point_a, point_b, point_c : ndarray
-        Input points.
-    kwargs : dict, optional
-        Additional keywords passed to `np.allclose`.
-
-    Returns
-    -------
-    bool
-        True if points are collinear.
-
-    Examples
-    --------
-    >>> is_collinear([0, 1], [1, 0], [1, 2])
-    False
-
-    >>> is_collinear([1, 1], [2, 2], [5, 5])
-    True
-
-    """
-    vector_ab = np.subtract(point_a, point_b)
-    vector_ac = np.subtract(point_a, point_c)
-
-    return is_parallel(vector_ab, vector_ac, **kwargs)
-
-
 def project_point_line(point_p, line_point_a, line_point_b):
     """
     Project a point onto a line.
@@ -197,37 +95,6 @@ def project_point_line(point_p, line_point_a, line_point_b):
 
     # Project point onto line
     return line_point_a + coeff * vec_ab
-
-
-def project_point_plane(point, point_plane, normal):
-    """
-    Project a point onto a plane.
-
-    Parameters
-    ----------
-    point : ndarray
-        Point in space.
-    point_plane : ndarray
-        Point on plane.
-    normal : ndarray
-        Normal vector of plane.
-
-    Returns
-    -------
-    ndarray
-        Projection of point P onto the plane..
-
-    Examples
-    --------
-    >>> point_plane, normal = np.array([0, 0, 0]), np.array([0, 0, 1])
-
-    >>> project_point_plane(np.array([10, 2, 5]), point_plane, normal)
-    array([10.,  2.,  0.])
-
-    """
-    unit_normal = unit(normal)
-
-    return point - np.dot(point - point_plane, unit_normal) * unit_normal
 
 
 def best_fit_line(points):
@@ -338,57 +205,6 @@ def target_side_value(forward, up, target):
     normal = unit(np.cross(forward, up))
 
     return np.dot(normal, target)
-
-
-def angle_between(u, v, degrees=False):
-    """
-    Compute the angle between vectors u and v.
-
-    Parameters
-    ----------
-    u, v : array_like
-        Input vectors
-
-    degrees : bool, optional
-        Set to true for angle in degrees rather than radians.
-
-    Returns
-    -------
-    theta : float
-        Angle between vectors.
-
-    Examples
-    --------
-    >>> angle_between([1, 0], [1, 0])
-    0.0
-
-    >>> u, v = [1, 0], [1, 1]
-    >>> round(angle_between(u, v, degrees=True))
-    45.0
-
-    >>> u, v = [1, 0], [-2, 0]
-    >>> round(angle_between(u, v, degrees=True))
-    180.0
-
-    >>> u, v = [1, 1, 1], [1, 1, 1]
-    >>> angle_between(u, v)
-    0.0
-
-    """
-    cos_theta = np.dot(unit(u), unit(v))
-
-    # The allowed domain for arccos is [-1, 1]
-    if cos_theta > 1:
-        cos_theta = 1
-    elif cos_theta < -1:
-        cos_theta = -1
-
-    theta = np.arccos(cos_theta)
-
-    if degrees:
-        theta = np.rad2deg(theta)
-
-    return theta
 
 
 def line_coordinate_system(line_point, direction, points):
