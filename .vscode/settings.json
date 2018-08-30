@@ -1,21 +1,14 @@
 {
+    "editor.fontSize": 12,
+
     "python.linting.enabled": true,
-
-    "python.linting.pep8Enabled": false,
-
     "python.linting.pylintEnabled": true,
     "python.linting.flake8Enabled": true,
     "python.linting.pydocstyleEnabled": true,
-    "python.linting.mypyEnabled": false,
+    
+    "python.pythonPath": "/home/andrew/.virtualenvs/depth_gait_env/bin/python",
 
     "git.ignoreLimitWarning": true,
 
     "vim.enableNeovim": true,
-    "python.pythonPath": "/home/andrew/.virtualenvs/depth_gait_env/bin/python",
-    "spellright.language": "en",
-    "spellright.documentTypes": [
-        "markdown",
-        "latex",
-        "plaintext"
-    ]
 }
