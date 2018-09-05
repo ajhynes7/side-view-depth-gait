@@ -2,11 +2,10 @@
 untitled*
 .*
 *.pyc
+*html*
 
 .hypothesis
 docs/_build
 docs/separate
 docs/stubs
 data/
-htmlcov/
-coverage_html/
