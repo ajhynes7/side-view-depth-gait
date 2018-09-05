@@ -1,4 +1,9 @@
-"""Transform raw data from the Kinect into a pandas DataFrame."""
+"""
+Transform raw data from the Kinect into a pandas DataFrame.
+
+This script is intended to be run when the parent folder is the working directory.
+
+"""
 
 import copy
 import glob
@@ -20,7 +25,7 @@ def main():
                                  'confidence')
 
     # All files with .txt extension
-    file_paths = glob.glob(os.path.join(load_dir, '*.txt'))
+    file_paths = sorted(glob.glob(os.path.join(load_dir, '*.txt')))
 
     # Number of columns for the position coordinates
     # Number should be sufficiently large and divisible by 3
@@ -29,7 +34,7 @@ def main():
     # Useful for catching errors with relative file paths
     assert len(file_paths) > 0
 
-    for file_path in file_paths[10:30]:
+    for file_path in file_paths[-1:]:
 
         df = pd.read_csv(file_path, skiprows=range(22), header=None,
                          names=[i for i in range(-2, n_coord_cols)],
@@ -41,10 +46,10 @@ def main():
         # Replace any non-number strings with nan in the Frame column
         df.Frame = df.Frame.replace(r'[^0-9]', np.nan, regex=True)
 
-        # Convert the strings in the frame column to numbers
+        # Convert the strings in the frame column so the max function will work
         df.Frame = pd.to_numeric(df.Frame)
 
-        max_frame = int(max(df.Frame))
+        max_frame = int(np.nanmax(df.Frame))
 
         # Crop the DataFrame at the max frame number
         last_index = df[df.Frame == max_frame].index[-1]

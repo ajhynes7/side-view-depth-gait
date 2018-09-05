@@ -27,7 +27,7 @@ def main():
     label_dict = {k: v for k, v in zip(labels, new_labels)}
 
     # All files with .xlsx extension
-    file_paths = glob.glob(os.path.join(load_dir, '*.xlsx'))
+    file_paths = sorted(glob.glob(os.path.join(load_dir, '*.xlsx')))
 
     save_path = os.path.join(save_dir, save_name)
 
