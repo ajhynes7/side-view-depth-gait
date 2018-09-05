@@ -1,3 +1,4 @@
+#!/bin/bash
 
 coverage run -a kinect_lengths.py
 coverage run -a kinect_best_pos.py
