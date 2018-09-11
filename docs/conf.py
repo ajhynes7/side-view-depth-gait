@@ -19,6 +19,7 @@
 #
 import os
 import sys
+
 sys.path.insert(0, os.path.abspath('..'))
 sys.path.insert(0, os.path.abspath(os.path.join('..', 'modules')))
 
@@ -31,12 +32,10 @@ sys.path.insert(0, os.path.abspath(os.path.join('..', 'modules')))
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc',
-              'sphinx.ext.coverage',
-              'sphinx.ext.mathjax',
-              'sphinx.ext.viewcode',
-              'sphinx.ext.githubpages',
-              'numpydoc']
+extensions = [
+    'sphinx.ext.autodoc', 'sphinx.ext.coverage', 'sphinx.ext.mathjax',
+    'sphinx.ext.viewcode', 'sphinx.ext.githubpages', 'numpydoc'
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -82,7 +81,6 @@ pygments_style = 'sphinx'
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
 
-
 # -- Options for HTML output ----------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -113,12 +111,10 @@ html_sidebars = {
     ]
 }
 
-
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'Kinectgaitmetricsdoc'
-
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -148,16 +144,12 @@ latex_documents = [
      'Andrew Hynes', 'manual'),
 ]
 
-
 # -- Options for manual page output ---------------------------------------
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, 'kinectgaitmetrics', 'Kinect gait metrics Documentation',
-     [author], 1)
-]
-
+man_pages = [(master_doc, 'kinectgaitmetrics',
+              'Kinect gait metrics Documentation', [author], 1)]
 
 # -- Options for Texinfo output -------------------------------------------
 
