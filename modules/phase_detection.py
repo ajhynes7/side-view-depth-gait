@@ -28,8 +28,8 @@ def detect_phases(step_signal):
 
     """
     pad_width = 5
-    cluster_values = sw.apply_to_padded(step_signal, np.nanvar, pad_width,
-                                        'reflect', reflect_type='odd')
+    cluster_values = sw.apply_to_padded(
+        step_signal, np.nanvar, pad_width, 'reflect', reflect_type='odd')
 
     points = nf.to_column(cluster_values)
     k_means = KMeans(n_clusters=2, random_state=0).fit(points)
@@ -42,8 +42,8 @@ def detect_phases(step_signal):
     labels = np.fromiter(itf.label_repeated_elements(is_stance), 'int')
 
     is_real = ~np.isnan(step_signal)
-    good_labels = nf.large_boolean_groups(is_stance & is_real, labels,
-                                          min_length=10)
+    good_labels = nf.large_boolean_groups(
+        is_stance & is_real, labels, min_length=10)
 
     good_elements = np.in1d(labels, list(good_labels))
 
@@ -77,8 +77,8 @@ def get_phase_dataframe(foot_series, direction_pass):
     frames = foot_series.index.values
     foot_points = np.stack(foot_series)
 
-    step_signal = lin.line_coordinate_system(np.zeros(3), direction_pass,
-                                             foot_points)
+    step_signal = lin.line_coordinate_system(
+        np.zeros(3), direction_pass, foot_points)
 
     is_stance = detect_phases(step_signal)
 

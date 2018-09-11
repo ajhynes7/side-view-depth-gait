@@ -24,7 +24,7 @@ def root_mean_square(array):
     True
 
     """
-    return np.sqrt(sum(array ** 2) / array.size)
+    return np.sqrt(sum(array**2) / array.size)
 
 
 def nan_normalize(array):

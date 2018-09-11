@@ -50,7 +50,8 @@ def only_consecutive_labels(label_adj_list):
             if key_2 - key_1 == 1:
 
                 consecutive_adj_list[key_1] = {
-                    key_2: label_adj_list[key_1][key_2]}
+                    key_2: label_adj_list[key_1][key_2]
+                }
 
     return consecutive_adj_list
 
@@ -108,8 +109,8 @@ def estimate_lengths(pop_series, label_series, cost_func, n_frames, eps=0.01):
             population = pop_series.loc[f]
             labels = label_series.loc[f]
 
-            prev, dist = pop_shortest_paths(population, labels,
-                                            length_dict, cost_func)
+            prev, dist = pop_shortest_paths(population, labels, length_dict,
+                                            cost_func)
 
             label_dict = itf.iterable_to_dict(labels)
             min_path = gr.min_shortest_path(prev, dist, label_dict, n_lengths)
@@ -217,7 +218,7 @@ def lengths_to_adj_list(label_connections, lengths):
 
     """
     last_part = label_connections.max()
-    label_adj_list = {i: {} for i in range(last_part+1)}
+    label_adj_list = {i: {} for i in range(last_part + 1)}
 
     n_rows = len(label_connections)
 
@@ -274,7 +275,7 @@ def paths_to_foot(prev, dist, labels):
     foot_index = np.where(labels == max_label)[0]
     n_feet = len(foot_index)
 
-    path_matrix = np.full((n_feet, max_label+1), np.nan)
+    path_matrix = np.full((n_feet, max_label + 1), np.nan)
     path_dist = np.full(n_feet, np.nan)
 
     for i, foot in enumerate(foot_index):
@@ -631,8 +632,8 @@ def process_frame(population, labels, label_adj_list, radii, cost_func,
     cons_label_adj_list = only_consecutive_labels(label_adj_list)
 
     # Run shortest path algorithm on the body graph
-    prev, dist = pop_shortest_paths(population, labels,
-                                    cons_label_adj_list, cost_func)
+    prev, dist = pop_shortest_paths(population, labels, cons_label_adj_list,
+                                    cost_func)
 
     # Get shortest path to each foot
     path_matrix, path_dist = paths_to_foot(prev, dist, labels)
@@ -648,7 +649,7 @@ def process_frame(population, labels, label_adj_list, radii, cost_func,
     foot_1, foot_2 = select_best_feet(dist_matrix, filtered_score_matrix,
                                       path_matrix, radii)
 
-    pop_1, pop_2 = foot_to_pop(population, path_matrix, path_dist,
-                               foot_1, foot_2)
+    pop_1, pop_2 = foot_to_pop(population, path_matrix, path_dist, foot_1,
+                               foot_2)
 
     return pop_1, pop_2

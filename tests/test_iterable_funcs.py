@@ -8,9 +8,9 @@ from hypothesis import given
 
 import modules.iterable_funcs as itf
 
-sequences = st.one_of(st.lists(elements=st.integers(),
-                               min_size=1, max_size=50),
-                      st.text(min_size=1, max_size=50))
+sequences = st.one_of(
+    st.lists(elements=st.integers(), min_size=1, max_size=50),
+    st.text(min_size=1, max_size=50))
 
 
 @given(sequences)
@@ -34,8 +34,9 @@ def test_iterable_to_dict(it):
     assert len(d) == len(list(it_2))
 
 
-@given(st.iterables(elements=st.integers(), max_size=50),
-       st.dictionaries(keys=st.integers(), values=st.integers()))
+@given(
+    st.iterables(elements=st.integers(), max_size=50),
+    st.dictionaries(keys=st.integers(), values=st.integers()))
 def test_map_with_dict(it, mapping):
     """Test mapping an iterator with a dictionary."""
     it_1, it_2 = tee(it)

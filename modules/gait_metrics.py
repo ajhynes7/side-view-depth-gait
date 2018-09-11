@@ -92,17 +92,14 @@ def stride_metrics(foot_x_i, foot_y, foot_x_f, *, fps=30):
     metrics = {
         'number': foot_x_i.number,
         'side': foot_x_i.side,
-
         'stride_length': stride_length,
         'stride_time': stride_time,
         'stride_velocity': stride_velocity,
-
         'absolute_step_length': norm(pos_x_f - pos_y),
         'step_length': norm(pos_x_f - pos_y_proj),
         'stride_width': norm(pos_y - pos_y_proj),
-
         'step_time': (foot_x_f.frame - foot_y.frame) / fps
-        }
+    }
 
     return metrics
 
@@ -136,8 +133,10 @@ def stance_metrics(is_stance_l, is_stance_r):
 
     stance_vectors = [is_stance_l, is_stance_r, is_stance_both]
 
-    metrics = {name: nf.ratio_nonzero(x) * 100 for name, x in
-               zip(metric_names, stance_vectors)}
+    metrics = {
+        name: nf.ratio_nonzero(x) * 100
+        for name, x in zip(metric_names, stance_vectors)
+    }
 
     return metrics
 
@@ -207,14 +206,17 @@ def walking_pass_metrics(df_pass, direction_pass):
 
     df_stacked = pd.concat(contact_dfs).sort_values('frame').reset_index()
 
-    df_contact = pf.split_column(df_stacked, column='index', delim='_',
-                                 new_columns=['number', 'side'])
+    df_contact = pf.split_column(
+        df_stacked, column='index', delim='_', new_columns=['number', 'side'])
 
     df_gait = foot_contacts_to_gait(df_contact)
 
     if not df_gait.empty:
-        df_gait = pf.split_and_merge(df_gait, merge_col='number',
-                                     split_col='side', split_vals=('L', 'R'))
+        df_gait = pf.split_and_merge(
+            df_gait,
+            merge_col='number',
+            split_col='side',
+            split_vals=('L', 'R'))
 
     df_pass_metrics = df_gait.reset_index(drop=True).join(df_stance)
 
@@ -248,8 +250,8 @@ def combine_walking_passes(pass_dfs):
 
         # Ensure there are no missing frames in the walking pass
         df_pass = pf.make_index_consecutive(df_pass)
-        df_pass = df_pass.applymap(lambda x: x if isinstance(x, np.ndarray)
-                                   else np.full(3, np.nan))
+        df_pass = df_pass.applymap(
+            lambda x: x if isinstance(x, np.ndarray) else np.full(3, np.nan))
 
         df_pass_metrics = walking_pass_metrics(df_pass, direction_pass)
         df_pass_metrics['pass'] = i  # Add column to record the walking pass
@@ -260,7 +262,7 @@ def combine_walking_passes(pass_dfs):
 
     df_final = df_combined.reset_index(drop=True)
 
-    df_final = df_final.set_index('pass')   # Set the index to the pass column
+    df_final = df_final.set_index('pass')  # Set the index to the pass column
     df_final = df_final.sort_index(axis=1)  # Sort the columns alphabetically
 
     return df_final

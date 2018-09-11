@@ -37,8 +37,10 @@ def evaluate_foot_side(head_points, foot_points_1, foot_points_2, direction):
     up_vectors = head_points - mean_foot_points
     targets = foot_points_1 - mean_foot_points
 
-    side_values = np.array([lin.target_side_value(direction, up, target)
-                            for up, target in zip(up_vectors, targets)])
+    side_values = np.array([
+        lin.target_side_value(direction, up, target)
+        for up, target in zip(up_vectors, targets)
+    ])
 
     return side_values
 
@@ -70,15 +72,15 @@ def assign_sides_portion(df_walk, direction):
     foot_points_r = np.stack(df_walk.R_FOOT)
 
     # Find a motion correspondence so the foot sides do not switch abruptly
-    foot_points_l, foot_points_r = pp.track_two_objects(foot_points_l,
-                                                        foot_points_r)
+    foot_points_l, foot_points_r = pp.track_two_objects(
+        foot_points_l, foot_points_r)
 
     df_assigned = df_walk.copy()
     df_assigned.L_FOOT = pf.series_of_rows(foot_points_l, index=df_walk.index)
     df_assigned.R_FOOT = pf.series_of_rows(foot_points_r, index=df_walk.index)
 
-    side_values = evaluate_foot_side(head_points, foot_points_l,
-                                     foot_points_r, direction)
+    side_values = evaluate_foot_side(head_points, foot_points_l, foot_points_r,
+                                     direction)
 
     if np.sum(side_values) > 0:
         # The left foot should be labelled the right foot, and vice versa
@@ -119,14 +121,15 @@ def assign_sides_pass(df_pass, direction_pass):
     # These peaks are the frames when the feet are close together.
     signal = 1 - sig.nan_normalize(norms)
     rms = sig.root_mean_square(signal)
-    peak_frames, _ = sw.detect_peaks(frames, signal, window_length=3,
-                                     min_height=rms)
+    peak_frames, _ = sw.detect_peaks(
+        frames, signal, window_length=3, min_height=rms)
 
     labels = nf.label_by_split(frames, peak_frames)
 
     grouped_dfs = [*nf.group_by_label(df_pass, labels)]
 
-    assigned_dfs = [assign_sides_portion(x, direction_pass) for x in
-                    grouped_dfs]
+    assigned_dfs = [
+        assign_sides_portion(x, direction_pass) for x in grouped_dfs
+    ]
 
     return pd.concat(assigned_dfs)

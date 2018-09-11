@@ -68,7 +68,7 @@ def gaussian(x, sigma=1, mu=0):
     np.seterr(under='ignore')
 
     coeff = 1.0 / np.sqrt(2 * np.pi * sigma**2)
-    exponent = np.exp(- (x - mu)**2 / (2 * sigma**2))
+    exponent = np.exp(-(x - mu)**2 / (2 * sigma**2))
 
     return coeff * exponent
 

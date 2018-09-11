@@ -361,8 +361,13 @@ def split_and_merge(df, merge_col=None, split_col=None, split_vals=None):
 
     suffixes = ['_' + x for x in split_vals]
 
-    df_merge = pd.merge(df_1, df_2, left_on=merge_col, right_on=merge_col,
-                        how='outer', suffixes=suffixes)
+    df_merge = pd.merge(
+        df_1,
+        df_2,
+        left_on=merge_col,
+        right_on=merge_col,
+        how='outer',
+        suffixes=suffixes)
 
     df_merge = drop_any_like(df_merge, [split_col], axis=1)
     df_merge = df_merge.set_index(merge_col)

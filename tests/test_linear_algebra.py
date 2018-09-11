@@ -11,27 +11,28 @@ import pytest
 
 import modules.linear_algebra as lin
 
-
 floats = st.floats(min_value=-1e6, max_value=1e6)
 ints = st.integers(min_value=-1e6, max_value=1e6)
 ints_nonzero = ints.filter(lambda x: x != 0)
 
 n_points = st.one_of(st.integers(min_value=2, max_value=10))
 
-non_zero_vector = st.lists(ints, min_size=2, max_size=5).filter(lambda x:
-                                                                any(x))
+non_zero_vector = st.lists(
+    ints, min_size=2, max_size=5).filter(lambda x: any(x))
 
-shapes = st.tuples(st.integers(min_value=2, max_value=10),
-                   st.integers(min_value=2, max_value=10))
+shapes = st.tuples(
+    st.integers(min_value=2, max_value=10),
+    st.integers(min_value=2, max_value=10))
 
 # Strategy for generating shapes of numpy arrays with dimension 2 or 3
-shapes_2_3 = st.tuples(st.integers(min_value=2, max_value=10),
-                       st.integers(min_value=2, max_value=3))
+shapes_2_3 = st.tuples(
+    st.integers(min_value=2, max_value=10),
+    st.integers(min_value=2, max_value=3))
 
-array_like_nonzero = st.lists(ints, min_size=3, max_size=3).filter(lambda x:
-                                                                   any(x))
+array_like_nonzero = st.lists(
+    ints, min_size=3, max_size=3).filter(lambda x: any(x))
 
-point_3 = arrays('int', (3,), ints)
+point_3 = arrays('int', (3, ), ints)
 
 points_2_3 = arrays('int', shapes_2_3, ints)
 
@@ -242,7 +243,7 @@ def test_collinear(point_a, point_b, point_c):
         max_index = np.argmax(dists)
 
         max_dist = dists[max_index]
-        non_max_dists = dists[:max_index] + dists[max_index+1:]
+        non_max_dists = dists[:max_index] + dists[max_index + 1:]
 
         assert np.isclose(max_dist, sum(non_max_dists))
 

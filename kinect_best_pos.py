@@ -8,24 +8,24 @@ import pandas as pd
 
 import analysis.math_funcs as mf
 import analysis.stats as st
-import modules.string_funcs as sf
 import modules.pose_estimation as pe
+import modules.string_funcs as sf
 
 
 def main():
 
     # %% Parameters
 
-    def cost_func(a, b): return (a - b)**2
+    def cost_func(a, b):
+        return (a - b)**2
 
     def score_func(a, b):
-
         x = 1 / mf.norm_ratio(a, b)
-
         return -(x - 1)**2 + 1
 
-    lower_part_types = ['HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG',
-                        'FOOT']
+    lower_part_types = [
+        'HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG', 'FOOT'
+    ]
 
     radii = [i for i in range(0, 30, 5)]
 
@@ -47,10 +47,10 @@ def main():
     # %% Select best positions from each Kinect data file
 
     for file_path in file_paths[:1]:
-        
+
         df = pd.read_pickle(file_path)
 
-        base_name = os.path.basename(file_path)     # File with extension
+        base_name = os.path.basename(file_path)  # File with extension
         file_name = os.path.splitext(base_name)[0]  # File with no extension
 
         lengths = df_length.loc[file_name]  # Read lengths
@@ -88,8 +88,8 @@ def main():
 
             best_pos_list.append((pos_1, pos_2))
 
-        df_best_pos = pd.DataFrame(best_pos_list, index=frames,
-                                   columns=['Side A', 'Side B'])
+        df_best_pos = pd.DataFrame(
+            best_pos_list, index=frames, columns=['Side A', 'Side B'])
 
         # Head and foot positions
         head_pos = df_best_pos['Side A'].apply(lambda row: row[0, :])
@@ -102,11 +102,11 @@ def main():
         df_head_feet.index.name = 'Frame'
 
         # Remove outlier frames
-        y_foot_1 = df_head_feet.apply(lambda row: row['L_FOOT'][1],
-                                      axis=1).values
+        y_foot_1 = df_head_feet.apply(
+            lambda row: row['L_FOOT'][1], axis=1).values
 
-        y_foot_2 = df_head_feet.apply(lambda row: row['R_FOOT'][1],
-                                      axis=1).values
+        y_foot_2 = df_head_feet.apply(
+            lambda row: row['R_FOOT'][1], axis=1).values
 
         y_foot_filtered_1 = st.mad_outliers(y_foot_1, 2)
         y_foot_filtered_2 = st.mad_outliers(y_foot_2, 2)

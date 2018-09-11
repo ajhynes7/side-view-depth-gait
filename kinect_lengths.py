@@ -11,10 +11,12 @@ def main():
 
     # %% Parameters
 
-    def cost_func(a, b): return (a - b)**2
+    def cost_func(a, b):
+        return (a - b)**2
 
-    lower_part_types = ['HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG',
-                        'FOOT']
+    lower_part_types = [
+        'HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG', 'FOOT'
+    ]
 
     # %% Reading data
 
@@ -49,14 +51,14 @@ def main():
             lambda row: pe.get_population(row, part_labels)[1], axis=1)
 
         # Estimate lengths between consecutive parts
-        lengths = pe.estimate_lengths(population_series, label_series,
-                                      cost_func, 60, eps=0.01)
+        lengths = pe.estimate_lengths(
+            population_series, label_series, cost_func, 60, eps=0.01)
 
         # %% Fill in row of results DataFrame
 
         df_metrics = pd.read_csv(save_path, index_col=0)
 
-        base_name = os.path.basename(file_path)     # File with extension
+        base_name = os.path.basename(file_path)  # File with extension
         file_name = os.path.splitext(base_name)[0]  # File with no extension
 
         df_metrics.loc[file_name] = lengths

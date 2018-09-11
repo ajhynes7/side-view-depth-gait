@@ -14,15 +14,17 @@ def main():
 
     save_name = 'zeno_gait_metrics.csv'
 
-    labels = ['Step Length (cm.)', 'Stride Length (cm.)',
-              'Stride Width (cm.)', 'Stride Velocity (cm./sec.)',
-              'Absolute Step Length (cm.)', 'Stride Time (sec.)',
-              'Stance %', 'Total D. Support %']
+    labels = [
+        'Step Length (cm.)', 'Stride Length (cm.)', 'Stride Width (cm.)',
+        'Stride Velocity (cm./sec.)', 'Absolute Step Length (cm.)',
+        'Stride Time (sec.)', 'Stance %', 'Total D. Support %'
+    ]
 
-    new_labels = ['step_length', 'stride_length',
-                  'stride_width', 'stride_velocity',
-                  'absolute_step_length', 'stride_time',
-                  'stance_percentage', 'double_stance_percentage']
+    new_labels = [
+        'step_length', 'stride_length', 'stride_width', 'stride_velocity',
+        'absolute_step_length', 'stride_time', 'stance_percentage',
+        'double_stance_percentage'
+    ]
 
     label_dict = {k: v for k, v in zip(labels, new_labels)}
 
@@ -40,14 +42,14 @@ def main():
 
     for file_path in file_paths:
 
-        base_name = os.path.basename(file_path)     # File with extension
+        base_name = os.path.basename(file_path)  # File with extension
         file_name = os.path.splitext(base_name)[0]  # File with no extension
 
         df = pd.read_excel(file_path)
 
         # Locate the gait metric labels in the Excel file
-        bool_array = df.applymap(lambda x: 'Step Time' in x if
-                                 isinstance(x, str) else False).values
+        bool_array = df.applymap(
+            lambda x: 'Step Time' in x if isinstance(x, str) else False).values
 
         row_gait, col_gait = np.argwhere(bool_array)[0]
         df.columns = df.iloc[row_gait, :]
@@ -74,8 +76,8 @@ def main():
     df_r = df_r.rename(label_dict, axis='columns')
 
     # Merge left and right DataFrames by matching filenames
-    df_final = pd.merge(df_l, df_r, left_on='File', right_on='File',
-                        suffixes=('_L', '_R'))
+    df_final = pd.merge(
+        df_l, df_r, left_on='File', right_on='File', suffixes=('_L', '_R'))
 
     df_final = df_final.set_index('File')
 

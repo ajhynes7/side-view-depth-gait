@@ -17,8 +17,11 @@ def array_like_2d(draw):
     n_dim = draw(st.integers(min_value=1, max_value=5))
     n_points = draw(st.integers(min_value=1, max_value=50))
 
-    points = draw(st.lists(st.lists(ints, min_size=n_dim, max_size=n_dim),
-                           min_size=n_points, max_size=n_points))
+    points = draw(
+        st.lists(
+            st.lists(ints, min_size=n_dim, max_size=n_dim),
+            min_size=n_points,
+            max_size=n_points))
 
     return points
 
@@ -51,8 +54,8 @@ def test_correspond_points(data):
 
     assert np.all(points_ordered.shape == points_curr.shape)
 
-    assert np.array_equal(np.unique(points_ordered, axis=0),
-                          np.unique(points_curr, axis=0))
+    assert np.array_equal(
+        np.unique(points_ordered, axis=0), np.unique(points_curr, axis=0))
 
 
 @given(st.data())
@@ -61,8 +64,10 @@ def test_track_two_objects(data):
     n_dim = data.draw(st.integers(min_value=1, max_value=5))
     n_points = data.draw(st.integers(min_value=1, max_value=50))
 
-    array_like = st.lists(st.lists(ints, min_size=n_dim, max_size=n_dim),
-                          min_size=n_points, max_size=n_points)
+    array_like = st.lists(
+        st.lists(ints, min_size=n_dim, max_size=n_dim),
+        min_size=n_points,
+        max_size=n_points)
 
     points_1, points_2 = data.draw(array_like), data.draw(array_like)
 
