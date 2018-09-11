@@ -18,8 +18,8 @@ df_gait : DataFrame
 
 """
 import numpy as np
-from numpy.linalg import norm
 import pandas as pd
+from numpy.linalg import norm
 
 import modules.assign_sides as asi
 import modules.linear_algebra as lin
