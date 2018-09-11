@@ -38,13 +38,10 @@ def test_adj_list_conversion(adj_matrix):
 def test_paths(test_input, expected):
 
     prev, dist = gr.dag_shortest_paths(G, V, source_nodes)
-
     assert gr.trace_path(prev, test_input) == expected
 
 
 def test_path_weight():
-
-    prev, dist = gr.dag_shortest_paths(G, V, source_nodes)
 
     prev, dist = gr.dag_shortest_paths(G, V, {0})
     shortest_path = gr.trace_path(prev, 5)
