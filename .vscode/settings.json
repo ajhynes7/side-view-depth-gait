@@ -1,5 +1,6 @@
 {
     "editor.fontSize": 12,
+    "editor.rulers": [79],
 
     "python.linting.enabled": true,
     "python.linting.pylintEnabled": true,
