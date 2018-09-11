@@ -1,12 +1,12 @@
 """Tests for functions dealing with graphs."""
 
-import hypothesis.strategies as st
 import numpy as np
 import pytest
+
+import hypothesis.strategies as st
+import modules.graphs as gr
 from hypothesis import given
 from hypothesis.extra.numpy import arrays
-
-import modules.graphs as gr
 
 floats = st.floats(min_value=-1e6, max_value=1e6, allow_nan=True)
 ints = st.integers(min_value=-1e6, max_value=1e6)

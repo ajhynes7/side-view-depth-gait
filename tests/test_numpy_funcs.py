@@ -1,12 +1,12 @@
 """Tests for functions using numpy."""
 
-import hypothesis.strategies as st
 import numpy as np
 import pytest
+
+import hypothesis.strategies as st
+import modules.numpy_funcs as nf
 from hypothesis import assume, given
 from hypothesis.extra.numpy import arrays
-
-import modules.numpy_funcs as nf
 
 ints = st.integers(min_value=-1e6, max_value=1e6)
 positive_ints = st.integers(min_value=1, max_value=1e6)

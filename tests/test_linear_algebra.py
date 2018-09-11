@@ -1,15 +1,13 @@
 """Tests for linear algebra module."""
 
 import numpy as np
+import pytest
 from numpy.linalg import norm
 
 import hypothesis.strategies as st
+import modules.linear_algebra as lin
 from hypothesis import assume, given
 from hypothesis.extra.numpy import arrays
-
-import pytest
-
-import modules.linear_algebra as lin
 
 floats = st.floats(min_value=-1e6, max_value=1e6)
 ints = st.integers(min_value=-1e6, max_value=1e6)
