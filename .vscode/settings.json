@@ -7,7 +7,7 @@
     "python.linting.flake8Enabled": true,
     "python.linting.pydocstyleEnabled": true,
     
-    "python.pythonPath": "/home/andrew/.virtualenvs/depth_gait_env/bin/python",
+    "python.pythonPath": "/home/andrew/anaconda3/envs/depth_gait_env/bin/python",
 
     "git.ignoreLimitWarning": true,
 
