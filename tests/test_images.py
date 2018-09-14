@@ -22,13 +22,17 @@ def array_2d(draw):
 
 
 @given(point_3d, pos_floats, pos_floats, pos_floats, pos_floats)
-def test_coordinate_conversion(point_real, x_res, y_res, f_xz, f_yz):
+def test_coordinate_conversion(point_real, x_res, y_res, fov_x, fov_y):
     """Test converting between real and projected coordinates."""
     assume(point_real[-1] != 0)
 
-    point_proj = im.real_to_proj(point_real, x_res, y_res, f_xz, f_yz)
+    # Get focal length from image resolution and field of view in degrees
+    f_x = im.focal_length(x_res, fov_x)
+    f_y = im.focal_length(y_res, fov_y)
 
-    point_real_new = im.proj_to_real(point_proj, x_res, y_res, f_xz, f_yz)
+    point_proj = im.real_to_image(point_real, x_res, y_res, f_x, f_y)
+
+    point_real_new = im.image_to_real(point_proj, x_res, y_res, f_x, f_y)
 
     assert np.allclose(point_real, point_real_new, rtol=1e-3)
 
