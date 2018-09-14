@@ -35,12 +35,3 @@ def test_coordinate_conversion(point_real, x_res, y_res, fov_x, fov_y):
     point_real_new = im.image_to_real(point_proj, x_res, y_res, f_x, f_y)
 
     assert np.allclose(point_real, point_real_new, rtol=1e-3)
-
-
-@given(array_2d())
-def test_image_points_conversion(img):
-    """Test converting between an image and a set of points."""
-    points = im.image_to_points(img)
-    img_new = im.points_to_image(points)
-
-    assert np.array_equal(img, img_new)
