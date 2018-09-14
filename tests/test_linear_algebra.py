@@ -297,7 +297,7 @@ def test_target_side_value(forward, up, target, c):
     value = lin.target_side_value(forward, up, target)
     value_scaled = lin.target_side_value(forward, up, c * np.array(target))
 
-    if value != 0:
+    if abs(value) > 1e-3:
         # The target is to the left or right of forward
 
         if abs(c) > 1:
