@@ -10,7 +10,6 @@ from sklearn.cluster import MeanShift
 import modules.gait_metrics as gm
 import modules.numpy_funcs as nf
 
-
 load_dir = os.path.join('data', 'kinect', 'best_pos')
 save_dir = os.path.join('data', 'results')
 

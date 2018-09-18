@@ -25,9 +25,7 @@ def score_func(a, b):
 
 # Parameters
 
-lower_part_types = [
-    'HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG', 'FOOT'
-]
+lower_part_types = ['HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG', 'FOOT']
 
 radii = [i for i in range(0, 30, 5)]
 
@@ -103,11 +101,9 @@ for file_path in file_paths:
     df_head_feet.index.name = 'Frame'
 
     # Remove outlier frames
-    y_foot_1 = df_head_feet.apply(
-        lambda row: row['L_FOOT'][1], axis=1).values
+    y_foot_1 = df_head_feet.apply(lambda row: row['L_FOOT'][1], axis=1).values
 
-    y_foot_2 = df_head_feet.apply(
-        lambda row: row['R_FOOT'][1], axis=1).values
+    y_foot_2 = df_head_feet.apply(lambda row: row['R_FOOT'][1], axis=1).values
 
     y_foot_filtered_1 = st.mad_outliers(y_foot_1, 2)
     y_foot_filtered_2 = st.mad_outliers(y_foot_2, 2)
