@@ -112,10 +112,25 @@ def real_to_image(position_real, x_res, y_res, f_x, f_y):
     """
     x_real, y_real, z = position_real
 
+    # Coordinates using centre of image as origin
     x_view = x_real * f_x / z
     y_view = y_real * f_y / z
 
+    # Coordinates using top left corner of image as origin
     x_image = x_view + 0.5 * x_res
     y_image = 0.5 * y_res - y_view
 
     return np.array([x_image, y_image, z])
+
+
+def recalibrate_positions(positions_real_old, x_res_old, y_res_old,
+                          x_res, y_res, f_x, f_y):
+
+    positions_real = np.full(positions_real_old.shape, np.nan)
+
+    for i, pos_real_old in enumerate(positions_real_old):
+
+        pos_image = real_to_image(pos_real_old, x_res_old, y_res_old, f_x, f_y)
+        positions_real[i] = image_to_real(pos_image, x_res, y_res, f_x, f_y)
+
+    return positions_real
