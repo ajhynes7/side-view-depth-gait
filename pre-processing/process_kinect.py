@@ -13,8 +13,8 @@ import os
 import numpy as np
 import pandas as pd
 
+import analysis.images as im
 import modules.string_funcs as sf
-
 
 load_dir = os.path.join('data', 'kinect', 'raw')
 
@@ -40,6 +40,15 @@ file_paths_matched = [
 # Number of columns for the position coordinates
 # Number should be sufficiently large and divisible by 3
 n_coord_cols = 99
+
+# Parameters for recalibrating positions
+x_res_old, y_res_old = 640, 480
+x_res, y_res = 565, 430
+
+field_of_view_x, field_of_view_y = 57, 43
+
+f_x = im.focal_length(x_res, field_of_view_x)
+f_y = im.focal_length(y_res, field_of_view_y)
 
 for file_path in file_paths_matched:
 
@@ -93,10 +102,18 @@ for file_path in file_paths_matched:
         frame, part = row_hypo.Frame, row_hypo.Part
 
         coordinates = row_hypo.values[2:2 + n_coords]
-        points = coordinates.reshape(-1, 3)
 
-        dict_hypo[part][frame] = points
-        dict_conf[part][frame] = row_conf.values[2:]
+        points_hypo_old = coordinates.reshape(-1, 3)
+        points_conf_old = row_conf.values[2:].reshape(-1, 3)
+
+        points_hypo = im.recalibrate_positions(
+            points_hypo_old, x_res_old, y_res_old, x_res, y_res, f_x, f_y)
+
+        points_conf = im.recalibrate_positions(
+            points_conf_old, x_res_old, y_res_old, x_res, y_res, f_x, f_y)
+
+        dict_hypo[part][frame] = points_hypo
+        dict_conf[part][frame] = points_conf
 
     df_final_hypo = pd.DataFrame(dict_hypo).rename_axis('Frame')
     df_final_conf = pd.DataFrame(dict_conf).rename_axis('Frame')
