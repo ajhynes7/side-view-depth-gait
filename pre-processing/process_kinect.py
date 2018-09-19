@@ -45,11 +45,6 @@ n_coord_cols = 99
 x_res_old, y_res_old = 640, 480
 x_res, y_res = 565, 430
 
-field_of_view_x, field_of_view_y = 57, 43
-
-f_x = im.focal_length(x_res, field_of_view_x)
-f_y = im.focal_length(y_res, field_of_view_y)
-
 f_xz, f_yz = 1.11146664619446, 0.833599984645844
 
 for file_path in file_paths_matched:
@@ -111,11 +106,13 @@ for file_path in file_paths_matched:
 
         # The hypothetical positions need to be converted from
         # real to image then back to real using new parameters.
-        points_hypo = im.reproject_positions(
+        points_hypo = im.recalibrate_positions(
             points_hypo_old, x_res_old, y_res_old, x_res, y_res, f_xz, f_yz)
 
-        # The confidence points must be converted from image to real coordinates.
-        points_conf = np.apply_along_axis(im.proj_to_real, 1, points_conf_old, x_res, y_res, f_xz, f_yz)
+        # The confidence points must be converted from
+        # image to real coordinates
+        points_conf = np.apply_along_axis(im.image_to_real, 1, points_conf_old,
+                                          x_res, y_res, f_xz, f_yz)
 
         dict_hypo[part][frame] = points_hypo
         dict_conf[part][frame] = points_conf
