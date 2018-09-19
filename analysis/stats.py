@@ -1,4 +1,4 @@
-"""Module for statisical calculations."""
+"""Module for statistical calculations."""
 
 import numpy as np
 from statsmodels import robust
