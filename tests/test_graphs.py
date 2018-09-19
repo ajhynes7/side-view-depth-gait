@@ -37,13 +37,13 @@ def test_adj_list_conversion(adj_matrix):
 ])
 def test_paths(test_input, expected):
 
-    prev, dist = gr.dag_shortest_paths(G, V, source_nodes)
+    prev, _ = gr.dag_shortest_paths(G, V, source_nodes)
     assert gr.trace_path(prev, test_input) == expected
 
 
 def test_path_weight():
 
-    prev, dist = gr.dag_shortest_paths(G, V, {0})
+    prev, _ = gr.dag_shortest_paths(G, V, {0})
     shortest_path = gr.trace_path(prev, 5)
 
     assert gr.weight_along_path(G, shortest_path) == 9
@@ -61,13 +61,28 @@ def test_min_shortest_path():
     assert min_path == [1, 2, 4]
 
 
-G = {0: {1: 2, 2: 5},
-     1: {3: 10, 2: 4},
-     2: {3: 3, 4: 1},
-     3: {4: 15, 5: 6},
-     4: {5: 3},
-     5: {}
-     }
+G = {
+    0: {
+        1: 2,
+        2: 5
+    },
+    1: {
+        3: 10,
+        2: 4
+    },
+    2: {
+        3: 3,
+        4: 1
+    },
+    3: {
+        4: 15,
+        5: 6
+    },
+    4: {
+        5: 3
+    },
+    5: {}
+}
 
 source_nodes = {0, 1}
 V = [v for v in G]
