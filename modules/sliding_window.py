@@ -7,7 +7,6 @@ The window contains n elements from a larger iterable.
 import itertools
 
 import numpy as np
-import pandas as pd
 
 import modules.numpy_funcs as nf
 

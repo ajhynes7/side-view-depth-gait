@@ -73,10 +73,10 @@ def test_track_two_objects(data):
 
     points_new_1, points_new_2 = pp.track_two_objects(points_1, points_2)
 
-    sum_1 = np.sum(pp.consecutive_dist(points_1))
-    sum_2 = np.sum(pp.consecutive_dist(points_2))
+    sum_1 = sum(pp.consecutive_dist(points_1))
+    sum_2 = sum(pp.consecutive_dist(points_2))
 
-    sum_new_1 = np.sum(pp.consecutive_dist(points_new_1))
-    sum_new_2 = np.sum(pp.consecutive_dist(points_new_2))
+    sum_new_1 = sum(pp.consecutive_dist(points_new_1))
+    sum_new_2 = sum(pp.consecutive_dist(points_new_2))
 
     assert sum_new_1 + sum_new_2 <= sum_1 + sum_2

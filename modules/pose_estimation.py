@@ -210,11 +210,11 @@ def lengths_to_adj_list(label_connections, lengths):
 
     Examples
     --------
-    >>> label_connections = np.matrix('0 1; 1 2; 2 3; 3 4; 4 5; 3 5')
+    >>> label_connections = np.array([[1, 2], [2, 3], [3, 4], [4, 5], [3, 5]])
     >>> lengths = [62, 20, 14, 19, 20]
 
     >>> lengths_to_adj_list(label_connections, lengths)
-    {0: {1: 62}, 1: {2: 20}, 2: {3: 14}, 3: {4: 19, 5: 39}, 4: {5: 20}, 5: {}}
+    {0: {}, 1: {2: 20}, 2: {3: 14}, 3: {4: 19, 5: 39}, 4: {5: 20}, 5: {}}
 
     """
     last_part = label_connections.max()
