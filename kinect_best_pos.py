@@ -45,7 +45,7 @@ df_length = pd.read_csv(length_path, index_col=0)
 
 # Select best positions from each Kinect data file
 
-for file_path in file_paths:
+for file_path in file_paths[:3]:
 
     df = pd.read_pickle(file_path)
 
