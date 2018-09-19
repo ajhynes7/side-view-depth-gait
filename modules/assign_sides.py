@@ -1,8 +1,8 @@
 """Functions for assigning correct sides to the feet."""
 
 import numpy as np
-import pandas as pd
 from numpy.linalg import norm
+import pandas as pd
 
 import modules.linear_algebra as lin
 import modules.numpy_funcs as nf
