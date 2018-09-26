@@ -226,6 +226,46 @@ def lengths_to_adj_list(label_connections, lengths):
     return label_adj_list
 
 
+def pop_shortest_paths(population, labels, label_adj_list, weight_func):
+    """
+    Calculate shortest paths on the population of body parts.
+
+    Parameters
+    ----------
+    population : ndarray
+        (n, 3) array of n positions.
+    labels : ndarray
+        (n,) array of labels for n positions.
+        The labels correspond to body part types (e.g., foot).
+    label_adj_list : dict
+        Adjacency list for the labels.
+        label_adj_list[A][B] is the expected distance between
+        a point with label A and a point with label B.
+    weight_func : function
+        Function used to weight edges of the graph.
+
+    Returns
+    -------
+    prev : dict
+        For each node u in the graph, prev[u] is the previous node
+        on the shortest path to u.
+    dist : dict
+        For each node u in the graph, dist[u] is the total distance (weight)
+        of the shortest path to u.
+
+    """
+    # Represent population as a weighted directed acyclic graph
+    pop_graph = gr.points_to_graph(population, labels, label_adj_list,
+                                   weight_func)
+
+    # Run shortest path algorithm
+    head_nodes = np.where(labels == 0)[0]  # Source nodes
+    order = pop_graph.keys()  # Topological ordering of the nodes
+    prev, dist = gr.dag_shortest_paths(pop_graph, order, head_nodes)
+
+    return prev, dist
+
+
 def paths_to_foot(prev, dist, labels):
     """
     Retrieve the shortest path to each foot position.
@@ -280,46 +320,6 @@ def paths_to_foot(prev, dist, labels):
         path_dist[i] = dist[foot]
 
     return path_matrix.astype(int), path_dist
-
-
-def pop_shortest_paths(population, labels, label_adj_list, weight_func):
-    """
-    Calculate shortest paths on the population of body parts.
-
-    Parameters
-    ----------
-    population : ndarray
-        (n, 3) array of n positions.
-    labels : ndarray
-        (n,) array of labels for n positions.
-        The labels correspond to body part types (e.g., foot).
-    label_adj_list : dict
-        Adjacency list for the labels.
-        label_adj_list[A][B] is the expected distance between
-        a point with label A and a point with label B.
-    weight_func : function
-        Function used to weight edges of the graph.
-
-    Returns
-    -------
-    prev : dict
-        For each node u in the graph, prev[u] is the previous node
-        on the shortest path to u.
-    dist : dict
-        For each node u in the graph, dist[u] is the total distance (weight)
-        of the shortest path to u.
-
-    """
-    # Represent population as a weighted directed acyclic graph
-    pop_graph = gr.points_to_graph(population, labels, label_adj_list,
-                                   weight_func)
-
-    # Run shortest path algorithm
-    head_nodes = np.where(labels == 0)[0]  # Source nodes
-    order = pop_graph.keys()  # Topological ordering of the nodes
-    prev, dist = gr.dag_shortest_paths(pop_graph, order, head_nodes)
-
-    return prev, dist
 
 
 def get_scores(dist_matrix, path_matrix, label_adj_list, score_func):
@@ -601,7 +601,7 @@ def process_frame(population, labels, label_adj_list, radii, cost_func,
     score_matrix = get_scores(dist_matrix, path_matrix, label_adj_list,
                               score_func)
 
-    foot_1, foot_2 = select_best_feet(dist_matrix, score_matrix, path_matrix, 
+    foot_1, foot_2 = select_best_feet(dist_matrix, score_matrix, path_matrix,
                                       radii)
 
     pop_1, pop_2 = foot_to_pop(population, path_matrix, path_dist, foot_1,
