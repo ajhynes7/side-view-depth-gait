@@ -414,6 +414,32 @@ def filter_by_path(input_matrix, path_matrix, part_connections):
     return filtered_matrix
 
 
+def get_scores(dist_matrix, path_matrix, label_adj_list, score_func):
+
+    score_matrix = np.zeros(dist_matrix.shape)
+    n_paths, n_path_nodes = path_matrix.shape
+
+    for i in range(n_paths):
+        for j in range(n_path_nodes):
+            for k in range(j, n_path_nodes):
+
+                if k in label_adj_list[j]:
+                    # These vertices are connected by a body link and
+                    # are in the same shortest path
+                    u, v = path_matrix[i, j], path_matrix[i, k]
+
+                    length_expected = label_adj_list[j][k]
+                    length_measured = dist_matrix[u, v]
+
+                    score_matrix[u, v] = score_func(length_measured,
+                                                    length_expected)
+
+    # Ensure that all values are finite so the elements can be summed
+    score_matrix[~np.isfinite(score_matrix)] = 0
+
+    return score_matrix
+
+
 def inside_spheres(dist_matrix, point_nums, r):
     """
     Calculate which of n points are contained inside m spheres.
@@ -634,6 +660,9 @@ def process_frame(population, labels, label_adj_list, radii, cost_func,
     # Get shortest path to each foot
     path_matrix, path_dist = paths_to_foot(prev, dist, labels)
 
+    # Matrix of measured distances between all n points
+    dist_matrix = cdist(population, population)
+
     # Compute scores for every edge between body parts
     score_matrix, dist_matrix = get_score_matrix(population, labels,
                                                  label_adj_list, score_func)
@@ -641,6 +670,11 @@ def process_frame(population, labels, label_adj_list, radii, cost_func,
     # Keep only scores of edges along the shortest paths to the feet
     filtered_score_matrix = filter_by_path(score_matrix, path_matrix,
                                            label_adj_list)
+
+    filtered_score_matrix2 = get_scores(dist_matrix, path_matrix, label_adj_list,
+                            score_func)
+
+    assert np.array_equal(filtered_score_matrix2, filtered_score_matrix)
 
     foot_1, foot_2 = select_best_feet(dist_matrix, filtered_score_matrix,
                                       path_matrix, radii)
