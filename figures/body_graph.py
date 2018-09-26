@@ -22,7 +22,6 @@ def generate_points(n_points_per_set):
 points_per_set = [2, 3, 5, 2, 4, 5]
 part_types = ['Head', 'Hip', 'Thigh', 'Knee', 'Calf', 'Foot']
 
-
 fig = plt.figure()
 
 point_sets = [*generate_points(points_per_set)]
@@ -33,7 +32,6 @@ for points_a, points_b in itf.pairwise(point_sets):
 
     pl.scatter2(points, c='k', s=50)
     pl.connect_two_sets(points_a, points_b, c='k')
-
 
 # Highlight path in red
 prev_path_point = np.array([])
@@ -48,13 +46,11 @@ for row_points in point_sets:
 
     prev_path_point = path_point
 
-
 # Label rows with body part names
 y_coords = [points[0, 1] for points in point_sets]
 
 for ii, part_type in enumerate(part_types):
     plt.text(1, y_coords[ii] - 0.075, part_type, fontsize=12)
-
 
 plt.xlim((0, 1.1))
 plt.axis('off')

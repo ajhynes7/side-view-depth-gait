@@ -34,7 +34,6 @@ path_matrix = np.load(os.path.join(load_dir, 'path_matrix.npy'))
 
 part_types = ['Head', 'Hip', 'Thigh', 'Knee', 'Calf', 'Foot']
 
-
 # %% Add noisy foot
 
 population = np.vstack([population, [-20, -20, 300]])
@@ -43,14 +42,12 @@ labels = np.append(labels, max(labels))
 path_extra = np.append(path_matrix[-1, :-1], len(labels) - 1)
 path_matrix = np.vstack([path_matrix, path_extra])
 
-
 # %% Customize font
 
 plt.rc('text', usetex=True)
 font = {'family': 'serif', 'weight': 'bold', 'size': 12}
 
 plt.rc('font', **font)  # pass in the font dict as kwargs
-
 
 # %% Plot population
 
@@ -65,7 +62,6 @@ plt.ylabel('Y', rotation=0)
 plt.show()
 
 # fig.savefig('labelled_points.pdf', format='pdf', dpi=1200)
-
 
 # %% Show score matrix filtering
 
@@ -104,29 +100,25 @@ plt.show()
 
 # fig.savefig('score_matrix.png', format='png')
 
-
 # %% Plot spheres
 
 pairs = [[1, 3], [-1, 2], [1, 2]]
 xlabels = ['(a)', '(b)', '(c)']
 
-fig = plt.figure()
-
 n_subplots = len(xlabels)
 
 for i in range(n_subplots):
 
-    ax = plt.subplot(1, n_subplots, i + 1)
-
-    ax.set_xlabel(xlabels[i])
-
-    ax.set_xticks([])
-    ax.set_yticks([])
+    fig, ax = plt.subplots()
 
     pl.scatter_labels(population, labels)
     plot_spheres(path_matrix[pairs[i], :])
 
-plt.show()
+    ax.set_aspect(1)
 
-#fig.savefig('spheres.pdf', format='pdf', dpi=1200)
-# fig.savefig('spheres.pgf', format='pgf')
+    ax.set_xticks([])
+    ax.set_yticks([])
+
+    plt.show()
+
+    fig.savefig('spheres_{}.pdf'.format(i), format='pdf', dpi=1200)
