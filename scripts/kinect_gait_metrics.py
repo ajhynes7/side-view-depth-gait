@@ -4,6 +4,7 @@ import glob
 import os
 
 import numpy as np
+from numpy.linalg import norm
 import pandas as pd
 from sklearn.cluster import MeanShift
 
@@ -28,13 +29,17 @@ for file_path in file_paths:
 
     # Remove outliers
 
-    mean_foot = (df_head_feet.L_FOOT + df_head_feet.R_FOOT) / 2
-    dist_head_feet = (df_head_feet.HEAD - mean_foot).apply(np.linalg.norm)
+    dist_to_foot_l = (df_head_feet.HEAD - df_head_feet.L_FOOT).apply(norm)
+    dist_to_foot_r = (df_head_feet.HEAD - df_head_feet.R_FOOT).apply(norm)
+    dist_to_feet = pd.concat([dist_to_foot_l, dist_to_foot_r])
 
-    dist_filtered = st.mad_outliers(dist_head_feet, 2)
-    keep_frame = ~np.isnan(dist_filtered)
+    dist_filtered = st.mad_outliers(dist_to_feet, 1.5)
 
-    df_head_feet = df_head_feet[keep_frame]
+    frames = df_head_feet.index
+    frames_stacked = np.concatenate((frames, frames))
+    good_frames = np.unique(frames_stacked[~np.isnan(dist_filtered)])
+
+    df_head_feet = df_head_feet.loc[good_frames]
 
     # Cluster frames with mean shift to locate the walking passes
     frames = df_head_feet.index
