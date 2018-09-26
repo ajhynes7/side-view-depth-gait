@@ -282,57 +282,6 @@ def paths_to_foot(prev, dist, labels):
     return path_matrix.astype(int), path_dist
 
 
-def get_score_matrix(population, labels, label_adj_list, score_func):
-    """
-    Compute a score matrix from a set of body part positions.
-
-    Compares measured distance between points to the expected distances.
-
-    Parameters
-    ----------
-    population : ndarray
-        (n, 3) array of n positions.
-    labels : ndarray
-        (n,) array of labels for n positions.
-        The labels correspond to body part types (e.g., foot).
-    label_adj_list : dict
-        Adjacency list for the labels.
-        label_adj_list[A][B] is the expected distance between
-        a point with label A and a point with label B.
-    score_func : function
-        Function of form f(a, b) -> c.
-        Outputs a score given a measured distance and an expected distance.
-
-    Returns
-    -------
-    score_matrix : ndarray
-       (n, n) array of scores.
-
-    dist_matrix : ndarray
-        (n, n) array of measured distances between the n points.
-
-    """
-    # Matrix of measured distances between all n points
-    dist_matrix = cdist(population, population)
-
-    # Adjacency list of all n nodes in the graph
-    # Edge weights are the expected distances between points
-    label_dict = itf.iterable_to_dict(labels)
-    expected_adj_list = gr.labelled_nodes_to_graph(label_dict, label_adj_list)
-
-    # Convert adj list to a matrix so it can be compared to the
-    # actual distance matrix
-    expected_dist_matrix = gr.adj_list_to_matrix(expected_adj_list)
-
-    vectorized_score_func = np.vectorize(score_func)
-
-    # Score is high if measured distance is close to expected distance
-    score_matrix = vectorized_score_func(dist_matrix, expected_dist_matrix)
-    score_matrix[np.isnan(score_matrix)] = 0
-
-    return score_matrix, dist_matrix
-
-
 def pop_shortest_paths(population, labels, label_adj_list, weight_func):
     """
     Calculate shortest paths on the population of body parts.
@@ -373,49 +322,35 @@ def pop_shortest_paths(population, labels, label_adj_list, weight_func):
     return prev, dist
 
 
-def filter_by_path(input_matrix, path_matrix, part_connections):
+def get_scores(dist_matrix, path_matrix, label_adj_list, score_func):
     """
-    Filter values in a matrix using the shortest paths.
+    Compute a score matrix from a set of body part positions.
 
-    Only the connections along the set of shortest paths are kept.
+    Compares measured distance between points to the expected distance.
+    Only the connections along the set of shortest paths are computed.
 
     Parameters
     ----------
-    input_matrix : ndarray
+    dist_matrix : ndarray
         (n, n) matrix for the n position hypotheses.
     path_matrix : ndarray
         (n_paths, n_types) array.
         Each row lists the nodes on a shortest path through the body part
         types, i.e., from head to foot.
-    part_connections : dict
-        part_connections[i][j] is the expected value
-        between parts of type i to parts of type j.
+    label_adj_list : dict
+            Adjacency list for the labels.
+        label_adj_list[A][B] is the expected distance between
+        a point with label A and a point with label B.
+    score_func : function
+        Function of form f(a, b) -> c.
+        Outputs a score given a measured distance and an expected distance.
 
     Returns
     -------
-    filtered_matrix : ndarray
-        (n, n) array with a subset of values from the input matrix.
-        The filtered values are set to NaN.
+    score_matrix : ndarray
+       (n, n) array of scores.
 
     """
-    filtered_matrix = np.zeros(input_matrix.shape)
-    n_paths, n_path_nodes = path_matrix.shape
-
-    for i in range(n_paths):
-        for j in range(n_path_nodes):
-            for k in range(n_path_nodes):
-
-                if k in part_connections[j]:
-                    # These nodes in the path are connected
-                    # in the body part graph
-                    a, b = path_matrix[i, j], path_matrix[i, k]
-                    filtered_matrix[a, b] = input_matrix[a, b]
-
-    return filtered_matrix
-
-
-def get_scores(dist_matrix, path_matrix, label_adj_list, score_func):
-
     score_matrix = np.zeros(dist_matrix.shape)
     n_paths, n_path_nodes = path_matrix.shape
 
@@ -663,21 +598,11 @@ def process_frame(population, labels, label_adj_list, radii, cost_func,
     # Matrix of measured distances between all n points
     dist_matrix = cdist(population, population)
 
-    # Compute scores for every edge between body parts
-    score_matrix, dist_matrix = get_score_matrix(population, labels,
-                                                 label_adj_list, score_func)
+    score_matrix = get_scores(dist_matrix, path_matrix, label_adj_list,
+                              score_func)
 
-    # Keep only scores of edges along the shortest paths to the feet
-    filtered_score_matrix = filter_by_path(score_matrix, path_matrix,
-                                           label_adj_list)
-
-    filtered_score_matrix2 = get_scores(dist_matrix, path_matrix, label_adj_list,
-                            score_func)
-
-    assert np.array_equal(filtered_score_matrix2, filtered_score_matrix)
-
-    foot_1, foot_2 = select_best_feet(dist_matrix, filtered_score_matrix,
-                                      path_matrix, radii)
+    foot_1, foot_2 = select_best_feet(dist_matrix, score_matrix, path_matrix, 
+                                      radii)
 
     pop_1, pop_2 = foot_to_pop(population, path_matrix, path_dist, foot_1,
                                foot_2)
