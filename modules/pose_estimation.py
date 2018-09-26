@@ -88,12 +88,9 @@ def estimate_lengths(pop_series, label_series, cost_func, n_frames, eps=0.01):
 
     """
     n_lengths = label_series.iloc[0].max()
+    lengths = np.zeros(n_lengths)  # Initial estimate of lengths
 
-    # List of image frames with data
-    frames = pop_series.index.values
-
-    # Initial estimate of lengths
-    lengths = np.zeros(n_lengths)
+    frames = pop_series.index.values  # List of image frames with data
 
     while True:
 
@@ -119,8 +116,7 @@ def estimate_lengths(pop_series, label_series, cost_func, n_frames, eps=0.01):
 
             length_array[i, :] = [*pp.consecutive_dist(min_pop)]
 
-        # Update lengths
-        lengths = np.median(length_array, axis=0)
+        lengths = np.median(length_array, axis=0)  # Update lengths
 
         if np.all(abs(lengths - prev_lengths)) < eps:
             break
