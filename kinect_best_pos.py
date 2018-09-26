@@ -29,8 +29,8 @@ lower_part_types = ['HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG', 'FOOT']
 
 radii = [i for i in range(0, 30, 5)]
 
-part_connections = np.array([0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [3, 5],
-                            [1, 3])
+part_connections = np.array([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [3, 5],
+                             [1, 3]])
 
 # Reading data
 load_dir = os.path.join('data', 'kinect', 'processed', 'hypothesis')
