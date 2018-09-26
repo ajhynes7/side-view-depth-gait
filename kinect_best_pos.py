@@ -46,7 +46,7 @@ df_length = pd.read_csv(length_path, index_col=0)
 
 # Select best positions from each Kinect data file
 
-for file_path in file_paths[:3]:
+for file_path in file_paths:
 
     df = pd.read_pickle(file_path)
 
@@ -83,6 +83,8 @@ for file_path in file_paths[:3]:
     for f in frames:
         population = population_series.loc[f]
         labels = label_series.loc[f]
+
+        # Select the best two shortest paths
         pos_1, pos_2 = pe.process_frame(population, labels, label_adj_list,
                                         radii, cost_func, score_func)
 
@@ -100,19 +102,6 @@ for file_path in file_paths[:3]:
     df_head_feet = pd.concat([head_pos, foot_pos_1, foot_pos_2], axis=1)
     df_head_feet.columns = ['HEAD', 'L_FOOT', 'R_FOOT']
     df_head_feet.index.name = 'Frame'
-
-    # Remove outlier frames
-    y_foot_1 = df_head_feet.apply(lambda row: row['L_FOOT'][1], axis=1).values
-
-    y_foot_2 = df_head_feet.apply(lambda row: row['R_FOOT'][1], axis=1).values
-
-    y_foot_filtered_1 = st.mad_outliers(y_foot_1, 2)
-    y_foot_filtered_2 = st.mad_outliers(y_foot_2, 2)
-
-    good_frame_1 = ~np.isnan(y_foot_filtered_1)
-    good_frame_2 = ~np.isnan(y_foot_filtered_2)
-
-    df_head_feet = df_head_feet[good_frame_1 & good_frame_2]
 
     # Save data
     save_path = os.path.join(save_dir, file_name) + '.pkl'

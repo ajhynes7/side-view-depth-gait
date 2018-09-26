@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 from sklearn.cluster import MeanShift
 
+import analysis.stats as st
 import modules.gait_metrics as gm
 import modules.numpy_funcs as nf
 
@@ -16,7 +17,7 @@ save_dir = os.path.join('data', 'results')
 save_name = 'kinect_gait_metrics.csv'
 
 # All files with .pkl extension
-file_paths = glob.glob(os.path.join(load_dir, '*.pkl'))
+file_paths = sorted(glob.glob(os.path.join(load_dir, '*.pkl')))
 save_path = os.path.join(save_dir, save_name)
 
 df_metrics = pd.read_csv(save_path, index_col=0)
@@ -25,9 +26,15 @@ for file_path in file_paths:
 
     df_head_feet = pd.read_pickle(file_path)
 
-    # Convert all position vectors to float type
-    # so they can be easily input to linear algebra functions
-    df_head_feet = df_head_feet.applymap(pd.to_numeric)
+    # Remove outliers
+
+    mean_foot = (df_head_feet.L_FOOT + df_head_feet.R_FOOT) / 2
+    dist_head_feet = (df_head_feet.HEAD - mean_foot).apply(np.linalg.norm)
+
+    dist_filtered = st.mad_outliers(dist_head_feet, 2)
+    keep_frame = ~np.isnan(dist_filtered)
+
+    df_head_feet = df_head_feet[keep_frame]
 
     # Cluster frames with mean shift to locate the walking passes
     frames = df_head_feet.index
