@@ -16,9 +16,9 @@ def plot_spheres(paths):
             population[path, :], s=1e3, facecolors='none', edgecolors='k')
 
 
-def plot_links(label_adj_list, path_matrix):
+def plot_links(label_adj_list, paths):
     """Plot the relevant score matrix links depending on the spheres."""
-    for path in path_matrix:
+    for path in paths:
         for u in label_adj_list:
             for v in label_adj_list[u]:
                 a, b = path[u], path[v]
@@ -30,7 +30,7 @@ load_dir = os.path.join('data', 'saved_variables')
 
 population = np.load(os.path.join(load_dir, 'population.npy'))
 labels = np.load(os.path.join(load_dir, 'labels.npy'))
-path_matrix = np.load(os.path.join(load_dir, 'path_matrix.npy'))
+paths = np.load(os.path.join(load_dir, 'path_matrix.npy'))
 
 part_types = ['Head', 'Hip', 'Thigh', 'Knee', 'Calf', 'Foot']
 
@@ -39,8 +39,8 @@ part_types = ['Head', 'Hip', 'Thigh', 'Knee', 'Calf', 'Foot']
 population = np.vstack([population, [-20, -20, 300]])
 labels = np.append(labels, max(labels))
 
-path_extra = np.append(path_matrix[-1, :-1], len(labels) - 1)
-path_matrix = np.vstack([path_matrix, path_extra])
+path_extra = np.append(paths[-1, :-1], len(labels) - 1)
+paths = np.vstack([paths, path_extra])
 
 # %% Customize font
 
@@ -87,7 +87,7 @@ pl.scatter_labels(population, labels)
 plt.legend(part_types)
 
 # Plot links of filtered score matrix
-for path in path_matrix:
+for path in paths:
     for u in label_adj_list:
         for v in label_adj_list[u]:
             a, b = path[u], path[v]
@@ -112,7 +112,7 @@ for i in range(n_subplots):
     fig, ax = plt.subplots()
 
     pl.scatter_labels(population, labels)
-    plot_spheres(path_matrix[pairs[i], :])
+    plot_spheres(paths[pairs[i], :])
 
     ax.set_aspect(1)
 

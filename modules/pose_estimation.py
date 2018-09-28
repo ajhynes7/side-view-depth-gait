@@ -283,7 +283,7 @@ def paths_to_foot(prev, dist, labels):
 
     Returns
     -------
-    path_matrix : ndarray
+    paths : ndarray
         One row for each foot position.
         Each row is a shortest path from head to foot.
     path_dist : ndarray
@@ -296,9 +296,9 @@ def paths_to_foot(prev, dist, labels):
 
     >>> labels = np.array([0, 1, 2, 3, 4, 4])
 
-    >>> path_matrix, path_dist = paths_to_foot(prev, dist, labels)
+    >>> paths, path_dist = paths_to_foot(prev, dist, labels)
 
-    >>> path_matrix
+    >>> paths
     array([[0, 1, 2, 3, 4],
            [0, 1, 2, 3, 5]])
 
@@ -311,18 +311,18 @@ def paths_to_foot(prev, dist, labels):
     foot_index = np.where(labels == max_label)[0]
     n_feet = len(foot_index)
 
-    path_matrix = np.full((n_feet, max_label + 1), np.nan)
+    paths = np.full((n_feet, max_label + 1), np.nan)
     path_dist = np.full(n_feet, np.nan)
 
     for i, foot in enumerate(foot_index):
 
-        path_matrix[i, :] = gr.trace_path(prev, foot)
+        paths[i, :] = gr.trace_path(prev, foot)
         path_dist[i] = dist[foot]
 
-    return path_matrix.astype(int), path_dist
+    return paths.astype(int), path_dist
 
 
-def get_scores(dist_matrix, path_matrix, label_adj_list, score_func):
+def get_scores(dist_matrix, paths, label_adj_list, score_func):
     """
     Compute a score matrix from a set of body part positions.
 
@@ -333,7 +333,7 @@ def get_scores(dist_matrix, path_matrix, label_adj_list, score_func):
     ----------
     dist_matrix : ndarray
         (n, n) matrix for the n position hypotheses.
-    path_matrix : ndarray
+    paths : ndarray
         (n_paths, n_types) array.
         Each row lists the nodes on a shortest path through the body part
         types, i.e., from head to foot.
@@ -352,7 +352,7 @@ def get_scores(dist_matrix, path_matrix, label_adj_list, score_func):
 
     """
     score_matrix = np.zeros(dist_matrix.shape)
-    n_paths, n_path_nodes = path_matrix.shape
+    n_paths, n_path_nodes = paths.shape
 
     for i in range(n_paths):
         for j in range(n_path_nodes):
@@ -361,7 +361,7 @@ def get_scores(dist_matrix, path_matrix, label_adj_list, score_func):
                 if k in label_adj_list[j]:
                     # These vertices are connected by a body link and
                     # are in the same shortest path
-                    u, v = path_matrix[i, j], path_matrix[i, k]
+                    u, v = paths[i, j], paths[i, k]
 
                     length_expected = label_adj_list[j][k]
                     length_measured = dist_matrix[u, v]
@@ -411,7 +411,7 @@ def inside_spheres(dist_matrix, point_nums, r):
     return in_spheres
 
 
-def inside_radii(dist_matrix, path_matrix, radii):
+def inside_radii(dist_matrix, paths, radii):
     """
     Find the positions inside a set of spheres at various radii.
 
@@ -419,7 +419,7 @@ def inside_radii(dist_matrix, path_matrix, radii):
     ----------
     dist_matrix : ndarray
         (n, n) distance matrix for n position hypotheses.
-    path_matrix : ndarray
+    paths : ndarray
         (n_paths, n_types) array.
         Each row lists the nodes on a shortest path through the body part
         types, i.e., from head to foot.
@@ -437,7 +437,7 @@ def inside_radii(dist_matrix, path_matrix, radii):
     """
     in_spheres_list = []
 
-    for path in path_matrix:
+    for path in paths:
         temp = []
 
         for r in radii:
@@ -449,7 +449,39 @@ def inside_radii(dist_matrix, path_matrix, radii):
     return in_spheres_list
 
 
-def select_best_feet(dist_matrix, score_matrix, path_matrix, radii):
+def reduce_population(population, paths):
+    
+    path_nums = np.unique(paths)
+
+    # Population along the shortest paths
+    pop_reduced = population[path_nums, :]
+
+    n_pop = len(path_nums)
+    mapping = {k: v for k, v in zip(path_nums, range(n_pop))}
+
+    paths_reduced = np.zeros(paths.shape, dtype=int)
+    n_paths, n_types = paths.shape
+    
+    for i in range(n_paths):
+        for j in range(n_types):
+            paths_reduced[i, j] = mapping[paths[i, j]]
+            
+    return pop_reduced, paths_reduced
+
+
+def get_path_vectors(paths, n_pop):
+    
+    n_paths = paths.shape[0]
+    path_vectors = np.zeros((n_paths, n_pop))
+
+    all_nums = [i for i in range(n_pop)]
+    for i, path in enumerate(paths):
+        path_vectors[i, :] = np.in1d(all_nums, path)
+
+    return path_vectors
+
+
+def select_best_feet(dist_matrix, score_matrix, path_vectors, radii):
     """
     Select the best two feet from multiple hypotheses.
 
@@ -460,10 +492,10 @@ def select_best_feet(dist_matrix, score_matrix, path_matrix, radii):
     score_matrix : ndarray
         (n, n) score matrix.
         The scores depend on the expected and actual lengths between positions.
-    path_matrix : ndarray
-        (n_paths, n_types) array.
-        Each row lists the nodes on a shortest path through the body part
-        types, i.e., from head to foot.
+    path_vectors : ndarray
+        (n_paths, n) array.
+        Each row is a boolean vector.
+        Element i is true if position i is in the path.
     radii : list
         List of radii for the spheres, e.g. [0, 5, 10, 15, 20].
 
@@ -473,31 +505,28 @@ def select_best_feet(dist_matrix, score_matrix, path_matrix, radii):
         Numbers of the best two feet.
 
     """
-    n_paths = len(path_matrix)
-    n_radii = len(radii)
+    n_paths = path_vectors.shape[0]
 
-    in_spheres_list = inside_radii(dist_matrix, path_matrix, radii)
-
-    # All possible pairs of paths
     combos = [*itertools.combinations(range(n_paths), 2)]
-
     n_combos = len(combos)
 
     votes, combo_scores = np.zeros(n_combos), np.zeros(n_combos)
 
-    for i in range(n_radii):
+    for r in radii:
 
-        for ii, combo in enumerate(combos):
+        mask = dist_matrix < r
+        scores_of_radius = mask * score_matrix
 
-            in_spheres_1 = in_spheres_list[combo[0]][i]
-            in_spheres_2 = in_spheres_list[combo[1]][i]
+        for i in range(n_combos):
 
-            in_spheres = in_spheres_1 | in_spheres_2
+            a, b = combos[i]
 
-            temp = score_matrix[in_spheres, :]
-            score_subset = temp[:, in_spheres]
+            path_1 = path_vectors[a, :]
+            path_2 = path_vectors[b, :]
 
-            combo_scores[ii] = np.sum(score_subset)
+            path_joined = np.logical_or(path_1, path_2)
+
+            combo_scores[i] = np.sum(scores_of_radius[:, path_joined])
 
         max_score = max(combo_scores)
 
@@ -513,7 +542,7 @@ def select_best_feet(dist_matrix, score_matrix, path_matrix, radii):
     return foot_1, foot_2
 
 
-def foot_to_pop(population, path_matrix, path_dist, foot_num_1, foot_num_2):
+def foot_to_pop(population, paths, path_dist, foot_num_1, foot_num_2):
     """
     Return the positions comprising the shortest path to each chosen foot.
 
@@ -524,7 +553,7 @@ def foot_to_pop(population, path_matrix, path_dist, foot_num_1, foot_num_2):
     ----------
     population : ndarray
         (n, 3) array of n positions.
-    path_matrix : ndarray
+    paths : ndarray
         One row for each foot position.
         Each row is a shortest path from head to foot.
     path_dist : ndarray
@@ -539,11 +568,11 @@ def foot_to_pop(population, path_matrix, path_dist, foot_num_1, foot_num_2):
         One point for each label (i.e., each body part type).
 
     """
-    path_1, path_2 = path_matrix[foot_num_1, :], path_matrix[foot_num_2, :]
+    path_1, path_2 = paths[foot_num_1, :], paths[foot_num_2, :]
     pop_1, pop_2 = population[path_1, :], population[path_2, :]
 
     # Select the head along the minimum shortest path
-    min_path = path_matrix[np.argmin(path_dist), :]
+    min_path = paths[np.argmin(path_dist), :]
     head_pos = population[min_path[0], :]
 
     pop_1[0, :], pop_2[0, :] = head_pos, head_pos
@@ -593,18 +622,20 @@ def process_frame(population, labels, label_adj_list, radii, cost_func,
                                     cost_func)
 
     # Get shortest path to each foot
-    path_matrix, path_dist = paths_to_foot(prev, dist, labels)
+    paths, path_dist = paths_to_foot(prev, dist, labels)
 
-    # Matrix of measured distances between all n points
-    dist_matrix = cdist(population, population)
+    pop_reduced, paths_reduced = reduce_population(population, paths)
 
-    score_matrix = get_scores(dist_matrix, path_matrix, label_adj_list,
+    dist_matrix = cdist(pop_reduced, pop_reduced)
+    score_matrix = get_scores(dist_matrix, paths_reduced, label_adj_list,
                               score_func)
 
-    foot_1, foot_2 = select_best_feet(dist_matrix, score_matrix, path_matrix,
+    path_vectors = get_path_vectors(paths_reduced, pop_reduced.shape[0])
+
+    foot_1, foot_2 = select_best_feet(dist_matrix, score_matrix, path_vectors,
                                       radii)
 
-    pop_1, pop_2 = foot_to_pop(population, path_matrix, path_dist, foot_1,
+    pop_1, pop_2 = foot_to_pop(population, paths, path_dist, foot_1,
                                foot_2)
 
     return pop_1, pop_2
