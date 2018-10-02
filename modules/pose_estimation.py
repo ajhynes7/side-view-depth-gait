@@ -398,7 +398,7 @@ def reduce_population(population, paths):
 def get_path_vectors(paths, n_pop):
 
     n_paths = paths.shape[0]
-    path_vectors = np.zeros((n_paths, n_pop))
+    path_vectors = np.full((n_paths, n_pop), False)
 
     all_nums = [i for i in range(n_pop)]
     for i, path in enumerate(paths):
@@ -407,8 +407,7 @@ def get_path_vectors(paths, n_pop):
     return path_vectors
 
 
-def in_spheres(dist_matrix, has_sphere, r):
-    within_radius = dist_matrix < r
+def in_spheres(within_radius, has_sphere):
 
     n = len(has_sphere)
     tiled = np.tile(has_sphere, (n, 1))
@@ -449,19 +448,24 @@ def select_best_feet(dist_matrix, score_matrix, path_vectors, radii):
 
     for r in radii:
 
-        mask = dist_matrix < r
-        scores_of_radius = mask * score_matrix
+        within_radius = dist_matrix < r
 
         for i in range(n_pairs):
 
             a, b = pairs[i]
 
-            path_1 = path_vectors[a, :]
-            path_2 = path_vectors[b, :]
+            has_sphere_1 = path_vectors[a, :]
+            has_sphere_2 = path_vectors[b, :]
 
-            path_joined = np.logical_or(path_1, path_2)
+            # Element i is true if i is the centre of a sphere
+            has_sphere = np.logical_or(has_sphere_1, has_sphere_2)
 
-            pair_scores[i] = np.sum(scores_of_radius[:, path_joined])
+            # Element i is true if i is inside the combined sphere volume
+            inside_spheres = in_spheres(within_radius, has_sphere)
+
+            in_spheres_col = inside_spheres.reshape(-1, 1)
+            score_included = in_spheres_col @ in_spheres_col.T
+            pair_scores[i] = np.sum(score_matrix[score_included])
 
         max_score = max(pair_scores)
 
