@@ -461,16 +461,16 @@ def reduce_population(population, paths):
 
     paths_reduced = np.zeros(paths.shape, dtype=int)
     n_paths, n_types = paths.shape
-    
+
     for i in range(n_paths):
         for j in range(n_types):
             paths_reduced[i, j] = mapping[paths[i, j]]
-            
+
     return pop_reduced, paths_reduced
 
 
 def get_path_vectors(paths, n_pop):
-    
+
     n_paths = paths.shape[0]
     path_vectors = np.zeros((n_paths, n_pop))
 
@@ -479,6 +479,15 @@ def get_path_vectors(paths, n_pop):
         path_vectors[i, :] = np.in1d(all_nums, path)
 
     return path_vectors
+
+
+def in_spheres(dist_matrix, has_sphere, r):
+    within_radius = dist_matrix < r
+
+    n = len(has_sphere)
+    tiled = np.tile(has_sphere, (n, 1))
+
+    return np.any(tiled * within_radius, 1)
 
 
 def select_best_feet(dist_matrix, score_matrix, path_vectors, radii):
@@ -507,37 +516,37 @@ def select_best_feet(dist_matrix, score_matrix, path_vectors, radii):
     """
     n_paths = path_vectors.shape[0]
 
-    combos = [*itertools.combinations(range(n_paths), 2)]
-    n_combos = len(combos)
+    pairs = [*itertools.combinations(range(n_paths), 2)]
+    n_pairs = len(pairs)
 
-    votes, combo_scores = np.zeros(n_combos), np.zeros(n_combos)
+    votes, pair_scores = np.zeros(n_pairs), np.zeros(n_pairs)
 
     for r in radii:
 
         mask = dist_matrix < r
         scores_of_radius = mask * score_matrix
 
-        for i in range(n_combos):
+        for i in range(n_pairs):
 
-            a, b = combos[i]
+            a, b = pairs[i]
 
             path_1 = path_vectors[a, :]
             path_2 = path_vectors[b, :]
 
             path_joined = np.logical_or(path_1, path_2)
 
-            combo_scores[i] = np.sum(scores_of_radius[:, path_joined])
+            pair_scores[i] = np.sum(scores_of_radius[:, path_joined])
 
-        max_score = max(combo_scores)
+        max_score = max(pair_scores)
 
-        # Winning combos for this radius
-        radius_winners = combo_scores == max_score
+        # Winning pairs for this radius
+        radius_winners = pair_scores == max_score
 
         # Votes go to the winners
         votes += radius_winners
 
-    winning_combo = np.argmax(votes)
-    foot_1, foot_2 = combos[winning_combo]
+    winning_pair = np.argmax(votes)
+    foot_1, foot_2 = pairs[winning_pair]
 
     return foot_1, foot_2
 

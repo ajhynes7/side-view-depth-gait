@@ -1,6 +1,7 @@
 """Functions for plotting points and visualizing results."""
 
 import matplotlib.pyplot as plt
+from matplotlib import cm
 import numpy as np
 
 
@@ -285,3 +286,24 @@ def plot_bland_altman(means, diffs, bias, limits, percent=True):
     plt.annotate('Bias', xy=(120, bias - 2))
     plt.annotate('Lower limit', xy=(120, lower_limit - 2))
     plt.annotate('Upper limit', xy=(120, upper_limit - 2))
+
+
+def plot_spheres(points, r, ax):
+
+    for point in points:
+        circle = plt.Circle((point[0], point[1]), radius=r, color="black", fill=False)
+        ax.add_patch(circle)
+
+
+def plot_links(population, score_matrix, inside_spheres):
+
+    for i, point_i in enumerate(population):
+        for j, point_j in enumerate(population):
+            if inside_spheres[i] and inside_spheres[j]:
+                score = score_matrix[i, j]
+
+                if score != 0:
+
+                    # Plot line coloured by score
+                    connect_points(point_i, point_j, c=cm.bwr(score), linestyle='-', linewidth=0.75)
+
