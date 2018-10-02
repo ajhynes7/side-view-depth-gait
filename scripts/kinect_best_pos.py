@@ -2,6 +2,7 @@
 
 import glob
 import os
+import time
 
 import numpy as np
 import pandas as pd
@@ -26,7 +27,7 @@ def score_func(a, b):
 
 lower_part_types = ['HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG', 'FOOT']
 
-radii = [i for i in range(0, 30, 5)]
+radii = [i for i in range(5, 30, 5)]
 
 part_connections = np.array([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [3, 5],
                              [1, 3]])
@@ -44,8 +45,10 @@ file_paths = glob.glob(os.path.join(load_dir, '*.pkl'))
 df_length = pd.read_csv(length_path, index_col=0)
 
 # Select best positions from each Kinect data file
+t = time.time()
+total_frames = 0
 
-for file_path in file_paths:
+for file_path in file_paths[:5]:
 
     df = pd.read_pickle(file_path)
 
@@ -105,3 +108,9 @@ for file_path in file_paths:
     # Save data
     save_path = os.path.join(save_dir, file_name) + '.pkl'
     df_head_feet.to_pickle(save_path)
+
+    total_frames += len(frames)
+
+elapsed = time.time() - t
+
+print("Frames per second: {}".format(np.round(total_frames / elapsed)))
