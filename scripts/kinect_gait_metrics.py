@@ -26,20 +26,21 @@ df_metrics = pd.read_csv(save_path, index_col=0)
 for file_path in file_paths:
 
     df_head_feet = pd.read_pickle(file_path)
+    frames = df_head_feet.index
 
     # Remove outliers
 
     dist_to_foot_l = (df_head_feet.HEAD - df_head_feet.L_FOOT).apply(norm)
     dist_to_foot_r = (df_head_feet.HEAD - df_head_feet.R_FOOT).apply(norm)
-    dist_to_feet = pd.concat([dist_to_foot_l, dist_to_foot_r])
 
-    dist_filtered = st.mad_outliers(dist_to_feet, 1.5)
+    to_filter = st.relative_error(dist_to_foot_l, dist_to_foot_r,
+                                  absolute=True)
+    filtered = st.mad_outliers(to_filter, 2)
 
-    frames = df_head_feet.index
-    frames_stacked = np.concatenate((frames, frames))
-    good_frames = np.unique(frames_stacked[~np.isnan(dist_filtered)])
+    good_frames = np.unique(frames[~np.isnan(filtered)])
+    keep_frame = np.in1d(frames, good_frames)
 
-    df_head_feet = df_head_feet.loc[good_frames]
+    df_head_feet = df_head_feet[keep_frame]
 
     # Cluster frames with mean shift to locate the walking passes
     frames = df_head_feet.index

@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 
 import analysis.math_funcs as mf
-import analysis.stats as st
 import modules.pose_estimation as pe
 import modules.string_funcs as sf
 
