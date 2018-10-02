@@ -2,6 +2,7 @@
 untitled*
 .*
 *.pyc
+*.pdf
 *html*
 
 .hypothesis
