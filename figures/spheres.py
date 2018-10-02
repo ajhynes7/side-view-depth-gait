@@ -122,7 +122,8 @@ for i in range(n_figs):
 
     has_sphere = np.any(path_vectors[pairs[i]], 0)
 
-    inside_spheres = pe.in_spheres(dist_matrix, has_sphere, r)
+    within_radius = dist_matrix < r
+    inside_spheres = pe.in_spheres(within_radius, has_sphere)
     pl.plot_links(pop_reduced, score_matrix, inside_spheres)
 
     pl.scatter_labels(pop_reduced, labels[path_nums], edgecolor='k', zorder=5)
