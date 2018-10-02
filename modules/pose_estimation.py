@@ -376,7 +376,25 @@ def get_scores(dist_matrix, paths, label_adj_list, score_func):
 
 
 def reduce_population(population, paths):
-    
+    """
+    Reduce the population of a frame to only the points on the shortest paths.
+
+    Parameters
+    ----------
+    population : ndarray
+        (n, 3) array of n positions.
+    paths : ndarray
+        One row for each foot position.
+        Each row is a shortest path from head to foot.
+
+    Returns
+    -------
+    pop_reduced : ndarray
+        (n_reduced, 3) array of positions.
+    paths_reduced : ndarray
+        Shortest paths with new values for the reduced population.
+
+    """
     path_nums = np.unique(paths)
 
     # Population along the shortest paths
@@ -396,7 +414,25 @@ def reduce_population(population, paths):
 
 
 def get_path_vectors(paths, n_pop):
+    """
+    Convert the paths to boolean vectors.
 
+    Parameters
+    ----------
+    paths : ndarray
+        One row for each foot position.
+        Each row is a shortest path from head to foot.
+    n_pop : int
+        Total number of positions in the population.
+
+    Returns
+    -----
+    path_vectors : ndarray
+        (n_paths, n_pop) array.
+        Each row is a boolean vector.
+        Element i is True if position i is in the path.
+
+    """
     n_paths = paths.shape[0]
     path_vectors = np.full((n_paths, n_pop), False)
 
@@ -408,7 +444,25 @@ def get_path_vectors(paths, n_pop):
 
 
 def in_spheres(within_radius, has_sphere):
+    """
+    Return a boolean vector for the positions in the combined sphere volume.
 
+    Parameters
+    ----------
+    within_radius : ndarray
+        (n, n) boolean array.
+        Element (i, j) is true if i is within a given radius from j
+    has_sphere : ndarray
+        (n,) boolean array.
+        Element i is true if position i is the centre of a sphere.
+
+    Returns
+    -------
+    ndarray
+        Boolean array.
+        Element i is true if position i is within the combined sphere volume.
+
+    """
     n = len(has_sphere)
     tiled = np.tile(has_sphere, (n, 1))
 
@@ -574,7 +628,6 @@ def process_frame(population, labels, label_adj_list, radii, cost_func,
     foot_1, foot_2 = select_best_feet(dist_matrix, score_matrix, path_vectors,
                                       radii)
 
-    pop_1, pop_2 = foot_to_pop(population, paths, path_dist, foot_1,
-                               foot_2)
+    pop_1, pop_2 = foot_to_pop(population, paths, path_dist, foot_1, foot_2)
 
     return pop_1, pop_2

@@ -289,21 +289,47 @@ def plot_bland_altman(means, diffs, bias, limits, percent=True):
 
 
 def plot_spheres(points, r, ax):
+    """
+    Plot two-dimensional view of spheres centered on points.
 
+    Parameters
+    ----------
+    points : array_like
+        Points in space.
+    r : int
+        Radius of spheres.
+    ax : object
+        Axis for plotting.
+
+    """
     for point in points:
-        circle = plt.Circle((point[0], point[1]), radius=r, color="black", fill=False)
+        circle = plt.Circle((point[0], point[1]), radius=r, color="black",
+                            fill=False)
         ax.add_patch(circle)
 
 
-def plot_links(population, score_matrix, inside_spheres):
+def plot_links(points, score_matrix, inside_spheres):
+    """
+    Plot scored links between points.
 
-    for i, point_i in enumerate(population):
-        for j, point_j in enumerate(population):
+    Parameters
+    ----------
+    points : array_like
+        (n, d) array of n points in space.
+    score_matrix : ndarray
+        (n, n) matrix of scores
+    inside_spheres : ndarray
+        (n, ) boolean array
+        Element i is true if position i is inside the combined sphere volume.
+
+    """
+    for i, point_i in enumerate(points):
+        for j, point_j in enumerate(points):
             if inside_spheres[i] and inside_spheres[j]:
                 score = score_matrix[i, j]
 
                 if score != 0:
 
                     # Plot line coloured by score
-                    connect_points(point_i, point_j, c=cm.bwr(score), linestyle='-', linewidth=0.75)
-
+                    connect_points(point_i, point_j, c=cm.bwr(score),
+                                   linestyle='-', linewidth=0.75)
