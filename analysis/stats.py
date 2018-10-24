@@ -1,14 +1,16 @@
 """Module for statistical calculations."""
 
+from collections import namedtuple
+
 import numpy as np
 from statsmodels import robust
 
 import analysis.math_funcs as mf
 
 
-class BlandAltman:
+def bland_altman(x_new, x_valid):
     """
-    Bland-Altman analysis.
+    Calculate measures for Bland-Altman analysis.
 
     Compare measurements of a new device to those of a validated device.
 
@@ -18,90 +20,40 @@ class BlandAltman:
         Measurements of new device.
     x_valid : ndarray
         Measurements of validate device.
-    percent : bool, optional
-        If True, the percent difference is used.
-        If False (default) the relative difference is used.
 
-    Attributes
-    ----------
-    means : ndarray
-        Means of corresponding measurements.
-    differences : ndarray
-        Differences between corresponding measurements.
+    Returns
+    -------
     bias : float
         Mean of the differences.
         Indicates the bias of the new device compared to the validated one.
-    limits_of_agreement : tuple
-        Tuple of form (lower_limit, upper_limit).
+    lower_limit, upper_limit : float
         Bias minus/plus 1.96 standard deviations.
-    range : float
-        Range of the limits of agreement.
-        A low range indicates stronger agreement.
 
     Examples
     --------
     >>> x_new = np.array([1, 2, 3])
     >>> x_valid = np.array([2, 2, 3])
+    >>> results = bland_altman(x_new, x_valid)
 
-    >>> results = BlandAltman(x_new, x_valid, percent=True)
+    >>> np.round(results.bias, 2)
+    -0.22
 
-    >>> results.means
-    array([1.5, 2. , 3. ])
+    >>> np.round(results.lower_limit, 2)
+    -0.84
 
-    >>> np.round(results.differences)
-    array([-67.,   0.,   0.])
-
-    >>> round(results.bias)
-    -22.0
-
-    >>> np.round(results.limits_of_agreement)
-    array([-84.,  39.])
-
-    >>> round(results.range)
-    123.0
+    >>> np.round(results.upper_limit, 2)
+    0.39
 
     """
+    differences = relative_difference(x_new, x_valid)
+    bias, standard_dev = differences.mean(), differences.std()
 
-    def __init__(self, x_new, x_valid, percent=False):
-        """Bland Altman needs sets of new and validated measurements."""
-        self.x_new, self.x_valid = x_new, x_valid
-        self.percent = percent
+    lower_limit, upper_limit = mf.limits(bias, 1.96 * standard_dev)
 
-    @property
-    def means(self):
-        """Return means of the two measurement sets."""
-        return (self.x_new + self.x_valid) / 2
+    BlandAltman = namedtuple('BlandAltman', 'bias lower_limit upper_limit')
 
-    @property
-    def differences(self):
-        """Return differences of the two measurement sets."""
-        diffs = relative_difference(self.x_new, self.x_valid)
-
-        if self.percent:
-            diffs *= 100
-
-        return diffs
-
-    @property
-    def bias(self):
-        """Return the mean of the differences, also called the bias."""
-        return self.differences.mean()
-
-    @property
-    def limits_of_agreement(self):
-        """Return the limits of agreement using the standard deviation."""
-        standard_dev = self.differences.std()
-
-        lower_lim, upper_lim = mf.limits(self.bias, 1.96 * standard_dev)
-
-        return lower_lim, upper_lim
-
-    @property
-    def range(self):
-        """Return the difference of the limits of agreement."""
-        lower_lim, upper_lim = self.limits_of_agreement
-
-        return upper_lim - lower_lim
+    return BlandAltman(
+        bias=bias, lower_limit=lower_limit, upper_limit=upper_limit)
 
 
 def relative_difference(x, y, absolute=False):
@@ -136,10 +88,9 @@ def relative_difference(x, y, absolute=False):
 
     """
     difference = x - y
+    mean_ = (x + y) / 2
 
-    average = (x + y) / 2
-
-    rel_difference = difference / average
+    rel_difference = difference / mean_
 
     if absolute:
         rel_difference = abs(rel_difference)
