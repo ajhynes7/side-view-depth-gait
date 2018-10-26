@@ -42,59 +42,6 @@ def swap_columns(df, column_1, column_2):
     return df_swapped
 
 
-def apply_to_columns(df_1, df_2, func):
-    """
-    Apply a function on each pair of matching columns from two DataFrames.
-
-    Rows with NaN are removed before applying the function.
-
-    Parameters
-    ----------
-    df_1, df_2 : DataFrame
-        Input DataFrames.
-    func : function
-        Function that takes two numerical series as inputs.
-
-    Returns
-    -------
-    dict_ : dict
-        Each key is a column label.
-        Each value is the output of the given function.
-
-    Examples
-    --------
-    >>> df_1 = pd.DataFrame({'A': [5, 3], 'B': [2, 10]})
-    >>> df_2 = pd.DataFrame({'A': [6, 4], 'B': [3, 2]})
-
-    >>> dict_ = apply_to_columns(df_1, df_2, lambda a, b: a + b)
-
-    >>> dict_['A']
-    0    11
-    1     7
-    Name: A, dtype: int64
-
-    >>> dict_['B']
-    0     5
-    1    12
-    Name: B, dtype: int64
-
-    """
-    # Columns with numerical data
-    numeric_columns_1 = df_1.select_dtypes(include='number').columns
-    numeric_columns_2 = df_2.select_dtypes(include='number').columns
-
-    shared_columns = set(numeric_columns_1) & set(numeric_columns_2)
-
-    dict_ = {}
-    for col in shared_columns:
-
-        df_concat = pd.concat([df_1[col], df_2[col]], axis=1).dropna(axis=0)
-
-        dict_[col] = func(df_concat.iloc[:, 0], df_concat.iloc[:, 1])
-
-    return dict_
-
-
 def drop_any_like(df, strings_to_drop, axis=0):
     """
     Drop labels that contain any of the input strings (case sensitive).
