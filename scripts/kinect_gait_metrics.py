@@ -33,8 +33,8 @@ for file_path in file_paths:
     dist_to_foot_l = (df_head_feet.HEAD - df_head_feet.L_FOOT).apply(norm)
     dist_to_foot_r = (df_head_feet.HEAD - df_head_feet.R_FOOT).apply(norm)
 
-    to_filter = st.relative_error(dist_to_foot_l, dist_to_foot_r,
-                                  absolute=True)
+    to_filter = st.relative_error(
+        dist_to_foot_l, dist_to_foot_r, absolute=True)
     filtered = st.mad_outliers(to_filter, 2)
 
     good_frames = np.unique(frames[~np.isnan(filtered)])
