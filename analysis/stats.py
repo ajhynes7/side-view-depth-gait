@@ -3,6 +3,7 @@
 from collections import namedtuple
 
 import numpy as np
+import pandas as pd
 from statsmodels import robust
 
 import analysis.math_funcs as mf
@@ -179,3 +180,38 @@ def mad_outliers(x, c):
     x_filtered[np.logical_or(x < lower_bound, x > upper_bound)] = np.nan
 
     return x_filtered
+
+
+def compare_measurements(df_1, df_2, compare_funcs):
+    """
+    Compare measurements taken by two devices.
+    
+    Parameters
+    ----------
+    df_1, df_2 : DataFrame
+        Measurements of devices 1 and 2.
+        Columns are measurement names
+        Rows are individual measurements.
+    compare_funcs : dict
+        Keys are metric names, e.g., relative error
+        Values are functions of form column_1, column_2 -> scalar
+    
+    Returns
+    -------
+    df_results : DataFrame
+        Columns are measurement names, e.g. stride length
+        Rows are metric names, e.g. relative error
+
+    """
+    measurements = df_1.columns
+    metrics = compare_funcs.keys()
+
+    df_results = pd.DataFrame(index=metrics, columns=measurements)
+
+    for measurement in measurements:
+        for metric, func in compare_funcs.items():
+
+            df_results.loc[metric, measurement] = func(
+                df_1[measurement], df_2[measurement])
+                        
+    return df_results
