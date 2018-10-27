@@ -12,4 +12,9 @@
     "git.ignoreLimitWarning": true,
 
     "vim.enableNeovim": true,
+
+    "autoDocstring.docstringFormat": "numpy",
+    "autoDocstring.includeDescription": true,
+    "autoDocstring.newlineBeforeSummary": true,
+    "autoDocstring.guessTypes": true,
 }
