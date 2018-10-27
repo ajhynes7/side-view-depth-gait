@@ -46,15 +46,19 @@ def bland_altman(x_new, x_valid):
     0.39
 
     """
-    differences = relative_difference(x_new, x_valid)
-    bias, standard_dev = differences.mean(), differences.std()
+    rel_diffs = relative_difference(x_new, x_valid)
+    bias, standard_dev = rel_diffs.mean(), rel_diffs.std()
 
     lower_limit, upper_limit = mf.limits(bias, 1.96 * standard_dev)
 
-    BlandAltman = namedtuple('BlandAltman', 'bias lower_limit upper_limit')
+    BlandAltman = namedtuple('BlandAltman',
+                             'bias lower_limit upper_limit range_')
 
     return BlandAltman(
-        bias=bias, lower_limit=lower_limit, upper_limit=upper_limit)
+        bias=bias,
+        lower_limit=lower_limit,
+        upper_limit=upper_limit,
+        range_=upper_limit - lower_limit)
 
 
 def relative_difference(x, y, absolute=False):
@@ -78,14 +82,17 @@ def relative_difference(x, y, absolute=False):
 
     Examples
     --------
-    >>> x = np.array([3, 3, 4])
-    >>> y = np.array([1, 2, 4])
+    >>> x = np.array([3, 3, 100])
+    >>> y = np.array([1, 2, 110])
 
-    >>> relative_difference(x, y)
-    array([1. , 0.4, 0. ])
+    >>> np.round(relative_difference(x, y), 3)
+    array([ 1.   ,  0.4  , -0.095])
 
     >>> relative_difference(2, 3)
     -0.4
+
+    >>> relative_difference(2, 3, absolute=True)
+    0.4
 
     """
     difference = x - y
@@ -185,7 +192,7 @@ def mad_outliers(x, c):
 def compare_measurements(df_1, df_2, compare_funcs):
     """
     Compare measurements taken by two devices.
-    
+
     Parameters
     ----------
     df_1, df_2 : DataFrame
@@ -195,7 +202,7 @@ def compare_measurements(df_1, df_2, compare_funcs):
     compare_funcs : dict
         Keys are metric names, e.g., relative error
         Values are functions of form column_1, column_2 -> scalar
-    
+
     Returns
     -------
     df_results : DataFrame
@@ -211,7 +218,7 @@ def compare_measurements(df_1, df_2, compare_funcs):
     for measurement in measurements:
         for metric, func in compare_funcs.items():
 
-            df_results.loc[metric, measurement] = func(
-                df_1[measurement], df_2[measurement])
-                        
+            df_results.loc[metric, measurement] = func(df_1[measurement],
+                                                       df_2[measurement])
+
     return df_results
