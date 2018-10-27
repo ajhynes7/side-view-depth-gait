@@ -7,7 +7,6 @@ from scipy.stats import spearmanr, pearsonr
 
 import analysis.stats as st
 
-
 results_dir = os.path.join('data', 'results')
 match_dir = os.path.join('data', 'matching')
 
@@ -50,16 +49,12 @@ df_z_grouped = df_z.groupby(
 
 # Calculate results
 funcs = {
-    'pearson':
-    lambda a, b: pearsonr(a, b)[0],
-    'spearman':
-    lambda a, b: spearmanr(a, b)[0],
+    'pearson': lambda a, b: pearsonr(a, b)[0],
+    'spearman': lambda a, b: spearmanr(a, b)[0],
     'abs_rel_error':
     lambda a, b: st.relative_error(a, b, absolute=True).mean(),
-    'bias':
-    lambda a, b: st.bland_altman(a, b).bias,
-    'range':
-    lambda a, b: st.bland_altman(a, b).range_,
+    'bias': lambda a, b: st.bland_altman(a, b).bias,
+    'range': lambda a, b: st.bland_altman(a, b).range_,
 }
 
 df_results_LR = st.compare_measurements(df_k, df_z, funcs)

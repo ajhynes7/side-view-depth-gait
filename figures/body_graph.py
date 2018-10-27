@@ -23,12 +23,9 @@ def generate_points(n_points_per_set):
 
 plt.rc('text', usetex=True)
 
-font = {'family': 'serif',
-        'weight': 'bold',
-        'size': 14}
+font = {'family': 'serif', 'weight': 'bold', 'size': 14}
 
 plt.rc('font', **font)  # pass in the font dict as kwargs
-
 
 # %% Plot figure
 
