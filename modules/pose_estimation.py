@@ -537,7 +537,7 @@ def select_best_feet(dist_matrix, score_matrix, path_vectors, radii):
 
 def foot_to_pop(population, paths, path_dist, foot_num_1, foot_num_2):
     """
-    Return the positions comprising the shortest path to each chosen foot.
+    Return the positions on the shortest paths to the two selected feet.
 
     For consistency, the two paths receive the same head position,
     which is the head along the minimum shortest path.
@@ -564,11 +564,13 @@ def foot_to_pop(population, paths, path_dist, foot_num_1, foot_num_2):
     path_1, path_2 = paths[foot_num_1, :], paths[foot_num_2, :]
     pop_1, pop_2 = population[path_1, :], population[path_2, :]
 
-    # Select the head along the minimum shortest path
-    min_path = paths[np.argmin(path_dist), :]
-    head_pos = population[min_path[0], :]
+    # Select the head on the shorter of the two selected shortest paths
 
-    pop_1[0, :], pop_2[0, :] = head_pos, head_pos
+    foot_distances = path_dist[[foot_num_1, foot_num_2]]
+    head_points = (pop_1[0, :], pop_2[0, :])
+    head_selected = head_points[np.argmin(foot_distances)]
+
+    pop_1[0, :], pop_2[0, :] = head_selected, head_selected
 
     return pop_1, pop_2
 
