@@ -84,7 +84,9 @@ def stride_metrics(foot_x_i, foot_y, foot_x_f, *, fps=30):
 
     pos_y_proj = lin.project_point_line(pos_y, pos_x_i, pos_x_f)
 
-    stride_length = norm(pos_x_f - pos_x_i)
+    stride_vector = pos_x_f - pos_x_i
+
+    stride_length = norm(stride_vector)
     stride_time = (foot_x_f.frame - foot_x_i.frame) / fps
 
     stride_velocity = stride_length / stride_time
