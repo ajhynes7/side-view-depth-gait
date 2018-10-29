@@ -28,8 +28,10 @@ for file_path in file_paths:
     df_head_feet = pd.read_pickle(file_path)
     frames = df_head_feet.index
 
-    # Remove outliers
+    # Convert all points to floats to allow for future calculations (e.g. np.isnan)
+    df_head_feet = df_head_feet.applymap(lambda point: point.astype(np.float))
 
+    # Remove outliers
     dist_to_foot_l = (df_head_feet.HEAD - df_head_feet.L_FOOT).apply(norm)
     dist_to_foot_r = (df_head_feet.HEAD - df_head_feet.R_FOOT).apply(norm)
 
@@ -41,9 +43,9 @@ for file_path in file_paths:
     keep_frame = np.in1d(frames, good_frames)
 
     df_head_feet = df_head_feet[keep_frame]
+    frames = df_head_feet.index
 
     # Cluster frames with mean shift to locate the walking passes
-    frames = df_head_feet.index
     mean_shift = MeanShift(bandwidth=60).fit(nf.to_column(frames))
     labels = mean_shift.labels_
 
