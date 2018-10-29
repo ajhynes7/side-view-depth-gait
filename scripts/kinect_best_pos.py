@@ -48,7 +48,7 @@ df_length = pd.read_csv(length_path, index_col=0)
 t = time.time()
 total_frames = 0
 
-for file_path in file_paths[:5]:
+for file_path in file_paths:
 
     df = pd.read_pickle(file_path)
 
@@ -111,6 +111,10 @@ for file_path in file_paths[:5]:
 
     total_frames += len(frames)
 
-elapsed = time.time() - t
+time_elapsed = time.time() - t
+frames_per_second = np.round(total_frames / time_elapsed)
 
-print("Frames per second: {}".format(np.round(total_frames / elapsed)))
+print("""Total frames: {}\n
+Total time: {}\n
+Frames per second: {}""".format(total_frames, np.round(time_elapsed, 2),
+                                frames_per_second))
