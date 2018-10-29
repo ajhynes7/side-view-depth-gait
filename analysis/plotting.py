@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 import numpy as np
 
+import modules.linear_algebra as lin
+
 
 def scatter_labels(points, labels, **kwargs):
     """
@@ -195,6 +197,34 @@ def plot_groups(data_groups, plot_func, **kwargs):
     for data in data_groups:
 
         plot_func(data, **kwargs)
+
+
+def plot_plane(ax, point, normal, *, x_range=range(10), y_range=range(10),
+               **kwargs):
+    """
+    Plot a 3D plane.
+
+    Parameters
+    ----------
+    ax : Axes3D object
+        Axis for plotting.
+    point : ndarray
+        Point on plane.
+    normal : ndarray
+        Normal vector of plane.
+    x_range, y_range : iterable, optional
+        Range of x and y used to plot the plane (default range(10))
+    kwargs: dict, optional
+        Additional keywords passed to `plot_surface`.
+
+    """
+    a, b, c, d = lin.plane_coefficients(point, normal)
+
+    x_grid, y_grid = np.meshgrid(x_range, y_range)
+
+    z_grid = (-a * x_grid - b * y_grid - d) / c
+
+    ax.plot_surface(x_grid, y_grid, z_grid, **kwargs)
 
 
 def plot_foot_peaks(foot_dist, peak_frames):
