@@ -51,7 +51,7 @@ def main():
         bool_array = df.applymap(
             lambda x: 'Step Time' in x if isinstance(x, str) else False).values
 
-        row_gait, col_gait = np.argwhere(bool_array)[0]
+        row_gait, _ = np.argwhere(bool_array)[0]
         df.columns = df.iloc[row_gait, :]
 
         df_gait = df.iloc[row_gait + 1:]
