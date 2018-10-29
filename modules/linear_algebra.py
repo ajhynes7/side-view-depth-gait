@@ -97,6 +97,37 @@ def project_point_line(point_p, line_point_a, line_point_b):
     return line_point_a + coeff * vec_ab
 
 
+def project_point_plane(point, point_plane, normal):
+    """
+    Project a point onto a plane.
+
+    Parameters
+    ----------
+    point : ndarray
+        Point in space.
+    point_plane : ndarray
+        Point on plane.
+    normal : ndarray
+        Normal vector of plane.
+
+    Returns
+    -------
+    ndarray
+        Projection of point P onto the plane..
+
+    Examples
+    --------
+    >>> point_plane, normal = np.array([0, 0, 0]), np.array([0, 0, 1])
+
+    >>> project_point_plane(np.array([10, 2, 5]), point_plane, normal)
+    array([10.,  2.,  0.])
+
+    """
+    unit_normal = unit(normal)
+
+    return point - np.dot(point - point_plane, unit_normal) * unit_normal
+
+
 def best_fit_line(points):
     """
     Return the line of best fit for a set of points.
