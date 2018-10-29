@@ -95,7 +95,7 @@ for file_path in file_paths:
     df_best_pos = pd.DataFrame(
         best_pos_list, index=frames, columns=['Side A', 'Side B'])
 
-    # Head and foot positions
+    # Head and foot positions as series
     head_pos = df_best_pos['Side A'].apply(lambda row: row[0, :])
     foot_pos_1 = df_best_pos['Side A'].apply(lambda row: row[-1, :])
     foot_pos_2 = df_best_pos['Side B'].apply(lambda row: row[-1, :])
