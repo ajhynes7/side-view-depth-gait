@@ -224,3 +224,41 @@ def line_coordinate_system(line_point, direction, points):
     coordinates = np.apply_along_axis(np.dot, 1, vectors, direction)
 
     return coordinates
+
+
+def side_line_2d(point_a, point_b, point_p):
+    """
+    Determine if a point is left or right of a line in two-dimensional space.
+
+    Parameters
+    ----------
+    point_a, point_b : array_like
+        2D points A and B that define a line.
+    point_p : array_like
+        2D point P in the plane.
+
+    Returns
+    -------
+    int
+        Integer indicating the side of point P to the line AB
+        -1 is left, 0 is straight, 1 is right.
+
+    Examples
+    --------
+    >>> point_a, point_b = [0, 0], [0, 1]
+    >>> point_p = [5, 1]
+
+    >>> side_line_2d(point_a, point_b, [5, 1])
+    1
+
+    >>> side_line_2d(point_a, point_b, [-2, 5])
+    -1
+
+    >>> side_line_2d(point_a, point_b, [0, 10])
+    0
+
+    """
+    direction_ab = np.subtract(point_b, point_a)
+    direction_ap = np.subtract(point_p, point_a)
+
+    return np.sign(np.cross(direction_ap, direction_ab))
