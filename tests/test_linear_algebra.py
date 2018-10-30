@@ -279,13 +279,13 @@ def test_best_fit_line(points):
 
     centroid, direction = lin.best_fit_line(points)
 
-    points_reversed = np.flip(points, axis=0)
+    points_reversed = np.flipud(points)
     centroid_rev, direction_rev = lin.best_fit_line(points_reversed)
 
     assert np.allclose(centroid, centroid_rev)
-    assert np.isclose(norm(direction), 1)
+    assert np.isclose(norm(direction), norm(direction_rev))
 
-    assert is_parallel(direction, direction_rev)
+    assert np.isclose(norm(direction), 1)
 
 
 @pytest.mark.parametrize("points, centroid, direction", [
