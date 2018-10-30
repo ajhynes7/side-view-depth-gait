@@ -288,36 +288,6 @@ def test_best_fit_line(points):
     assert is_parallel(direction, direction_rev)
 
 
-@given(array_like_nonzero, array_like_nonzero, array_like_nonzero,
-       ints_nonzero)
-def test_target_side_value(forward, up, target, c):
-    """Test evaluating the side (left/right) of a target."""
-    assume(not is_parallel(forward, up))
-
-    value = lin.target_side_value(forward, up, target)
-    value_scaled = lin.target_side_value(forward, up, c * np.array(target))
-
-    if abs(value) > 1e-3:
-        # The target is to the left or right of forward
-
-        if abs(c) > 1:
-            assert abs(value_scaled) > abs(value)
-        elif abs(c) < 1:
-            assert abs(value_scaled) < abs(value)
-
-    scaled_forward = lin.target_side_value(c * np.array(forward), up, target)
-    scaled_up = lin.target_side_value(forward, c * np.array(up), target)
-
-    # Scaling the forward or up vectors does not change the
-    # magnitude of the result.
-    if c > 0:
-        assert np.isclose(value, scaled_forward)
-        assert np.isclose(value, scaled_up)
-    else:
-        assert np.isclose(value, -scaled_forward)
-        assert np.isclose(value, -scaled_up)
-
-
 @pytest.mark.parametrize("points, centroid, direction", [
     (np.array([[0, 0, 0], [1, 0, 0], [2, 0, 0]]), np.array([1, 0, 0]),
      np.array([1, 0, 0])),

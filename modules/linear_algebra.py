@@ -185,59 +185,6 @@ def best_fit_line(points):
     return centroid, direction
 
 
-def target_side_value(forward, up, target):
-    """
-    Return a signed value indicating the left/right direction of a target.
-
-    The orientation is defined by specifying the forward and up directions.
-
-    A positive value indicates right, negative indicates left, and zero
-    indicates straight. The magnitude of the value is greater when the target
-    is further to the left or right.
-
-    Parameters
-    ----------
-    forward : array_like
-        Vector for forward direction.
-    up : array_like
-        Vector for up direction.
-    target : array_like
-        Vector for up direction.
-
-    Returns
-    -------
-    float
-        Signed value indicating left/right direction of a target.
-
-    Examples
-    --------
-    >>> forward, up = [0, 1, 0], [0, 0, 1]
-
-    >>> target_side_value(forward, up, [1, 10, 0])
-    1.0
-
-    >>> target_side_value([0, -1, 0], up, [1, 10, 0])
-    -1.0
-
-    >>> target_side_value(forward, up, [0, 2, 0])
-    0.0
-
-    The magnitude of the forward and up vectors does not affect the value.
-    >>> target_side_value([0, 5, 0], [0, 0, 3], [1, 10, 0])
-    1.0
-
-    >>> target_side_value(forward, up, [3, 10, 0])
-    3.0
-
-    >>> target_side_value(forward, up, [-4, 5, 5])
-    -4.0
-
-    """
-    normal = unit(np.cross(forward, up))
-
-    return np.dot(normal, target)
-
-
 def line_coordinate_system(line_point, direction, points):
     """
     Represent points in a one-dimensional coordinate system defined by a line.
