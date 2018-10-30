@@ -72,8 +72,7 @@ def assign_sides_portion(df_walk, direction):
     df_assigned.L_FOOT = pf.series_of_rows(foot_points_l, index=df_walk.index)
     df_assigned.R_FOOT = pf.series_of_rows(foot_points_r, index=df_walk.index)
 
-    side_values = evaluate_foot_side(foot_points_l, foot_points_r,
-                                     direction)
+    side_values = evaluate_foot_side(foot_points_l, foot_points_r, direction)
 
     if np.sum(side_values) > 0:
         # The left foot should be labelled the right foot, and vice versa
