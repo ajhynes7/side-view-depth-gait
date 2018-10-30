@@ -253,7 +253,8 @@ def combine_walking_passes(pass_dfs):
         # Ensure there are no missing frames in the walking pass
         df_pass = pf.make_index_consecutive(df_pass)
         df_pass = df_pass.applymap(
-            lambda x: x if isinstance(x, np.ndarray) else np.full(3, np.nan))
+            lambda x: x if isinstance(x, np.ndarray)
+            else np.full(direction_pass.size, np.nan))
 
         df_pass_metrics = walking_pass_metrics(df_pass, direction_pass)
         df_pass_metrics['pass'] = i  # Add column to record the walking pass
