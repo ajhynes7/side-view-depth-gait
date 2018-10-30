@@ -28,7 +28,7 @@ for file_path in file_paths:
     df_head_feet = pd.read_pickle(file_path)
     frames = df_head_feet.index
 
-    # Convert all points to floats to allow for future calculations (e.g. np.isnan)
+    # Convert points to floats to allow future calculations (e.g. np.isnan)
     df_head_feet = df_head_feet.applymap(lambda point: point.astype(np.float))
 
     # Remove outliers
@@ -53,9 +53,15 @@ for file_path in file_paths:
     labels = nf.map_to_whole(labels)
 
     # DataFrames for each walking pass in a trial
-    pass_dfs = nf.group_by_label(df_head_feet, labels)
+    pass_dfs_3d = nf.group_by_label(df_head_feet, labels)
 
-    df_trial = gm.combine_walking_passes(pass_dfs)
+    # Reduce dimension of head and foot positions on each walking pass
+    pass_dfs_2d = []
+    for df_pass in pass_dfs_3d:
+        pass_dfs_2d.append(
+            df_pass.applymap(lambda point: np.array([point[2], point[0]])))
+
+    df_trial = gm.combine_walking_passes(pass_dfs_2d)
     row_metrics = df_trial.apply(np.nanmedian, axis=0)
 
     base_name = os.path.basename(file_path)  # File with extension
