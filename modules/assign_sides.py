@@ -12,7 +12,7 @@ import modules.signals as sig
 import modules.sliding_window as sw
 
 
-def evaluate_foot_side(head_points, foot_points_1, foot_points_2, direction):
+def evaluate_foot_side(foot_points_1, foot_points_2, direction):
     """
     Yield a value indicating the side (left/right) of a foot.
 
@@ -20,8 +20,6 @@ def evaluate_foot_side(head_points, foot_points_1, foot_points_2, direction):
 
     Parameters
     ----------
-    head_points : ndarray
-        (n, 3) array of head positions.
     foot_points_1, foot_points_2 : ndarray
         (n, 3) array of foot positions.
     direction : ndarray
@@ -34,13 +32,9 @@ def evaluate_foot_side(head_points, foot_points_1, foot_points_2, direction):
 
     """
     mean_foot_points = (foot_points_1 + foot_points_2) / 2
-    up_vectors = head_points - mean_foot_points
     targets = foot_points_1 - mean_foot_points
 
-    side_values = np.array([
-        lin.target_side_value(direction, up, target)
-        for up, target in zip(up_vectors, targets)
-    ])
+    side_values = np.array([np.cross(direction, target) for target in targets])
 
     return side_values
 
@@ -67,7 +61,6 @@ def assign_sides_portion(df_walk, direction):
         Walking data after foot sides have been assigned.
 
     """
-    head_points = np.stack(df_walk.HEAD)
     foot_points_l = np.stack(df_walk.L_FOOT)
     foot_points_r = np.stack(df_walk.R_FOOT)
 
@@ -79,7 +72,7 @@ def assign_sides_portion(df_walk, direction):
     df_assigned.L_FOOT = pf.series_of_rows(foot_points_l, index=df_walk.index)
     df_assigned.R_FOOT = pf.series_of_rows(foot_points_r, index=df_walk.index)
 
-    side_values = evaluate_foot_side(head_points, foot_points_l, foot_points_r,
+    side_values = evaluate_foot_side(foot_points_l, foot_points_r,
                                      direction)
 
     if np.sum(side_values) > 0:

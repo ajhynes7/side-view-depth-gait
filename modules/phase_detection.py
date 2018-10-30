@@ -77,8 +77,9 @@ def get_phase_dataframe(foot_series, direction_pass):
     frames = foot_series.index.values
     foot_points = np.stack(foot_series)
 
+    line_point = np.zeros(direction_pass.shape)
     step_signal = lin.line_coordinate_system(
-        np.zeros(3), direction_pass, foot_points)
+        line_point, direction_pass, foot_points)
 
     is_stance = detect_phases(step_signal)
 
