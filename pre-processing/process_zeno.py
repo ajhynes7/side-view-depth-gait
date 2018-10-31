@@ -1,41 +1,41 @@
-"""Pull data from Excel files with Zeno Walkway measurements."""
+"""Process data from Excel files with Zeno Walkway measurements."""
 
 import glob
 import os
+import re
 
 import numpy as np
 import pandas as pd
 
 
+def parse_stride_info(stride_info):
+    """Parse stride information (e.g. pass number, stride number)."""
+    pass_list, side_list, stride_list = [], [], []
+
+    for string in stride_info:
+
+        first_char = string[0]
+
+        if first_char.isdigit():
+            # This row starts a new walking pass
+            # Update current pass number
+            pass_number = int(first_char)
+
+        pass_list.append(pass_number)
+
+        # Match 'Right' or 'Left' and take first character ('R' or 'L')
+        side_list.append(re.search(r'(\w+)\s', string).group(1)[0])
+
+        stride_list.append(int(string[-1]))
+
+    return pd.DataFrame({
+        'walking_pass': pass_list,
+        'side': side_list,
+        'stride': stride_list
+    })
+
+
 def main():
-
-    load_dir = os.path.join('data', 'zeno', 'raw')
-    save_dir = os.path.join('data', 'results')
-
-    save_name = 'zeno_gait_metrics.csv'
-
-    labels = [
-        'Step Length (cm.)', 'Stride Length (cm.)', 'Stride Width (cm.)',
-        'Stride Velocity (cm./sec.)', 'Absolute Step Length (cm.)',
-        'Stride Time (sec.)', 'Stance %', 'Total D. Support %'
-    ]
-
-    new_labels = [
-        'step_length', 'stride_length', 'stride_width', 'stride_velocity',
-        'absolute_step_length', 'stride_time', 'stance_percentage',
-        'double_stance_percentage'
-    ]
-
-    label_dict = {k: v for k, v in zip(labels, new_labels)}
-
-    # All files with .xlsx extension
-    file_paths = sorted(glob.glob(os.path.join(load_dir, '*.xlsx')))
-
-    save_path = os.path.join(save_dir, save_name)
-
-    # %% Read gait metrics from each Zeno file
-
-    list_l, list_r = [], []
 
     # Useful for catching errors with relative file paths
     assert len(file_paths) > 0
@@ -51,40 +51,47 @@ def main():
         bool_array = df.applymap(
             lambda x: 'Step Time' in x if isinstance(x, str) else False).values
 
-        row_gait, _ = np.argwhere(bool_array)[0]
-        df.columns = df.iloc[row_gait, :]
+        # Crop DataFrame at row where raw values begin
+        row_first_data = int(np.where(df.iloc[:, 0] == 1)[0])
+        df_gait = df.iloc[row_first_data:, :]
 
-        df_gait = df.iloc[row_gait + 1:]
+        # Set the gait parameters as column labels
+        row_gait_parameters = np.argwhere(bool_array)[0][0]
+        df_gait.columns = df.iloc[row_gait_parameters, :]
 
-        df_gait.columns.values[0] = 'Type'
-        df_gait.columns.values[1] = 'Side'
-        df_gait = df_gait.set_index(['Type', 'Side'])
+        df_gait.columns.name = None
 
-        series_l = df_gait.loc['Mean'].loc['Left'][labels]
-        series_r = df_gait.loc['Mean'].loc['Right'][labels]
+        df_labels = df_gait[labels].rename(label_dict, axis=1)
+        df_labels = df_labels.reset_index(drop=True)
 
-        series_l['File'], series_r['File'] = file_name, file_name
+        stride_info = df_gait.iloc[:, 1]
+        df_numbers = parse_stride_info(stride_info)
 
-        list_l.append(series_l)
-        list_r.append(series_r)
+        df_final = pd.concat((df_numbers, df_labels), axis=1, sort=False)
 
-    df_l = pd.DataFrame(list_l)
-    df_r = pd.DataFrame(list_r)
+        save_path = os.path.join(save_dir, file_name + '.pkl')
+        df_final.to_pickle(save_path)
 
-    # Change column labels to new labels
-    df_l = df_l.rename(label_dict, axis='columns')
-    df_r = df_r.rename(label_dict, axis='columns')
 
-    # Merge left and right DataFrames by matching filenames
-    df_final = pd.merge(
-        df_l, df_r, left_on='File', right_on='File', suffixes=('_L', '_R'))
+load_dir = os.path.join('data', 'zeno', 'raw')
+save_dir = os.path.join('data', 'zeno', 'processed')
 
-    df_final = df_final.set_index('File')
+labels = [
+    'Step Length (cm.)', 'Stride Length (cm.)', 'Stride Width (cm.)',
+    'Stride Velocity (cm./sec.)', 'Absolute Step Length (cm.)',
+    'Stride Time (sec.)', 'Stance %', 'Total D. Support %'
+]
 
-    # Order columns alphabetically
-    df_final = df_final.reindex(sorted(df_final.columns), axis=1)
+new_labels = [
+    'step_length', 'stride_length', 'stride_width', 'stride_velocity',
+    'absolute_step_length', 'stride_time', 'stance_percentage',
+    'double_stance_percentage'
+]
 
-    df_final.to_csv(save_path, index=True)
+label_dict = {k: v for k, v in zip(labels, new_labels)}
+
+# All files with .xlsx extension
+file_paths = sorted(glob.glob(os.path.join(load_dir, '*.xlsx')))
 
 
 if __name__ == '__main__':
