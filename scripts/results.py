@@ -1,51 +1,61 @@
 """Calculate results of comparing Kinect and Zeno gait metrics."""
 
 import os
+import glob
 
+import numpy as np
 import pandas as pd
 from scipy.stats import spearmanr, pearsonr
 
 import analysis.stats as st
 
-results_dir = os.path.join('data', 'results')
+
+def combine_trials(load_dir, matched_file_names):
+    """Combine dataframes from all matched walking trials."""
+    list_dfs = []
+
+    for i, file_name in enumerate(matched_file_names):
+
+        file_path = os.path.join(load_dir, file_name + '.pkl')
+
+        df_device = pd.read_pickle(file_path)
+        df_device['trial_id'] = i
+
+        list_dfs.append(df_device)
+
+    return pd.concat(list_dfs).reset_index(drop=True)
+
+
+load_dir_k = os.path.join('data', 'kinect', 'gait_params')
+load_dir_z = os.path.join('data', 'zeno', 'gait_params')
 match_dir = os.path.join('data', 'matching')
-
-df_k_raw = pd.read_csv(
-    os.path.join(results_dir, 'kinect_gait_metrics.csv'), index_col=0)
-
-df_z_raw = pd.read_csv(
-    os.path.join(results_dir, 'zeno_gait_metrics.csv'), index_col=0)
 
 df_match = pd.read_csv(os.path.join(match_dir, 'match_kinect_zeno.csv'))
 
 # Drop rows where file has no match
-df_match = df_match.dropna(axis=0)
+df_match = df_match.dropna(axis=0).reset_index(drop=True)
 
-df_match_zeno = pd.merge(df_match, df_z_raw, left_on='Zeno', right_index=True)
+file_paths_k = sorted(glob.glob(os.path.join(load_dir_k, '*.pkl')))
+file_paths_z = sorted(glob.glob(os.path.join(load_dir_z, '*.pkl')))
 
-df_total = pd.merge(
-    df_match_zeno,
-    df_k_raw,
-    left_on='Kinect',
-    right_index=True,
-    suffixes=('_z', '_k'))
+# Convert match table to dictionary for easy file matching
+dict_match = {x.Zeno: x.Kinect for x in df_match.itertuples()}
 
-# Take columns from total DataFrame to get Kinect and Zeno data
-df_k = df_total.filter(like='_k')
-df_z = df_total.filter(like='_z')
+matched_file_names_k = list(dict_match.values())
+matched_file_names_z = list(dict_match.keys())
 
-# Remove suffixes from column names
-df_k = df_k.rename(columns=lambda x: str(x)[:-2])
-df_z = df_z.rename(columns=lambda x: str(x)[:-2])
+df_total_k = combine_trials(load_dir_k, matched_file_names_k)
+df_total_z = combine_trials(load_dir_z, matched_file_names_z)
 
-# Group by gait metric without suffix
-df_k_grouped = df_k.groupby(
-    lambda col_name: col_name[:-2],
-    axis=1).apply(lambda x: pd.Series(x.values.flatten('F')))
+# Columns that represent gait parameters
+gait_params = df_total_k.select_dtypes(float).columns
 
-df_z_grouped = df_z.groupby(
-    lambda col_name: col_name[:-2],
-    axis=1).apply(lambda x: pd.Series(x.values.flatten('F')))
+# Remove negative values from Zeno data
+df_total_z = df_total_z.applymap(
+    lambda x: np.nan if isinstance(x, float) and x < 0 else x)
+
+df_trials_k = df_total_k.groupby('trial_id').mean()[gait_params]
+df_trials_z = df_total_z.groupby('trial_id').mean()[gait_params]
 
 # Calculate results
 funcs = {
@@ -57,8 +67,6 @@ funcs = {
     'range': lambda a, b: st.bland_altman(a, b).range_,
 }
 
-df_results_LR = st.compare_measurements(df_k, df_z, funcs)
-df_results_grouped = st.compare_measurements(df_k_grouped, df_z_grouped, funcs)
+df_results = st.compare_measurements(df_trials_k, df_trials_z, funcs)
 
-df_results_LR.to_csv(os.path.join('results', 'results_LR.csv'))
-df_results_grouped.to_csv(os.path.join('results', 'results_grouped.csv'))
+df_results.to_csv(os.path.join('results', 'results_grouped.csv'))
