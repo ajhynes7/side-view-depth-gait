@@ -10,7 +10,7 @@ df_pass : DataFrame
     Elements are position vectors.
 df_contact : DataFrame
     Each row represents a frame when a foot contacts the floor.
-    Columns include 'number', 'side', 'frame'.
+    Columns include 'stride', 'side', 'frame'.
 df_gait : DataFrame
     Each row represents a stride.
     Columns include gait metrics, e.g. 'stride_length', and the side and
@@ -51,12 +51,19 @@ def direction_of_pass(df_pass):
     head_points = np.stack(df_pass.HEAD)
 
     # Line of best fit for head positions
-    line_point, direction_pass = lin.best_fit_line(head_points)
+    line_point, line_direction = lin.best_fit_line(head_points)
+
+    vector_start_end = head_points[-1, :] - head_points[0, :]
+
+    direction_pass = line_direction
+    if np.dot(line_direction, vector_start_end) < 0:
+        # The direction of the best fit line should be reversed
+        direction_pass = -line_direction
 
     return line_point, direction_pass
 
 
-def stride_metrics(foot_x_i, foot_y, foot_x_f, *, fps=30):
+def stride_metrics(foot_x_i, foot_x_f, foot_y, *, fps=30):
     """
     Calculate gait metrics from a single stride.
 
@@ -64,12 +71,12 @@ def stride_metrics(foot_x_i, foot_y, foot_x_f, *, fps=30):
     ----------
     foot_x_i : namedtuple
         Single result from pandas DataFrame.itertuples() method.
-        Includes fields of 'frame', 'position', 'number', and 'side'.
+        Includes fields of 'frame', 'position', 'stride', and 'side'.
         Represents the initial foot on side x.
-    foot_y : namedtuple
-        Represents the foot on side y.
     foot_x_f : namedtuple
         Represents the final foot on side x.
+    foot_y : namedtuple
+        Represents the foot on side y.
     fps : int, optional
         Camera frame rate in frames per second (default 30).
 
@@ -92,15 +99,13 @@ def stride_metrics(foot_x_i, foot_y, foot_x_f, *, fps=30):
     stride_velocity = stride_length / stride_time
 
     metrics = {
-        'number': foot_x_i.number,
+        'stride': foot_x_i.stride,
         'side': foot_x_i.side,
         'stride_length': stride_length,
         'stride_time': stride_time,
         'stride_velocity': stride_velocity,
-        'absolute_step_length': norm(pos_x_f - pos_y),
         'step_length': norm(pos_x_f - pos_y_proj),
         'stride_width': norm(pos_y - pos_y_proj),
-        'step_time': (foot_x_f.frame - foot_y.frame) / fps
     }
 
     return metrics
@@ -125,22 +130,18 @@ def stance_metrics(is_stance_l, is_stance_r):
         Dictionary with stance metrics, e.g. double stance percentage.
 
     """
-    is_stance_both = is_stance_l & is_stance_r
+    stance_vectors = [is_stance_l, is_stance_r, is_stance_l & is_stance_r]
 
-    metric_names = [
-        'stance_percentage_L',
-        'stance_percentage_R',
-        'double_stance_percentage',
-    ]
+    stance_l, stance_r, stance_double = [nf.ratio_nonzero(x) * 100
+                                         for x in stance_vectors]
 
-    stance_vectors = [is_stance_l, is_stance_r, is_stance_both]
+    df_stance = pd.DataFrame({
+        'side': ['L', 'R'],
+        'stance_percentage': [stance_l, stance_r],
+        'stance_percentage_double': stance_double,
+    })
 
-    metrics = {
-        name: nf.ratio_nonzero(x) * 100
-        for name, x in zip(metric_names, stance_vectors)
-    }
-
-    return metrics
+    return df_stance
 
 
 def foot_contacts_to_gait(df_contact):
@@ -151,14 +152,14 @@ def foot_contacts_to_gait(df_contact):
     ----------
     df_contact : DataFrame
         Each row represents an instance of a foot contacting the floor.
-        Columns are 'frame', 'position', 'number', 'side'.
+        Columns are 'frame', 'position', 'stride', 'side'.
 
     Returns
     -------
     df_gait : DataFrame
         Each row represents a set of gait metrics calculated from one stride.
         Columns include gait metric names, e.g., stride_velocity.
-        Columns also include 'number' and 'side'.
+        Columns also include 'stride' and 'side'.
 
     """
     foot_tuples = df_contact.itertuples(index=False)
@@ -167,7 +168,9 @@ def foot_contacts_to_gait(df_contact):
         """Inner function to yield metrics for each stride."""
         for foot_tuple in sw.generate_window(foot_tuples, n=3):
 
-            yield stride_metrics(*foot_tuple)
+            foot_x_i, foot_y, foot_x_f = foot_tuple
+
+            yield stride_metrics(foot_x_i, foot_x_f, foot_y)
 
     df_gait = pd.DataFrame(yield_metrics())
 
@@ -197,32 +200,23 @@ def walking_pass_metrics(df_pass, direction_pass):
 
     is_stance_l = df_phase_l.phase.values == 'stance'
     is_stance_r = df_phase_r.phase.values == 'stance'
+    df_stance = stance_metrics(is_stance_l, is_stance_r)
 
-    stance_dict = stance_metrics(is_stance_l, is_stance_r)
-    df_stance = pd.DataFrame.from_records([stance_dict])
+    df_contact_l = pde.get_contacts(df_pass.L_FOOT, direction_pass)
+    df_contact_r = pde.get_contacts(df_pass.R_FOOT, direction_pass)
 
-    df_contact_l = pde.get_contacts(df_pass.L_FOOT, direction_pass, '_L')
-    df_contact_r = pde.get_contacts(df_pass.R_FOOT, direction_pass, '_R')
+    df_contact_l['side'] = 'L'
+    df_contact_r['side'] = 'R'
 
-    contact_dfs = [df_contact_l, df_contact_r]
-
-    df_stacked = pd.concat(contact_dfs).sort_values('frame').reset_index()
-
-    df_contact = pf.split_column(
-        df_stacked, column='index', delim='_', new_columns=['number', 'side'])
+    df_contact = pd.concat([df_contact_l, df_contact_r]).sort_values('frame')
 
     df_gait = foot_contacts_to_gait(df_contact)
 
     if not df_gait.empty:
-        df_gait = pf.split_and_merge(
-            df_gait,
-            merge_col='number',
-            split_col='side',
-            split_vals=('L', 'R'))
+        df_pass_metrics = pd.merge(df_gait, df_stance, left_on='side',
+                                   right_on='side')
 
-    df_pass_metrics = df_gait.reset_index(drop=True).join(df_stance)
-
-    return df_pass_metrics
+        return df_pass_metrics
 
 
 def combine_walking_passes(pass_dfs):
@@ -242,7 +236,7 @@ def combine_walking_passes(pass_dfs):
         Columns are gait metrics for left/right sides.
 
     """
-    df_list = []
+    list_dfs = []
     for i, df_pass in enumerate(pass_dfs):
 
         _, direction_pass = direction_of_pass(df_pass)
@@ -253,18 +247,17 @@ def combine_walking_passes(pass_dfs):
         # Ensure there are no missing frames in the walking pass
         df_pass = pf.make_index_consecutive(df_pass)
         df_pass = df_pass.applymap(
-            lambda x: x if isinstance(x, np.ndarray) else np.full(3, np.nan))
+            lambda x: x if isinstance(x, np.ndarray)
+            else np.full(direction_pass.size, np.nan))
 
         df_pass_metrics = walking_pass_metrics(df_pass, direction_pass)
-        df_pass_metrics['pass'] = i  # Add column to record the walking pass
 
-        df_list.append(df_pass_metrics)
+        if df_pass_metrics is not None:
+            # Add column to record the walking pass
+            df_pass_metrics['pass'] = i
 
-    df_combined = pd.concat(df_list, sort=True)
+        list_dfs.append(df_pass_metrics)
 
-    df_final = df_combined.reset_index(drop=True)
+    df_trial = pd.concat(list_dfs, sort=True).reset_index(drop=True)
 
-    df_final = df_final.set_index('pass')  # Set the index to the pass column
-    df_final = df_final.sort_index(axis=1)  # Sort the columns alphabetically
-
-    return df_final
+    return df_trial

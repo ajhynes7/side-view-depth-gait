@@ -185,59 +185,6 @@ def best_fit_line(points):
     return centroid, direction
 
 
-def target_side_value(forward, up, target):
-    """
-    Return a signed value indicating the left/right direction of a target.
-
-    The orientation is defined by specifying the forward and up directions.
-
-    A positive value indicates right, negative indicates left, and zero
-    indicates straight. The magnitude of the value is greater when the target
-    is further to the left or right.
-
-    Parameters
-    ----------
-    forward : array_like
-        Vector for forward direction.
-    up : array_like
-        Vector for up direction.
-    target : array_like
-        Vector for up direction.
-
-    Returns
-    -------
-    float
-        Signed value indicating left/right direction of a target.
-
-    Examples
-    --------
-    >>> forward, up = [0, 1, 0], [0, 0, 1]
-
-    >>> target_side_value(forward, up, [1, 10, 0])
-    1.0
-
-    >>> target_side_value([0, -1, 0], up, [1, 10, 0])
-    -1.0
-
-    >>> target_side_value(forward, up, [0, 2, 0])
-    0.0
-
-    The magnitude of the forward and up vectors does not affect the value.
-    >>> target_side_value([0, 5, 0], [0, 0, 3], [1, 10, 0])
-    1.0
-
-    >>> target_side_value(forward, up, [3, 10, 0])
-    3.0
-
-    >>> target_side_value(forward, up, [-4, 5, 5])
-    -4.0
-
-    """
-    normal = unit(np.cross(forward, up))
-
-    return np.dot(normal, target)
-
-
 def line_coordinate_system(line_point, direction, points):
     """
     Represent points in a one-dimensional coordinate system defined by a line.
@@ -277,3 +224,41 @@ def line_coordinate_system(line_point, direction, points):
     coordinates = np.apply_along_axis(np.dot, 1, vectors, direction)
 
     return coordinates
+
+
+def side_line_2d(point_a, point_b, point_p):
+    """
+    Determine if a point is left or right of a line in two-dimensional space.
+
+    Parameters
+    ----------
+    point_a, point_b : array_like
+        2D points A and B that define a line.
+    point_p : array_like
+        2D point P in the plane.
+
+    Returns
+    -------
+    int
+        Integer indicating the side of point P to the line AB
+        -1 is left, 0 is straight, 1 is right.
+
+    Examples
+    --------
+    >>> point_a, point_b = [0, 0], [0, 1]
+    >>> point_p = [5, 1]
+
+    >>> side_line_2d(point_a, point_b, [5, 1])
+    1
+
+    >>> side_line_2d(point_a, point_b, [-2, 5])
+    -1
+
+    >>> side_line_2d(point_a, point_b, [0, 10])
+    0
+
+    """
+    direction_ab = np.subtract(point_b, point_a)
+    direction_ap = np.subtract(point_p, point_a)
+
+    return np.sign(np.cross(direction_ap, direction_ab))

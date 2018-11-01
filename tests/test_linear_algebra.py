@@ -279,43 +279,13 @@ def test_best_fit_line(points):
 
     centroid, direction = lin.best_fit_line(points)
 
-    points_reversed = np.flip(points, axis=0)
+    points_reversed = np.flipud(points)
     centroid_rev, direction_rev = lin.best_fit_line(points_reversed)
 
     assert np.allclose(centroid, centroid_rev)
+    assert np.isclose(norm(direction), norm(direction_rev))
+
     assert np.isclose(norm(direction), 1)
-
-    assert is_parallel(direction, direction_rev)
-
-
-@given(array_like_nonzero, array_like_nonzero, array_like_nonzero,
-       ints_nonzero)
-def test_target_side_value(forward, up, target, c):
-    """Test evaluating the side (left/right) of a target."""
-    assume(not is_parallel(forward, up))
-
-    value = lin.target_side_value(forward, up, target)
-    value_scaled = lin.target_side_value(forward, up, c * np.array(target))
-
-    if abs(value) > 1e-3:
-        # The target is to the left or right of forward
-
-        if abs(c) > 1:
-            assert abs(value_scaled) > abs(value)
-        elif abs(c) < 1:
-            assert abs(value_scaled) < abs(value)
-
-    scaled_forward = lin.target_side_value(c * np.array(forward), up, target)
-    scaled_up = lin.target_side_value(forward, c * np.array(up), target)
-
-    # Scaling the forward or up vectors does not change the
-    # magnitude of the result.
-    if c > 0:
-        assert np.isclose(value, scaled_forward)
-        assert np.isclose(value, scaled_up)
-    else:
-        assert np.isclose(value, -scaled_forward)
-        assert np.isclose(value, -scaled_up)
 
 
 @pytest.mark.parametrize("points, centroid, direction", [
