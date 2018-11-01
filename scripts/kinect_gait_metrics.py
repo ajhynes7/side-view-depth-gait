@@ -13,15 +13,10 @@ import modules.gait_metrics as gm
 import modules.numpy_funcs as nf
 
 load_dir = os.path.join('data', 'kinect', 'best_pos')
-save_dir = os.path.join('data', 'results')
-
-save_name = 'kinect_gait_metrics.csv'
+save_dir = os.path.join('data', 'kinect', 'gait_params')
 
 # All files with .pkl extension
 file_paths = sorted(glob.glob(os.path.join(load_dir, '*.pkl')))
-save_path = os.path.join(save_dir, save_name)
-
-df_metrics = pd.read_csv(save_path, index_col=0)
 
 for file_path in file_paths:
 
@@ -62,12 +57,9 @@ for file_path in file_paths:
             df_pass.applymap(lambda point: np.array([point[2], point[0]])))
 
     df_trial = gm.combine_walking_passes(pass_dfs_2d)
-    row_metrics = df_trial.apply(np.nanmedian, axis=0)
 
     base_name = os.path.basename(file_path)  # File with extension
     file_name = os.path.splitext(base_name)[0]  # File with no extension
 
-    # Fill in row of gait metrics DataFrame
-    df_metrics.loc[file_name] = row_metrics
-
-df_metrics.to_csv(save_path, na_rep='NaN')
+    save_path = os.path.join(save_dir, file_name + '.pkl')
+    df_trial.to_pickle(save_path)
