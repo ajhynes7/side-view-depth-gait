@@ -71,7 +71,7 @@ def get_phase_dataframe(foot_series, direction_pass):
     -------
     df_phase : DataFrame
         Index is 'frame'.
-        Columns are 'phase', 'position', 'number'.
+        Columns are 'phase', 'position', 'stride'.
 
     """
     frames = foot_series.index.values
@@ -101,14 +101,14 @@ def get_phase_dataframe(foot_series, direction_pass):
 
     stance_series = pd.Series(stance_numbers, index=frames[is_stance])
     swing_series = pd.Series(swing_numbers, index=frames[is_swing])
-    df_phase['number'] = pd.concat([stance_series, swing_series])
+    df_phase['stride'] = pd.concat([stance_series, swing_series])
 
     df_phase.index.name = 'frame'
 
     return df_phase
 
 
-def group_stance_frames(df_phase, suffix):
+def group_stance_frames(df_phase):
     """
     Create a DataFrame of stance frames grouped by contact number.
 
@@ -116,20 +116,17 @@ def group_stance_frames(df_phase, suffix):
     ----------
     df_phase : DataFrame
         Index is 'frame'.
-        Columns are 'phase', 'number', 'position'.
-    suffix : str
-        Suffix to add to values of the index ('_L' or '_R').
+        Columns are 'phase', 'stride', 'position'.
 
     Returns
     -------
     df_grouped : DataFrame
-        Index values have the suffix appended.
         Columns are 'frame', 'position'
 
     Examples
     --------
     >>> pos = [[1, 2], [3, 4]]
-    >>> d = {'phase': ['stance', 'stance'], 'number': [0, 0], 'position': pos}
+    >>> d = {'phase': ['stance', 'stance'], 'stride': [0, 0], 'position': pos}
 
     >>> df = pd.DataFrame(d, index=[175, 176])
     >>> df.index.name = 'frame'
@@ -142,16 +139,14 @@ def group_stance_frames(df_phase, suffix):
     df_stance = df_phase[df_phase.phase == 'stance'].reset_index()
 
     column_funcs = {'frame': np.median, 'position': np.stack}
-    df_grouped = pf.apply_to_grouped(df_stance, 'number', column_funcs)
+    df_grouped = pf.apply_to_grouped(df_stance, 'stride', column_funcs)
 
     df_grouped.position = df_grouped.position.apply(np.nanmedian, axis=0)
 
-    df_grouped.index = df_grouped.index.astype('str') + suffix
-
-    return df_grouped
+    return df_grouped.reset_index()
 
 
-def get_contacts(foot_series, direction_pass, suffix):
+def get_contacts(foot_series, direction_pass):
     """
     Return a DataFrame containing contact frames and positions for one foot.
 
@@ -165,16 +160,13 @@ def get_contacts(foot_series, direction_pass, suffix):
         Values are foot positions.
     direction_pass : ndarray
         Direction of motion for the walking pass.
-    suffix : str
-        Suffix indicating the foot side ('_L' or '_R').
 
     Returns
     -------
     DataFrame
-        Index values have the suffix appended.
         Columns are 'frame', 'position'
 
     """
     df_phase = get_phase_dataframe(foot_series, direction_pass)
 
-    return group_stance_frames(df_phase, suffix)
+    return group_stance_frames(df_phase)
