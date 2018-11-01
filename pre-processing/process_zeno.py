@@ -29,9 +29,9 @@ def parse_stride_info(stride_info):
         stride_list.append(int(string[-1]))
 
     return pd.DataFrame({
-        'walking_pass': pass_list,
+        'pass': pass_list,
+        'stride': stride_list,
         'side': side_list,
-        'stride': stride_list
     })
 
 
@@ -41,9 +41,6 @@ def main():
     assert len(file_paths) > 0
 
     for file_path in file_paths:
-
-        base_name = os.path.basename(file_path)  # File with extension
-        file_name = os.path.splitext(base_name)[0]  # File with no extension
 
         df = pd.read_excel(file_path)
 
@@ -67,25 +64,27 @@ def main():
         stride_info = df_gait.iloc[:, 1]
         df_numbers = parse_stride_info(stride_info)
 
-        df_final = pd.concat((df_numbers, df_labels), axis=1, sort=False)
+        df_trial = pd.concat((df_numbers, df_labels), axis=1, sort=False)
+
+        base_name = os.path.basename(file_path)  # File with extension
+        file_name = os.path.splitext(base_name)[0]  # File with no extension
 
         save_path = os.path.join(save_dir, file_name + '.pkl')
-        df_final.to_pickle(save_path)
+        df_trial.to_pickle(save_path)
 
 
 load_dir = os.path.join('data', 'zeno', 'raw')
-save_dir = os.path.join('data', 'zeno', 'processed')
+save_dir = os.path.join('data', 'zeno', 'gait_params')
 
 labels = [
     'Step Length (cm.)', 'Stride Length (cm.)', 'Stride Width (cm.)',
-    'Stride Velocity (cm./sec.)', 'Absolute Step Length (cm.)',
-    'Stride Time (sec.)', 'Stance %', 'Total D. Support %'
+    'Stride Velocity (cm./sec.)', 'Stride Time (sec.)',
+    'Stance %', 'Total D. Support %',
 ]
 
 new_labels = [
     'step_length', 'stride_length', 'stride_width', 'stride_velocity',
-    'absolute_step_length', 'stride_time', 'stance_percentage',
-    'double_stance_percentage'
+    'stride_time', 'stance_percentage', 'stance_percentage_double'
 ]
 
 label_dict = {k: v for k, v in zip(labels, new_labels)}
