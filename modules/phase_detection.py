@@ -131,9 +131,9 @@ def group_stance_frames(df_phase):
     >>> df = pd.DataFrame(d, index=[175, 176])
     >>> df.index.name = 'frame'
 
-    >>> group_stance_frames(df, '_L')
-         frame    position
-    0_L  175.5  [2.0, 3.0]
+    >>> group_stance_frames(df)
+       stride  frame    position
+    0       0  175.5  [2.0, 3.0]
 
     """
     df_stance = df_phase[df_phase.phase == 'stance'].reset_index()
