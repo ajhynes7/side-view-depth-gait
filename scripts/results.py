@@ -70,3 +70,6 @@ funcs = {
 df_results = st.compare_measurements(df_trials_k, df_trials_z, funcs)
 
 df_results.to_csv(os.path.join('results', 'results_grouped.csv'))
+
+df_total_k.to_pickle(os.path.join('data', 'results', 'df_total_k.pkl'))
+df_total_z.to_pickle(os.path.join('data', 'results', 'df_total_z.pkl'))
