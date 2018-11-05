@@ -10,3 +10,5 @@ docs/_build
 docs/separate
 docs/stubs
 data/
+results/figures/
+results/dataframes/
