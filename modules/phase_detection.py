@@ -28,14 +28,18 @@ def detect_phases(step_signal):
 
     """
     pad_width = 5
-    cluster_values = sw.apply_to_padded(
+    variances = sw.apply_to_padded(
         step_signal, np.nanvar, pad_width, 'reflect', reflect_type='odd')
 
-    points = nf.to_column(cluster_values)
-    k_means = KMeans(n_clusters=2, random_state=0).fit(points)
+    points_to_cluster = nf.to_column(nf.remove_nan(np.array(variances)))
+    k_means = KMeans(n_clusters=2, random_state=0).fit(points_to_cluster)
+
+    signal_labels = pp.assign_to_closest(nf.to_column(variances),
+                                         k_means.cluster_centers_)
 
     stance_label = np.argmin(k_means.cluster_centers_)
-    is_stance = k_means.labels_ == stance_label
+    is_stance = np.logical_and(signal_labels == stance_label,
+                               ~np.isnan(variances))
 
     # Filter groups of stance frames that are too small
 
