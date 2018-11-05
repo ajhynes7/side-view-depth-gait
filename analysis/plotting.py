@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 import numpy as np
 
+import analysis.stats as st
 
 def scatter_labels(points, labels, **kwargs):
     """
@@ -219,36 +220,7 @@ def plot_foot_peaks(foot_dist, peak_frames):
     plt.ylabel('Distance between feet [cm]')
 
 
-def compare_measurements(x, y, **kwargs):
-    """
-    Scatter plot of measurements from two devices.
-
-    Straight line shows ideal results (when measurements are equal).
-
-    Parameters
-    ----------
-    x : array_like
-        Measurements of device A.
-    y : array_like
-        Measurements of device B.
-    kwargs : dict, optional
-        Additional keywords passed to `plot_surface`.
-
-    """
-    _, ax = plt.subplots()
-
-    ax.scatter(x, y, **kwargs)
-
-    lims = [
-        np.min([ax.get_xlim(), ax.get_ylim()]),
-        np.max([ax.get_xlim(), ax.get_ylim()]),
-    ]
-
-    # Plot both limits against each other
-    ax.plot(lims, lims, 'k-')
-
-
-def plot_bland_altman(means, diffs, bias, limits, percent=True):
+def scatter_bland(ax, measures_1, measures_2, **kwargs):
     """
     Produce a Bland-Altman plot.
 
@@ -268,24 +240,10 @@ def plot_bland_altman(means, diffs, bias, limits, percent=True):
             If False (default) the y label shows regular difference.
 
     """
-    lower_limit, upper_limit = limits
+    means = (measures_1 + measures_2) / 2
+    differences = st.relative_difference(measures_1, measures_2)
 
-    plt.scatter(means, diffs, c='black', s=5)
-
-    plt.axhline(y=bias, color='k', linestyle='-')
-    plt.axhline(y=lower_limit, color='k', linestyle='--')
-    plt.axhline(y=upper_limit, color='k', linestyle='--')
-
-    plt.xlabel('Mean of measurements')
-
-    if percent:
-        plt.ylabel('Percent difference between measurements')
-    else:
-        plt.ylabel('Difference between measurements')
-
-    plt.annotate('Bias', xy=(120, bias - 2))
-    plt.annotate('Lower limit', xy=(120, lower_limit - 2))
-    plt.annotate('Upper limit', xy=(120, upper_limit - 2))
+    ax.scatter(means, differences, **kwargs)
 
 
 def plot_spheres(points, r, ax):
@@ -298,7 +256,7 @@ def plot_spheres(points, r, ax):
         Points in space.
     r : int
         Radius of spheres.
-    ax : object
+    ax : AxesSubplot
         Axis for plotting.
 
     """
