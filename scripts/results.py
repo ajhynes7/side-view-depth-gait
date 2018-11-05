@@ -64,13 +64,12 @@ funcs = {
     'spearman': lambda a, b: spearmanr(a, b)[0],
     'abs_rel_error':
     lambda a, b: st.relative_error(a, b, absolute=True).mean(),
-    'bias': lambda a, b: st.bland_altman(a, b).bias,
-    'range': lambda a, b: st.bland_altman(a, b).range_,
+    'bias': lambda a, b: st.bland_altman(st.relative_difference(a, b)).bias,
+    'range': lambda a, b: st.bland_altman(st.relative_difference(a, b)).range_,
 }
 
 df_results = st.compare_measurements(df_trials_k, df_trials_z, funcs)
-
 df_results.to_csv(os.path.join('results', 'results_grouped.csv'))
 
-df_total_k.to_pickle(os.path.join('data', 'results', 'df_total_k.pkl'))
-df_total_z.to_pickle(os.path.join('data', 'results', 'df_total_z.pkl'))
+df_total_k.to_pickle(os.path.join('results', 'dataframes', 'df_total_k.pkl'))
+df_total_z.to_pickle(os.path.join('results', 'dataframes', 'df_total_z.pkl'))
