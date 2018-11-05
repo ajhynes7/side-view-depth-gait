@@ -21,7 +21,7 @@ def evaluate_foot_side(foot_points_1, foot_points_2, direction):
     Parameters
     ----------
     foot_points_1, foot_points_2 : ndarray
-        (n, 3) array of foot positions.
+        (n, d) array of foot positions.
     direction : ndarray
         Vector for direction of motion.
 
