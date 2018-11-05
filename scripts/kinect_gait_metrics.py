@@ -34,7 +34,7 @@ for file_path in file_paths:
     labels = nf.map_to_whole(labels)
 
     # DataFrames for each walking pass in a trial
-    pass_dfs_3d = nf.group_by_label(df_head_feet, labels)
+    pass_dfs_3d = list(nf.group_by_label(df_head_feet, labels))
 
     # Reduce dimension of head and foot positions on each walking pass
     pass_dfs_2d = []
