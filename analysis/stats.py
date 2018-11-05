@@ -9,58 +9,6 @@ from statsmodels import robust
 import analysis.math_funcs as mf
 
 
-def bland_altman(x_new, x_valid):
-    """
-    Calculate measures for Bland-Altman analysis.
-
-    Compare measurements of a new device to those of a validated device.
-
-    Parameters
-    ----------
-    x_new : ndarray
-        Measurements of new device.
-    x_valid : ndarray
-        Measurements of validate device.
-
-    Returns
-    -------
-    bias : float
-        Mean of the differences.
-        Indicates the bias of the new device compared to the validated one.
-    lower_limit, upper_limit : float
-        Bias minus/plus 1.96 standard deviations.
-
-    Examples
-    --------
-    >>> x_new = np.array([1, 2, 3])
-    >>> x_valid = np.array([2, 2, 3])
-    >>> results = bland_altman(x_new, x_valid)
-
-    >>> np.round(results.bias, 2)
-    -0.22
-
-    >>> np.round(results.lower_limit, 2)
-    -0.84
-
-    >>> np.round(results.upper_limit, 2)
-    0.39
-
-    """
-    rel_diffs = relative_difference(x_new, x_valid)
-    bias, standard_dev = rel_diffs.mean(), rel_diffs.std()
-
-    lower_limit, upper_limit = mf.limits(bias, 1.96 * standard_dev)
-
-    BlandAltman = namedtuple('BlandAltman',
-                             'bias lower_limit upper_limit range_')
-
-    return BlandAltman(
-        bias=bias,
-        lower_limit=lower_limit,
-        upper_limit=upper_limit,
-        range_=upper_limit - lower_limit)
-
-
 def relative_difference(x, y, absolute=False):
     """
     Relative difference between values x and y.
@@ -187,6 +135,54 @@ def mad_outliers(x, c):
     x_filtered[np.logical_or(x < lower_bound, x > upper_bound)] = np.nan
 
     return x_filtered
+
+
+def bland_altman(differences):
+    """
+    Calculate measures for Bland-Altman analysis.
+
+    Compare measurements of a new device to those of a validated device.
+
+    Parameters
+    ----------
+    differences : ndarray
+        Differences (relative or absolute) between measurements of two devices.
+
+    Returns
+    -------
+    BlandAltman : namedtuple
+        namedtuple with Bland-Altman parameters.
+
+    Examples
+    --------
+    >>> measures_1 = np.array([1, 2, 3])
+    >>> measures_2 = np.array([2, 2, 3])
+    >>> differences = relative_difference(measures_1, measures_2)
+    >>> results = bland_altman(differences)
+
+    >>> np.round(results.bias, 2)
+    -0.22
+
+    >>> np.round(results.lower_limit, 2)
+    -0.84
+
+    >>> np.round(results.upper_limit, 2)
+    0.39
+
+    """
+    bias, standard_dev = differences.mean(), differences.std()
+
+    lower_limit, upper_limit = mf.limits(bias, 1.96 * standard_dev)
+
+    params = 'bias lower_limit upper_limit range_'
+
+    BlandAltman = namedtuple('BlandAltman', params)
+
+    return BlandAltman(
+        bias=bias,
+        lower_limit=lower_limit,
+        upper_limit=upper_limit,
+        range_=upper_limit - lower_limit)
 
 
 def compare_measurements(df_1, df_2, compare_funcs):
