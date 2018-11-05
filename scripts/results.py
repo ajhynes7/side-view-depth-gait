@@ -20,6 +20,7 @@ def combine_trials(load_dir, matched_file_names):
 
         df_device = pd.read_pickle(file_path)
         df_device['trial_id'] = i
+        df_device['file_name'] = file_name
 
         list_dfs.append(df_device)
 
