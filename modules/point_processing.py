@@ -9,6 +9,37 @@ from scipy.spatial.distance import cdist
 import modules.iterable_funcs as itf
 
 
+def assign_to_closest(points, targets):
+    """
+    Assign each point to the closest target.
+
+    Parameters
+    ----------
+    points : ndarray
+        (n, d) array of n points with dimension d.
+    targets : ndarray
+        (n_targets, d) array of target points with dimension d.
+
+    Returns
+    -------
+    ndarray
+        (n,) array of labels.
+        Label i corresponds to the target closest to point i.
+
+    Examples
+    --------
+    >>> points = np.array([[0, 0], [1, 1], [50, 0], [2, 2], [100, 100]])
+    >>> targets = np.array([[5, 5], [40, 0], [105, 100]])
+
+    >>> assign_to_closest(points, targets)
+    array([0, 0, 1, 0, 2])
+
+    """
+    dist_matrix = cdist(points, targets)
+
+    return np.argmin(dist_matrix, axis=1)
+
+
 def consecutive_dist(points):
     """
     Calculate the distance between each consecutive pair of points.
