@@ -216,6 +216,14 @@ def walking_pass_metrics(df_pass, direction_pass):
         df_pass_metrics = pd.merge(df_gait, df_stance, left_on='side',
                                    right_on='side')
 
+        head_points = np.stack(df_pass.HEAD)
+
+        vectors = np.diff(head_points[::27], axis=0)
+        norms = np.linalg.norm(vectors, axis=1)
+        speed = np.nanmedian(norms)
+
+        df_pass_metrics.stride_velocity = speed
+
         return df_pass_metrics
 
 
