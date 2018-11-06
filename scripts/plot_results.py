@@ -35,12 +35,12 @@ for gait_param in gait_params:
 
     fig, ax = plt.subplots()
 
-    scatter_l = ax.scatter(df_sides_k.xs('L', level='side')[gait_param],
-                           df_sides_z.xs('L', level='side')[gait_param],
+    scatter_l = ax.scatter(df_sides_z.xs('L', level='side')[gait_param],
+                           df_sides_k.xs('L', level='side')[gait_param],
                            c='b', s=10)
 
-    scatter_r = ax.scatter(df_sides_k.xs('R', level='side')[gait_param],
-                           df_sides_z.xs('R', level='side')[gait_param],
+    scatter_r = ax.scatter(df_sides_z.xs('R', level='side')[gait_param],
+                           df_sides_k.xs('R', level='side')[gait_param],
                            c='r', s=10)
 
     ax.legend([scatter_l, scatter_r], ['L', 'R'])
