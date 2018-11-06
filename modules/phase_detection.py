@@ -8,6 +8,7 @@ import modules.iterable_funcs as itf
 import modules.linear_algebra as lin
 import modules.numpy_funcs as nf
 import modules.pandas_funcs as pf
+import modules.point_processing as pp
 import modules.sliding_window as sw
 
 
