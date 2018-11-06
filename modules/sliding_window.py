@@ -123,8 +123,6 @@ def apply_to_padded(array, func, *args, **kwargs):
         Input array.
     func : function
         Function to apply to each window.
-    r : int, optional
-        Radius of sliding window (default 1).
     args, kwargs
         Additional arguments for numpy.pad
 
