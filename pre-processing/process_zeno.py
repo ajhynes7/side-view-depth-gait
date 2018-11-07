@@ -44,7 +44,7 @@ def main():
 
         df = pd.read_excel(file_path)
 
-        # Locate the gait metric labels in the Excel file
+        # Locate the gait parameter labels in the Excel file
         bool_array = df.applymap(
             lambda x: 'Step Time' in x if isinstance(x, str) else False).values
 

@@ -1,22 +1,23 @@
-"""Script to calculate gait metrics from Kinect data."""
+"""Script to calculate gait parameters from Kinect data."""
 
 import glob
 import os
 
 import numpy as np
-from numpy.linalg import norm
 import pandas as pd
 from sklearn.cluster import MeanShift
 
-import analysis.stats as st
-import modules.gait_metrics as gm
+import modules.gait_parameters as gp
 import modules.numpy_funcs as nf
+
 
 load_dir = os.path.join('data', 'kinect', 'best_pos')
 save_dir = os.path.join('data', 'kinect', 'gait_params')
 
 # All files with .pkl extension
 file_paths = sorted(glob.glob(os.path.join(load_dir, '*.pkl')))
+
+file_paths = [x for x in file_paths if '2014-12-08_P006_Post_003' in x]
 
 for file_path in file_paths:
 
@@ -42,7 +43,7 @@ for file_path in file_paths:
         pass_dfs_2d.append(
             df_pass.applymap(lambda point: np.array([point[2], point[0]])))
 
-    df_trial = gm.combine_walking_passes(pass_dfs_2d)
+    df_trial = gp.combine_walking_passes(pass_dfs_2d)
 
     base_name = os.path.basename(file_path)  # File with extension
     file_name = os.path.splitext(base_name)[0]  # File with no extension

@@ -54,11 +54,11 @@ for file_path in file_paths:
 
     # Fill in row of results DataFrame
 
-    df_metrics = pd.read_csv(save_path, index_col=0)
+    df_lengths = pd.read_csv(save_path, index_col=0)
 
     base_name = os.path.basename(file_path)  # File with extension
     file_name = os.path.splitext(base_name)[0]  # File with no extension
 
-    df_metrics.loc[file_name] = lengths
+    df_lengths.loc[file_name] = lengths
 
-    df_metrics.to_csv(save_path)
+    df_lengths.to_csv(save_path)
