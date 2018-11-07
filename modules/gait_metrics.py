@@ -17,6 +17,8 @@ df_gait : DataFrame
     stride number.
 
 """
+from collections import namedtuple
+
 import numpy as np
 from numpy.linalg import norm
 import pandas as pd
@@ -63,52 +65,101 @@ def direction_of_pass(df_pass):
     return line_point, direction_pass
 
 
-def stride_metrics(foot_x_i, foot_x_f, foot_y, *, fps=30):
+def spatial_parameters(pos_a_i, pos_b, pos_a_f):
     """
-    Calculate gait metrics from a single stride.
+    Calculate spatial gait parameters.
+
+    Positions are input in temporal order
+    (foot A initial, foot B, foot A final).
 
     Parameters
     ----------
-    foot_x_i : namedtuple
+    pos_a_i : ndarray
+        Initial position of foot A.
+    pos_b : ndarray
+        Position of foot B.
+    pos_a_f : ndarray
+        Final position of foot A.
+
+    Returns
+    -------
+    Spatial : namedtuple
+        namedtuple including stride length, step length, and stride width.
+
+    Examples
+    --------
+    >>> pos_l_1 = np.array([764.253, 28.798])
+    >>> pos_r_1 = np.array([696.834, 37.141])
+
+    >>> pos_l_2 = np.array([637.172, 24.508])
+    >>> pos_r_2 = np.array([579.102, 35.457])
+
+    >>> pos_l_3 = np.array([518.030, 30.507])
+
+    >>> np.round(spatial_parameters(pos_l_1, pos_r_1, pos_l_2), 1)
+    array([127.2,  60.1,  10.6])
+
+    >>> np.round(spatial_parameters(pos_r_1, pos_l_2, pos_r_2), 1)
+    array([117.7,  57.9,  11.8])
+
+    >>> np.round(spatial_parameters(pos_l_2, pos_r_2, pos_l_3), 1)
+    array([119.3,  60.7,   8. ])
+
+    """
+    stride_length = norm(pos_a_f - pos_a_i)
+
+    pos_b_proj = lin.project_point_line(pos_b, pos_a_i, pos_a_f)
+    step_length = norm(pos_a_f - pos_b_proj)
+    stride_width = norm(pos_b - pos_b_proj)
+
+    Spatial = namedtuple('Spatial',
+                         ['stride_length', 'step_length', 'stride_width'])
+
+    return Spatial(stride_length, step_length, stride_width)
+
+
+def stride_parameters(foot_a_i, foot_b, foot_a_f, *, fps=30):
+    """
+    Calculate gait parameters from a single stride.
+
+    Parameters
+    ----------
+    foot_a_i : namedtuple
         Single result from pandas DataFrame.itertuples() method.
         Includes fields of 'frame', 'position', 'stride', and 'side'.
-        Represents the initial foot on side x.
-    foot_x_f : namedtuple
-        Represents the final foot on side x.
-    foot_y : namedtuple
-        Represents the foot on side y.
+        Represents the initial foot on side A.
+    foot_b : namedtuple
+        Represents the foot on side B.
+    foot_a_f : namedtuple
+        Represents the final foot on side A.
     fps : int, optional
         Camera frame rate in frames per second (default 30).
 
     Returns
     -------
-    metrics : dict
-        Dictionary containing gait metric names and values.
+    parameters : dict
+        Dictionary containing gait parameter names and values.
 
     """
-    pos_x_i, pos_x_f = foot_x_i.position, foot_x_f.position
-    pos_y = foot_y.position
+    pos_a_i, pos_a_f = foot_a_i.position, foot_a_f.position
+    pos_b = foot_b.position
 
-    pos_y_proj = lin.project_point_line(pos_y, pos_x_i, pos_x_f)
+    spatial = spatial_parameters(pos_a_i, pos_b, pos_a_f)
 
-    stride_vector = pos_x_f - pos_x_i
+    stride_time = (foot_a_f.frame - foot_a_i.frame) / fps
+    stride_velocity = spatial.stride_length / stride_time
 
-    stride_length = norm(stride_vector)
-    stride_time = (foot_x_f.frame - foot_x_i.frame) / fps
-
-    stride_velocity = stride_length / stride_time
-
-    metrics = {
-        'stride': foot_x_i.stride,
-        'side': foot_x_i.side,
-        'stride_length': stride_length,
+    parameters = {
+        'stride': foot_a_i.stride,
+        'side': foot_a_i.side,
+        'stride_length': spatial.stride_length,
+        'step_length': spatial.step_length,
+        'stride_width': spatial.stride_width,
         'stride_time': stride_time,
         'stride_velocity': stride_velocity,
-        'step_length': norm(pos_x_f - pos_y_proj),
-        'stride_width': norm(pos_y - pos_y_proj),
     }
 
-    return metrics
+    return parameters
 
 
 def stance_metrics(is_stance_l, is_stance_r):
@@ -132,8 +183,9 @@ def stance_metrics(is_stance_l, is_stance_r):
     """
     stance_vectors = [is_stance_l, is_stance_r, is_stance_l & is_stance_r]
 
-    stance_l, stance_r, stance_double = [nf.ratio_nonzero(x) * 100
-                                         for x in stance_vectors]
+    stance_l, stance_r, stance_double = [
+        nf.ratio_nonzero(x) * 100 for x in stance_vectors
+    ]
 
     df_stance = pd.DataFrame({
         'side': ['L', 'R'],
@@ -168,9 +220,7 @@ def foot_contacts_to_gait(df_contact):
         """Inner function to yield metrics for each stride."""
         for foot_tuple in sw.generate_window(foot_tuples, n=3):
 
-            foot_x_i, foot_y, foot_x_f = foot_tuple
-
-            yield stride_metrics(foot_x_i, foot_x_f, foot_y)
+            yield stride_parameters(*foot_tuple)
 
     df_gait = pd.DataFrame(yield_metrics())
 
@@ -213,8 +263,8 @@ def walking_pass_metrics(df_pass, direction_pass):
     df_gait = foot_contacts_to_gait(df_contact)
 
     if not df_gait.empty:
-        df_pass_metrics = pd.merge(df_gait, df_stance, left_on='side',
-                                   right_on='side')
+        df_pass_metrics = pd.merge(
+            df_gait, df_stance, left_on='side', right_on='side')
 
         head_points = np.stack(df_pass.HEAD)
 
