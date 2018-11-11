@@ -3,6 +3,7 @@
 import os
 import glob
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.stats import spearmanr, pearsonr
@@ -55,8 +56,11 @@ gait_params = df_total_k.select_dtypes(float).columns
 df_total_z = df_total_z.applymap(
     lambda x: np.nan if isinstance(x, float) and x < 0 else x)
 
-df_trials_k = df_total_k.groupby('trial_id').mean()[gait_params]
-df_trials_z = df_total_z.groupby('trial_id').mean()[gait_params]
+df_trials_k = df_total_k.groupby('trial_id').median()[gait_params]
+df_trials_z = df_total_z.groupby('trial_id').median()[gait_params]
+
+df_sides_k = df_total_k.groupby(['trial_id', 'side']).median()[gait_params]
+df_sides_z = df_total_z.groupby(['trial_id', 'side']).median()[gait_params]
 
 # Calculate results
 funcs = {
@@ -74,3 +78,49 @@ df_results.to_csv(
 
 df_total_k.to_pickle(os.path.join('results', 'dataframes', 'df_total_k.pkl'))
 df_total_z.to_pickle(os.path.join('results', 'dataframes', 'df_total_z.pkl'))
+
+
+# %% Plotting
+
+save_dir = os.path.join('results', 'figures')
+
+plt.rc('text', usetex=True)
+
+font = {'family': 'serif',
+        'weight': 'bold',
+        'size': 14,
+        }
+plt.rc('font', **font)  # pass in the font dict as kwargs
+
+
+for gait_param in gait_params:
+
+    fig, ax = plt.subplots()
+
+    scatter_l = ax.scatter(df_sides_z.xs('L', level='side')[gait_param],
+                           df_sides_k.xs('L', level='side')[gait_param],
+                           c='b', s=10)
+
+    scatter_r = ax.scatter(df_sides_z.xs('R', level='side')[gait_param],
+                           df_sides_k.xs('R', level='side')[gait_param],
+                           c='r', s=10)
+
+    ax.legend([scatter_l, scatter_r], ['L', 'R'])
+
+    lims = [
+        np.min([ax.get_xlim(), ax.get_ylim()]),
+        np.max([ax.get_xlim(), ax.get_ylim()]),
+    ]
+
+    # Plot equality line
+    ax.plot(lims, lims, 'k-')
+
+    # Remove right and top borders
+    plt.gca().spines['right'].set_visible(False)
+    plt.gca().spines['top'].set_visible(False)
+
+    plt.xlabel("Zeno Walkway [cm]")
+    plt.ylabel("Kinect [cm]")
+
+    fig.savefig(os.path.join(save_dir, 'compare_{}.pdf'.format(gait_param)),
+                format='pdf', dpi=1200)
