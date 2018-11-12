@@ -84,7 +84,8 @@ def spatial_parameters(pos_a_i, pos_b, pos_a_f):
     Returns
     -------
     Spatial : namedtuple
-        namedtuple including stride length, step length, and stride width.
+        namedtuple consisting of absolute step length, step length,
+        stride length,  and stride width.
 
     Examples
     --------
@@ -97,25 +98,29 @@ def spatial_parameters(pos_a_i, pos_b, pos_a_f):
     >>> pos_l_3 = np.array([518.030, 30.507])
 
     >>> np.round(spatial_parameters(pos_l_1, pos_r_1, pos_l_2), 1)
-    array([127.2,  60.1,  10.6])
+    array([ 61. ,  60.1, 127.2,  10.6])
 
     >>> np.round(spatial_parameters(pos_r_1, pos_l_2, pos_r_2), 1)
-    array([117.7,  57.9,  11.8])
+    array([ 59.1,  57.9, 117.7,  11.8])
 
     >>> np.round(spatial_parameters(pos_l_2, pos_r_2, pos_l_3), 1)
-    array([119.3,  60.7,   8. ])
+    array([ 61.3,  60.7, 119.3,   8. ])
 
     """
     stride_length = norm(pos_a_f - pos_a_i)
 
     pos_b_proj = lin.project_point_line(pos_b, pos_a_i, pos_a_f)
+
+    absolute_step_length = norm(pos_a_f - pos_b)
     step_length = norm(pos_a_f - pos_b_proj)
     stride_width = norm(pos_b - pos_b_proj)
 
     Spatial = namedtuple('Spatial',
-                         ['stride_length', 'step_length', 'stride_width'])
+                         ['absolute_step_length', 'step_length',
+                          'stride_length', 'stride_width'])
 
-    return Spatial(stride_length, step_length, stride_width)
+    return Spatial(absolute_step_length, step_length,
+                   stride_length, stride_width)
 
 
 def stride_parameters(foot_a_i, foot_b, foot_a_f, *, fps=30):
@@ -136,7 +141,7 @@ def stride_parameters(foot_a_i, foot_b, foot_a_f, *, fps=30):
 
     Returns
     -------
-    parameters : dict
+    dict
         Dictionary containing gait parameter names and values.
 
     Examples
@@ -169,17 +174,12 @@ def stride_parameters(foot_a_i, foot_b, foot_a_f, *, fps=30):
     stride_time = (foot_a_f.frame - foot_a_i.frame) / fps
     stride_velocity = spatial.stride_length / stride_time
 
-    parameters = {
-        'stride': foot_a_i.stride,
-        'side': foot_a_i.side,
-        'stride_length': spatial.stride_length,
-        'step_length': spatial.step_length,
-        'stride_width': spatial.stride_width,
-        'stride_time': stride_time,
-        'stride_velocity': stride_velocity,
-    }
+    stride_info = {'stride': foot_a_i.stride, 'side': foot_a_i.side}
 
-    return parameters
+    temporal_params = {'stride_time': stride_time,
+                       'stride_velocity': stride_velocity}
+
+    return {**stride_info, **temporal_params, **spatial._asdict()}
 
 
 def stance_parameters(is_stance_l, is_stance_r):

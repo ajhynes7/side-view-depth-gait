@@ -77,13 +77,15 @@ load_dir = os.path.join('data', 'zeno', 'raw')
 save_dir = os.path.join('data', 'zeno', 'gait_params')
 
 labels = [
-    'Step Length (cm.)', 'Stride Length (cm.)', 'Stride Width (cm.)',
+    'Absolute Step Length (cm.)', 'Step Length (cm.)',
+    'Stride Length (cm.)', 'Stride Width (cm.)',
     'Stride Velocity (cm./sec.)', 'Stride Time (sec.)',
     'Stance %', 'Total D. Support %',
 ]
 
 new_labels = [
-    'step_length', 'stride_length', 'stride_width', 'stride_velocity',
+    'absolute_step_length', 'step_length',
+    'stride_length', 'stride_width', 'stride_velocity',
     'stride_time', 'stance_percentage', 'stance_percentage_double'
 ]
 
