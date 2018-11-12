@@ -25,9 +25,6 @@ save_dir_conf = os.path.join('data', 'kinect', 'processed', 'confidence')
 # All files with .txt extension
 file_paths = sorted(glob.glob(os.path.join(load_dir, '*.txt')))
 
-# Useful for catching errors with relative file paths
-assert len(file_paths) > 0
-
 # Find the Kinect files that have matching Zeno files
 match_dir = os.path.join('data', 'matching')
 df_match = pd.read_csv(os.path.join(match_dir, 'match_kinect_zeno.csv'))
