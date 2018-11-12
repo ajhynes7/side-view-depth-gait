@@ -49,6 +49,10 @@ matched_file_names_z = list(dict_match.keys())
 df_total_k = combine_trials(load_dir_k, matched_file_names_k)
 df_total_z = combine_trials(load_dir_z, matched_file_names_z)
 
+# Save total dataframes for easy analysis
+df_total_k.to_pickle(os.path.join('results', 'dataframes', 'df_total_k.pkl'))
+df_total_z.to_pickle(os.path.join('results', 'dataframes', 'df_total_z.pkl'))
+
 # Columns that represent gait parameters
 gait_params = df_total_k.select_dtypes(float).columns
 
@@ -74,10 +78,7 @@ funcs = {
 
 df_results = st.compare_measurements(df_trials_k, df_trials_z, funcs)
 df_results.to_csv(
-    os.path.join('results', 'spreadsheets', 'results_grouped.csv'))
-
-df_total_k.to_pickle(os.path.join('results', 'dataframes', 'df_total_k.pkl'))
-df_total_z.to_pickle(os.path.join('results', 'dataframes', 'df_total_z.pkl'))
+    os.path.join('results', 'spreadsheets', 'results_grouped.csv'))\
 
 
 # %% Plotting

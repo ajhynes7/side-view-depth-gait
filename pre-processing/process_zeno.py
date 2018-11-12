@@ -59,7 +59,7 @@ def main():
         df_gait.columns.name = None
 
         df_labels = df_gait[labels].rename(label_dict, axis=1)
-        df_labels = df_labels.reset_index(drop=True)
+        df_labels = df_labels.reset_index(drop=True).astype(np.float)
 
         stride_info = df_gait.iloc[:, 1]
         df_numbers = parse_stride_info(stride_info)
