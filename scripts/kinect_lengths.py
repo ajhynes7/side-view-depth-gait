@@ -2,6 +2,7 @@
 
 import glob
 import os
+import time
 
 import pandas as pd
 
@@ -16,21 +17,38 @@ def cost_func(a, b):
 
 # Parameters
 
+n_frames_est = 60  # Number of frames used to estimate lengths on each trial
+
 lower_part_types = ['HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG', 'FOOT']
 
-save_name = 'kinect_lengths.csv'
-
 load_dir = os.path.join('data', 'kinect', 'processed', 'hypothesis')
-save_dir = os.path.join('data', 'results')
+save_dir = os.path.join('data', 'kinect', 'lengths')
+
+save_name = 'kinect_lengths.csv'
+save_path = os.path.join(save_dir, save_name)
 
 # All files with .pkl extension
 file_paths = glob.glob(os.path.join(load_dir, '*.pkl'))
 
-save_path = os.path.join(save_dir, save_name)
+# Find the Kinect files that have matching Zeno files
+match_dir = os.path.join('data', 'matching')
+df_match = pd.read_csv(os.path.join(match_dir, 'match_kinect_zeno.csv'))
+
+# Create DataFrame of lengths between consecutive parts
+file_names = [os.path.splitext(os.path.basename(path))[0] for path in file_paths]
+df_lengths = pd.DataFrame(index=file_names, columns=range(len(lower_part_types) - 1))
+df_lengths.index.name = 'File'
+
+# Select best positions from each Kinect data file
+t = time.time()
+total_frames = 0
 
 # Calculate lengths for each file
 
 for file_path in file_paths:
+
+    base_name = os.path.basename(file_path)  # File with extension
+    file_name = os.path.splitext(base_name)[0]  # File with no extension
 
     df = pd.read_pickle(file_path)
 
