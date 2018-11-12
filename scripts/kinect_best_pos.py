@@ -55,7 +55,7 @@ for file_path in file_paths:
     base_name = os.path.basename(file_path)  # File with extension
     file_name = os.path.splitext(base_name)[0]  # File with no extension
 
-    lengths = df_length.loc[file_name]  # Read lengths
+    lengths = df_length.loc[file_name]  # Read estimated lengths for trial
 
     # Select frames with data
     string_index, part_labels = sf.strings_with_any_substrings(
@@ -114,7 +114,11 @@ for file_path in file_paths:
 time_elapsed = time.time() - t
 frames_per_second = np.round(total_frames / time_elapsed)
 
-print("""Total frames: {}\n
+print("""
+Number of trials: {}\n
+Number of frames: {}\n
 Total time: {}\n
-Frames per second: {}""".format(total_frames, np.round(time_elapsed, 2),
+Frames per second: {}""".format(len(file_paths),
+                                total_frames,
+                                np.round(time_elapsed, 2),
                                 frames_per_second))
