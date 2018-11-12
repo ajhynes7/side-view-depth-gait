@@ -36,7 +36,7 @@ part_connections = np.array([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [3, 5],
 load_dir = os.path.join('data', 'kinect', 'processed', 'hypothesis')
 save_dir = os.path.join('data', 'kinect', 'best_pos')
 
-length_path = os.path.join('data', 'results', 'kinect_lengths.csv')
+length_path = os.path.join('data', 'kinect', 'lengths', 'kinect_lengths.csv')
 
 # All files with .pkl extension
 file_paths = glob.glob(os.path.join(load_dir, '*.pkl'))

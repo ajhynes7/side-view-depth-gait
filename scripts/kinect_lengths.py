@@ -50,15 +50,25 @@ for file_path in file_paths:
 
     # Estimate lengths between consecutive parts
     lengths = pe.estimate_lengths(
-        population_series, label_series, cost_func, 60, eps=0.01)
+        population_series, label_series, cost_func, n_frames_est, eps=0.01)
 
-    # Fill in row of results DataFrame
-
-    df_lengths = pd.read_csv(save_path, index_col=0)
-
-    base_name = os.path.basename(file_path)  # File with extension
-    file_name = os.path.splitext(base_name)[0]  # File with no extension
-
+    # Fill in row of lengths DataFrame
     df_lengths.loc[file_name] = lengths
 
-    df_lengths.to_csv(save_path)
+
+n_trials = len(file_paths)
+total_frames = n_trials * n_frames_est
+
+time_elapsed = time.time() - t
+frames_per_second = round(total_frames / time_elapsed)
+
+df_lengths.to_csv(save_path)
+
+print("""
+Number of trials: {}\n
+Number of frames: {}\n
+Total time: {}\n
+Frames per second: {}""".format(n_trials,
+                                total_frames,
+                                round(time_elapsed, 2),
+                                frames_per_second))
