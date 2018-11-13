@@ -1,6 +1,5 @@
 """Select the best body part positions from multiple hypotheses."""
 
-import glob
 import os
 import time
 
@@ -35,21 +34,23 @@ part_connections = np.array([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [3, 5],
 # Reading data
 load_dir = os.path.join('data', 'kinect', 'processed', 'hypothesis')
 save_dir = os.path.join('data', 'kinect', 'best_pos')
+match_dir = os.path.join('data', 'matching')
 
-length_path = os.path.join('data', 'kinect', 'lengths', 'kinect_lengths.csv')
-
-# All files with .pkl extension
-file_paths = glob.glob(os.path.join(load_dir, '*.pkl'))
+df_match = pd.read_csv(os.path.join(match_dir, 'match_kinect_zeno.csv'))
 
 # DataFrame with lengths between body parts
+length_path = os.path.join('data', 'kinect', 'lengths', 'kinect_lengths.csv')
 df_length = pd.read_csv(length_path, index_col=0)
 
-# Select best positions from each Kinect data file
 t = time.time()
 total_frames = 0
 
-for file_path in file_paths:
 
+# %% Select best positions from each Kinect data file
+
+for file_name in df_match.kinect:
+
+    file_path = os.path.join(load_dir, file_name + '.pkl')
     df = pd.read_pickle(file_path)
 
     base_name = os.path.basename(file_path)  # File with extension
@@ -111,6 +112,9 @@ for file_path in file_paths:
 
     total_frames += len(frames)
 
+
+# %% Calculate run-time metrics
+
 time_elapsed = time.time() - t
 frames_per_second = np.round(total_frames / time_elapsed)
 
@@ -118,7 +122,7 @@ print("""
 Number of trials: {}\n
 Number of frames: {}\n
 Total time: {}\n
-Frames per second: {}""".format(len(file_paths),
+Frames per second: {}""".format(df_match.shape[0],
                                 total_frames,
                                 np.round(time_elapsed, 2),
                                 frames_per_second))

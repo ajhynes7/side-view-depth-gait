@@ -7,14 +7,13 @@ directory.
 """
 
 import copy
-import glob
 import os
 
 import numpy as np
 import pandas as pd
 
 import analysis.images as im
-import modules.string_funcs as sf
+
 
 load_dir = os.path.join('data', 'kinect', 'raw')
 
@@ -22,17 +21,9 @@ load_dir = os.path.join('data', 'kinect', 'raw')
 save_dir_hypo = os.path.join('data', 'kinect', 'processed', 'hypothesis')
 save_dir_conf = os.path.join('data', 'kinect', 'processed', 'confidence')
 
-# All files with .txt extension
-file_paths = sorted(glob.glob(os.path.join(load_dir, '*.txt')))
-
 # Find the Kinect files that have matching Zeno files
 match_dir = os.path.join('data', 'matching')
 df_match = pd.read_csv(os.path.join(match_dir, 'match_kinect_zeno.csv'))
-
-file_names_kinect = df_match.Kinect.dropna()
-file_paths_matched = [
-    f for f in file_paths if sf.any_in_string(f, file_names_kinect)
-]
 
 # Number of columns for the position coordinates
 # Number should be sufficiently large and divisible by 3
@@ -44,7 +35,9 @@ x_res, y_res = 565, 430
 
 f_xz, f_yz = 1.11146664619446, 0.833599984645844
 
-for file_path in file_paths_matched:
+for file_name in df_match.kinect:
+
+    file_path = os.path.join(load_dir, file_name + '.txt')
 
     df = pd.read_csv(
         file_path,

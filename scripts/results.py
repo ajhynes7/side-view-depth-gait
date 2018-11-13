@@ -1,7 +1,6 @@
 """Calculate results of comparing Kinect and Zeno gait parameters."""
 
 import os
-import glob
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -34,14 +33,9 @@ match_dir = os.path.join('data', 'matching')
 
 df_match = pd.read_csv(os.path.join(match_dir, 'match_kinect_zeno.csv'))
 
-# Drop rows where file has no match
-df_match = df_match.dropna(axis=0).reset_index(drop=True)
-
-file_paths_k = sorted(glob.glob(os.path.join(load_dir_k, '*.pkl')))
-file_paths_z = sorted(glob.glob(os.path.join(load_dir_z, '*.pkl')))
 
 # Convert match table to dictionary for easy file matching
-dict_match = {x.Zeno: x.Kinect for x in df_match.itertuples()}
+dict_match = {x.zeno: x.kinect for x in df_match.itertuples()}
 
 matched_file_names_k = list(dict_match.values())
 matched_file_names_z = list(dict_match.keys())

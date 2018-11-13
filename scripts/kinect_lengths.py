@@ -1,6 +1,5 @@
 """Script to estimate lengths of the body for each trial."""
 
-import glob
 import os
 import time
 
@@ -18,29 +17,19 @@ def cost_func(a, b):
     return (a - b) ** 2
 
 
-# Parameters
-
 lower_part_types = ['HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG', 'FOOT']
 
 load_dir = os.path.join('data', 'kinect', 'processed', 'hypothesis')
 save_dir = os.path.join('data', 'kinect', 'lengths')
+match_dir = os.path.join('data', 'matching')
 
 save_name = 'kinect_lengths.csv'
-save_path = os.path.join(save_dir, save_name)
 
-# All files with .pkl extension
-file_paths = glob.glob(os.path.join(load_dir, '*.pkl'))
-
-# Find the Kinect files that have matching Zeno files
-match_dir = os.path.join('data', 'matching')
 df_match = pd.read_csv(os.path.join(match_dir, 'match_kinect_zeno.csv'))
 
-# Create DataFrame of lengths between consecutive parts
-file_names = [os.path.splitext(os.path.basename(path))[0] for path in
-              file_paths]
-df_lengths = pd.DataFrame(index=file_names,
+df_lengths = pd.DataFrame(index=df_match.kinect,
                           columns=range(len(lower_part_types) - 1))
-df_lengths.index.name = 'File'
+df_lengths.index.name = 'file_name'
 
 t = time.time()
 total_frames = 0
@@ -53,7 +42,9 @@ index_pairs = list(itf.pairwise(range(len(lower_part_types))))
 
 # %% Calculate lengths for each file
 
-for file_path in file_paths:
+for file_name in df_match.kinect:
+
+    file_path = os.path.join(load_dir, file_name + '.pkl')
 
     base_name = os.path.basename(file_path)  # File with extension
     file_name = os.path.splitext(base_name)[0]  # File with no extension
@@ -87,12 +78,13 @@ for file_path in file_paths:
     # Fill in row of lengths DataFrame
     df_lengths.loc[file_name] = np.median(trial_lengths, axis=0)
 
+save_path = os.path.join(save_dir, save_name)
 df_lengths.to_csv(save_path)
 
 
 # %% Calculate run-time metrics
 
-n_trials = len(file_paths)
+n_trials = df_match.shape[0]
 
 time_elapsed = time.time() - t
 frames_per_second = round(total_frames / time_elapsed)

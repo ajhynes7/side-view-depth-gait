@@ -1,6 +1,5 @@
 """Script to calculate gait parameters from Kinect data."""
 
-import glob
 import os
 
 import numpy as np
@@ -13,13 +12,14 @@ import modules.numpy_funcs as nf
 
 load_dir = os.path.join('data', 'kinect', 'best_pos')
 save_dir = os.path.join('data', 'kinect', 'gait_params')
+match_dir = os.path.join('data', 'matching')
 
-# All files with .pkl extension
-file_paths = sorted(glob.glob(os.path.join(load_dir, '*.pkl')))
+df_match = pd.read_csv(os.path.join(match_dir, 'match_kinect_zeno.csv'))
 
-file_paths = [x for x in file_paths if '2014-12-08_P006_Post_003' in x]
 
-for file_path in file_paths:
+for file_name in df_match.kinect:
+
+    file_path = os.path.join(load_dir, file_name + '.pkl')
 
     df_head_feet = pd.read_pickle(file_path)
     frames = df_head_feet.index
