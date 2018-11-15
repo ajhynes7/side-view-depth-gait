@@ -45,8 +45,5 @@ for file_name in df_match.kinect:
 
     df_trial = gp.combine_walking_passes(pass_dfs_2d)
 
-    base_name = os.path.basename(file_path)  # File with extension
-    file_name = os.path.splitext(base_name)[0]  # File with no extension
-
     save_path = os.path.join(save_dir, file_name + '.pkl')
     df_trial.to_pickle(save_path)
