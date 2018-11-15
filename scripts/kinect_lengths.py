@@ -1,5 +1,6 @@
 """Script to estimate lengths of the body for each trial."""
 
+import glob
 import os
 import time
 
@@ -21,13 +22,13 @@ lower_part_types = ['HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG', 'FOOT']
 
 load_dir = os.path.join('data', 'kinect', 'processed', 'hypothesis')
 save_dir = os.path.join('data', 'kinect', 'lengths')
-match_dir = os.path.join('data', 'matching')
 
 save_name = 'kinect_lengths.csv'
 
-df_match = pd.read_csv(os.path.join(match_dir, 'match_kinect_zeno.csv'))
+file_paths = glob.glob(os.path.join(load_dir, '*.pkl'))
+file_names = [os.path.splitext(os.path.basename(x))[0] for x in file_paths]
 
-df_lengths = pd.DataFrame(index=df_match.kinect,
+df_lengths = pd.DataFrame(index=file_names,
                           columns=range(len(lower_part_types) - 1))
 df_lengths.index.name = 'file_name'
 
@@ -36,18 +37,19 @@ total_frames = 0
 
 n_lengths = len(lower_part_types) - 1
 
+
+# %% Calculate lengths for each walking trial
+
+# List of trials to run
+running_path = os.path.join('data', 'kinect', 'running', 'trials_to_run.csv')
+trials_to_run = pd.read_csv(running_path, header=None, squeeze=True).values
+
 # Pairs of consecutive body part indices
 index_pairs = list(itf.pairwise(range(len(lower_part_types))))
 
-
-# %% Calculate lengths for each file
-
-for file_name in df_match.kinect:
+for file_name in trials_to_run:
 
     file_path = os.path.join(load_dir, file_name + '.pkl')
-
-    base_name = os.path.basename(file_path)  # File with extension
-    file_name = os.path.splitext(base_name)[0]  # File with no extension
 
     df = pd.read_pickle(file_path)
 
@@ -84,8 +86,6 @@ df_lengths.to_csv(save_path)
 
 # %% Calculate run-time metrics
 
-n_trials = df_match.shape[0]
-
 time_elapsed = time.time() - t
 frames_per_second = round(total_frames / time_elapsed)
 
@@ -94,7 +94,7 @@ print("""
 Number of trials: {}\n
 Number of frames: {}\n
 Total time: {}\n
-Frames per second: {}""".format(n_trials,
+Frames per second: {}""".format(len(trials_to_run),
                                 total_frames,
                                 round(time_elapsed, 2),
                                 frames_per_second))

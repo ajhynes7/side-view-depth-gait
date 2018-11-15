@@ -34,9 +34,6 @@ part_connections = np.array([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [3, 5],
 # Reading data
 load_dir = os.path.join('data', 'kinect', 'processed', 'hypothesis')
 save_dir = os.path.join('data', 'kinect', 'best_pos')
-match_dir = os.path.join('data', 'matching')
-
-df_match = pd.read_csv(os.path.join(match_dir, 'match_kinect_zeno.csv'))
 
 # DataFrame with lengths between body parts
 length_path = os.path.join('data', 'kinect', 'lengths', 'kinect_lengths.csv')
@@ -48,9 +45,14 @@ total_frames = 0
 
 # %% Select best positions from each Kinect data file
 
-for file_name in df_match.kinect:
+# List of trials to run
+running_path = os.path.join('data', 'kinect', 'running', 'trials_to_run.csv')
+trials_to_run = pd.read_csv(running_path, header=None, squeeze=True).values
+
+for file_name in trials_to_run:
 
     file_path = os.path.join(load_dir, file_name + '.pkl')
+
     df = pd.read_pickle(file_path)
 
     base_name = os.path.basename(file_path)  # File with extension
@@ -122,7 +124,7 @@ print("""
 Number of trials: {}\n
 Number of frames: {}\n
 Total time: {}\n
-Frames per second: {}""".format(df_match.shape[0],
+Frames per second: {}""".format(len(trials_to_run),
                                 total_frames,
                                 np.round(time_elapsed, 2),
                                 frames_per_second))
