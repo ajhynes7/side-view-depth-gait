@@ -7,6 +7,7 @@ directory.
 """
 
 import copy
+import glob
 import os
 
 import numpy as np
@@ -21,9 +22,6 @@ load_dir = os.path.join('data', 'kinect', 'raw')
 save_dir_hypo = os.path.join('data', 'kinect', 'processed', 'hypothesis')
 save_dir_conf = os.path.join('data', 'kinect', 'processed', 'confidence')
 
-# Find the Kinect files that have matching Zeno files
-match_dir = os.path.join('data', 'matching')
-df_match = pd.read_csv(os.path.join(match_dir, 'match_kinect_zeno.csv'))
 
 # Number of columns for the position coordinates
 # Number should be sufficiently large and divisible by 3
@@ -35,9 +33,11 @@ x_res, y_res = 565, 430
 
 f_xz, f_yz = 1.11146664619446, 0.833599984645844
 
-for file_name in df_match.kinect:
+# %% Process all raw text files
 
-    file_path = os.path.join(load_dir, file_name + '.txt')
+file_paths = glob.glob(os.path.join(load_dir, '*.txt'))
+
+for file_path in file_paths:
 
     df = pd.read_csv(
         file_path,
