@@ -4,7 +4,7 @@ import os
 
 import numpy as np
 import pandas as pd
-from sklearn.cluster import MeanShift
+from sklearn.cluster import DBSCAN
 
 import modules.gait_parameters as gp
 import modules.numpy_funcs as nf
@@ -28,8 +28,14 @@ for file_name in df_match.kinect:
     df_head_feet = df_head_feet.applymap(lambda point: point.astype(np.float))
 
     # Cluster frames with mean shift to locate the walking passes
-    mean_shift = MeanShift(bandwidth=60).fit(nf.to_column(frames))
-    labels = mean_shift.labels_
+    clustering = DBSCAN(eps=5).fit(nf.to_column(frames))
+    labels = clustering.labels_
+
+    # Drop frames identified as noise
+    is_noise = labels == -1
+    frames_to_drop = frames[is_noise]
+    df_head_feet = df_head_feet.drop(frames_to_drop)
+    labels = labels[~is_noise]
 
     # Sort labels so that the frames are in temporal order
     labels = nf.map_to_whole(labels)
