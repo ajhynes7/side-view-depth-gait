@@ -8,7 +8,7 @@ import results.scripts.plot_results as plot_results
 
 combine_trials.main()
 
-# Figures
+# Plots
 plot_results.main()
 
 # Tables
