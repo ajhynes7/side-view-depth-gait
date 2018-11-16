@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 import numpy as np
 
-import analysis.stats as st
 
 def scatter_labels(points, labels, **kwargs):
     """
@@ -218,32 +217,6 @@ def plot_foot_peaks(foot_dist, peak_frames):
 
     plt.xlabel('Frame number')
     plt.ylabel('Distance between feet [cm]')
-
-
-def scatter_bland(ax, measures_1, measures_2, **kwargs):
-    """
-    Produce a Bland-Altman plot.
-
-    Parameters
-    ----------
-    means : array_like
-        Means of measurements from devices A and B.
-    diffs : array_like
-        Differences of measurements.
-    bias : {int, float}
-            Mean of the differences.
-    limits : tuple
-        Tuple of form (lower_limit, upper_limit).
-        Bias minus/plus 1.96 standard deviations.
-    percent : bool, optional
-            If True, the y label shows percent difference.
-            If False (default) the y label shows regular difference.
-
-    """
-    means = (measures_1 + measures_2) / 2
-    differences = st.relative_difference(measures_1, measures_2)
-
-    ax.scatter(means, differences, **kwargs)
 
 
 def plot_spheres(points, r, ax):
