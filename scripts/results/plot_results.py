@@ -28,10 +28,11 @@ def main():
 
     plt.rc('text', usetex=True)
 
-    font = {'family': 'serif',
-            'weight': 'bold',
-            'size': 14,
-            }
+    font = {
+        'family': 'serif',
+        'weight': 'bold',
+        'size': 14,
+    }
     plt.rc('font', **font)  # pass in the font dict as kwargs
 
     for param in gait_params:
@@ -59,14 +60,16 @@ def main():
         ax.axhline(y=bland_alt.upper_limit, color='k', linestyle=':')
 
         # Format y labels as percentages
-        ax.set_yticklabels([r'{:.0f}\%'.format(x*100)
-                            for x in ax.get_yticks()])
+        ax.set_yticklabels(
+            [r'{:.0f}\%'.format(x * 100) for x in ax.get_yticks()])
 
         plt.xlabel('Mean of two measurements [cm]')
         plt.ylabel('Relative difference')
 
-        fig.savefig(os.path.join(save_dir, 'bland_{}.pdf'.format(param)),
-                    format='pdf', dpi=1200)
+        fig.savefig(
+            os.path.join(save_dir, 'bland_{}.pdf'.format(param)),
+            format='pdf',
+            dpi=1200)
 
         # %% Direct comparison plot
 
@@ -89,8 +92,10 @@ def main():
         plt.xlabel("Zeno Walkway [cm]")
         plt.ylabel("Kinect [cm]")
 
-        fig.savefig(os.path.join(save_dir, 'compare_{}.pdf'.format(param)),
-                    format='pdf', dpi=1200)
+        fig.savefig(
+            os.path.join(save_dir, 'compare_{}.pdf'.format(param)),
+            format='pdf',
+            dpi=1200)
 
 
 if __name__ == '__main__':

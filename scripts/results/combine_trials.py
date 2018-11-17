@@ -44,10 +44,10 @@ def main():
         lambda x: abs(x) if isinstance(x, float) else x)
 
     # Save total dataframes for easy analysis
-    df_total_k.to_pickle(os.path.join('results', 'dataframes',
-                                      'df_total_k.pkl'))
-    df_total_z.to_pickle(os.path.join('results', 'dataframes',
-                                      'df_total_z.pkl'))
+    df_total_k.to_pickle(
+        os.path.join('results', 'dataframes', 'df_total_k.pkl'))
+    df_total_z.to_pickle(
+        os.path.join('results', 'dataframes', 'df_total_z.pkl'))
 
 
 if __name__ == '__main__':

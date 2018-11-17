@@ -30,9 +30,8 @@ def main():
 
         bland_alt_tuples.append(bland_alt)
 
-    df_bland = pd.DataFrame.from_records(bland_alt_tuples,
-                                         index=gait_params,
-                                         columns=bland_alt._fields)
+    df_bland = pd.DataFrame.from_records(
+        bland_alt_tuples, index=gait_params, columns=bland_alt._fields)
 
     df_bland.to_csv(
         os.path.join('results', 'spreadsheets', 'bland_altman.csv'))\
