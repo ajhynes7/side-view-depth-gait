@@ -5,7 +5,7 @@ from scipy.spatial.distance import cdist
 
 import hypothesis.strategies as st
 import modules.point_processing as pp
-from hypothesis import given
+from hypothesis import assume, given
 from hypothesis.extra.numpy import arrays
 
 ints = st.integers(min_value=-1e6, max_value=1e6)
@@ -29,7 +29,10 @@ def array_like_2d(draw):
 @given(array_like_2d())
 def test_consecutive_dist(points):
     """Test finding the distance between consecutive pairs of points."""
-    lengths = np.fromiter(pp.consecutive_dist(points), dtype='float')
+    points = np.array(points)
+    assume(points.shape[0] > 1 and points.shape[1] > 1)
+
+    lengths = pp.consecutive_dist(points)
 
     assert lengths.ndim == 1
     assert lengths.size == len(points) - 1
@@ -62,7 +65,7 @@ def test_correspond_points(data):
 def test_track_two_objects(data):
     """Test tracking two objects by assigning positions to the objects."""
     n_dim = data.draw(st.integers(min_value=1, max_value=5))
-    n_points = data.draw(st.integers(min_value=1, max_value=50))
+    n_points = data.draw(st.integers(min_value=2, max_value=50))
 
     array_like = st.lists(
         st.lists(ints, min_size=n_dim, max_size=n_dim),

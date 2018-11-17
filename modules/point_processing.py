@@ -6,8 +6,6 @@ import numpy as np
 from numpy.linalg import norm
 from scipy.spatial.distance import cdist
 
-import modules.iterable_funcs as itf
-
 
 def assign_to_closest(points, targets):
     """
@@ -49,22 +47,21 @@ def consecutive_dist(points):
     points : array_like
         List of points.
 
-    Yields
+    Returns
     ------
-    float
-        Distance between two consecutive points.
+    ndarray
+        Distance between consecutive points.
 
     Examples
     --------
     >>> points = [[1, 1], [2, 1], [0, 1]]
-    >>> [*consecutive_dist(points)]
-    [1.0, 2.0]
+    >>> consecutive_dist(points)
+    array([1., 2.])
 
     """
-    for point_1, point_2 in itf.pairwise(points):
+    differences = np.diff(points, axis=0)
 
-        vector = np.subtract(point_1, point_2)
-        yield norm(vector)
+    return np.apply_along_axis(norm, 1, differences)
 
 
 def correspond_points(points_prev, points_curr):
