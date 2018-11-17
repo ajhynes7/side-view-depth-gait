@@ -35,8 +35,8 @@ def detect_phases(step_signal):
     points_to_cluster = nf.to_column(nf.remove_nan(np.array(variances)))
     k_means = KMeans(n_clusters=2, random_state=0).fit(points_to_cluster)
 
-    signal_labels = pp.assign_to_closest(nf.to_column(variances),
-                                         k_means.cluster_centers_)
+    signal_labels = pp.assign_to_closest(
+        nf.to_column(variances), k_means.cluster_centers_)
 
     stance_label = np.argmin(k_means.cluster_centers_)
     is_stance = np.logical_and(signal_labels == stance_label,
