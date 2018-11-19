@@ -5,7 +5,7 @@ import os
 import pandas as pd
 
 
-def combine_trials(load_dir, matched_file_names):
+def combine_walking_trials(load_dir, matched_file_names):
     """Combine dataframes from all matched walking trials."""
     list_dfs = []
 
@@ -36,8 +36,17 @@ def main():
     matched_file_names_k = list(dict_match.values())
     matched_file_names_z = list(dict_match.keys())
 
-    df_total_k = combine_trials(load_dir_k, matched_file_names_k)
-    df_total_z = combine_trials(load_dir_z, matched_file_names_z)
+    df_total_k = combine_walking_trials(load_dir_k, matched_file_names_k)
+    df_total_z = combine_walking_trials(load_dir_z, matched_file_names_z)
+
+    # Extract date and participant from file name
+    pattern = r'(?P<date>\d{4}-\d{2}-\d{2})_P(?P<participant>\d{3})'
+    df_regex = df_total_k.file_name.str.extract(pattern)
+    df_total_k = pd.concat((df_total_k, df_regex), axis=1, sort=False)
+
+    # Convert dtypes of new columns
+    df_total_k.participant = pd.to_numeric(df_total_k.participant)
+    df_total_k.date = pd.to_datetime(df_total_k.date)
 
     # Remove negative values from Zeno data
     df_total_z = df_total_z.applymap(
