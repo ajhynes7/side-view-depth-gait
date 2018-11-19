@@ -36,12 +36,10 @@ def main():
     df_bland.to_csv(
         os.path.join('results', 'spreadsheets', 'bland_altman.csv'))\
 
-    df_bland_round = np.round(df_bland, 4)
+    save_path = os.path.join('results', 'tables', 'bland_altman.txt')
+    with open(save_path, 'w') as file:
 
-    save_dir = os.path.join('results', 'tables')
-
-    with open(os.path.join(save_dir, 'bland_altman.txt'), 'w') as file:
-        file.write(df_bland_round.to_latex())
+        file.write(np.round(df_bland, 3).to_latex())
 
 
 if __name__ == '__main__':

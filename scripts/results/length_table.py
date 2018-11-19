@@ -24,12 +24,11 @@ def main():
     df_expanded = pd.concat((df_lengths_matched, df_regex), axis=1, sort=False)
 
     df_grouped = df_expanded.groupby('participant').agg(['mean', 'std'])
-    df_grouped_round = np.round(df_grouped, 2)
 
     save_dir = os.path.join('results', 'tables')
-
     with open(os.path.join(save_dir, 'lengths.txt'), 'w') as file:
-        file.write(df_grouped_round.to_latex())
+
+        file.write(np.round(df_grouped, 2).to_latex())
 
 
 if __name__ == '__main__':
