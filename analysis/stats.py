@@ -58,6 +58,8 @@ def relative_error(measured, actual, absolute=False):
     """
     Return the relative errors between measured and actual values.
 
+    Calculated as (measure - actual) / actual.
+
     Parameters
     ----------
     measured : {int, float, ndarray}
