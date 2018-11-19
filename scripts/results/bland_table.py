@@ -18,8 +18,8 @@ def main():
 
     gait_params = df_total_k.select_dtypes(float).columns
 
-    df_trials_k = df_total_k.groupby('trial_id').median()[gait_params]
-    df_trials_z = df_total_z.groupby('trial_id').median()[gait_params]
+    df_trials_k = df_total_k.groupby('trial_id').median()
+    df_trials_z = df_total_z.groupby('trial_id').median()
 
     bland_alt_tuples = []
 
