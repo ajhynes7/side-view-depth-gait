@@ -101,5 +101,6 @@ def main():
 
     df_truth.to_pickle(os.path.join('results', 'dataframes', 'df_truth.pkl'))
 
+
 if __name__ == '__main__':
     main()
