@@ -67,9 +67,8 @@ def main():
     plt.xlabel('X')
     plt.ylabel('Y', rotation=0)
 
-    plt.show()
-
-    fig.savefig('joint_proposals.pdf', dpi=1200)
+    save_path = os.path.join('figures', 'joint_proposals.pdf')
+    fig.savefig(save_path, dpi=1200)
 
     # %% Calculate paths
 
@@ -127,9 +126,8 @@ def main():
         plt.axis('equal')
         plt.axis('off')
 
-        fig.savefig('spheres_{}.pdf'.format(i), dpi=1200)
-
-        plt.show()
+        save_path = os.path.join('figures', 'spheres_{}.pdf')
+        fig.savefig(save_path.format(i), dpi=1200)
 
 
 if __name__ == '__main__':
