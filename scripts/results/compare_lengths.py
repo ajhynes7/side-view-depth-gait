@@ -14,6 +14,7 @@ def main():
     # Ground truth positions from labelled trials
     df_truth = pd.read_pickle(
         os.path.join('results', 'dataframes', 'df_truth.pkl'))
+
     part_names = df_truth.columns.values
     trial_names = df_truth.index.levels[0].values
 
@@ -49,7 +50,8 @@ def main():
         })
 
         df_length_compare['Relative Error'] = df_length_compare.apply(
-            lambda row: st.relative_error(row['Estimated'], row['Ground Truth']),
+            lambda row: st.relative_error(row['Estimated'],
+                                          row['Ground Truth']),
             axis=1)
 
         dict_lengths[i + 1] = df_length_compare
