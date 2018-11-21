@@ -1,3 +1,5 @@
+"""Generate diagram of sphere process to select best feet."""
+
 import os
 
 import numpy as np
@@ -22,13 +24,6 @@ def score_func(a, b):
 
 def main():
 
-    # Customize font
-    plt.rc('text', usetex=True)
-    font = {'family': 'serif', 'weight': 'bold', 'size': 14}
-    plt.rc('font', **font)  # pass in the font dict as kwargs
-
-    # %% Parameters
-
     part_connections = np.array([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5],
                                  [3, 5], [1, 3]])
 
@@ -36,23 +31,18 @@ def main():
 
     part_types = ['Head', 'Hip', 'Thigh', 'Knee', 'Calf', 'Foot']
 
-    # %% Load variables
-
     load_dir = os.path.join('data', 'saved_variables')
-
     population = np.load(os.path.join(load_dir, 'population.npy'))
     labels = np.load(os.path.join(load_dir, 'labels.npy'))
 
-    # %% Remove some points to make the figure clearer
-
+    # Remove some points to make the figure clearer
     to_keep = np.concatenate((np.arange(29), [31]))
     population = population[to_keep]
     labels = labels[to_keep]
 
     population[:, -1] = 0  # Remove depth
 
-    # %% Add noisy foot
-
+    # Add noisy foot
     population = np.vstack([population, [-20, 0, 0]])
     labels = np.append(labels, max(labels))
 
@@ -116,8 +106,7 @@ def main():
         inside_spheres = pe.in_spheres(within_radius, has_sphere)
         pl.plot_links(pop_reduced, score_matrix, inside_spheres)
 
-        pl.scatter_labels(
-            pop_reduced, labels[path_nums], edgecolor='k', zorder=5)
+        pl.scatter2(pop_reduced, c='k', zorder=5)
 
         has_sphere = np.any(path_vectors[pairs[i]], 0)
 

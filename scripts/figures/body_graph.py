@@ -23,13 +23,6 @@ def generate_points(n_points_per_set):
 
 def main():
 
-    # Customize font
-    plt.rc('text', usetex=True)
-    font = {'family': 'serif', 'weight': 'bold', 'size': 14}
-    plt.rc('font', **font)  # pass in the font dict as kwargs
-
-    # %% Plot figure
-
     points_per_set = [2, 3, 5, 2, 4, 5]
     part_types = ['Head', 'Hip', 'Thigh', 'Knee', 'Calf', 'Foot']
 
