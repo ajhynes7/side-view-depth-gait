@@ -37,7 +37,7 @@ def main():
     df_lengths.index.name = 'file_name'
 
     t = time.time()
-    total_frames = 0
+    trials_run, frames_run = 0, 0
 
     n_lengths = len(lower_part_types) - 1
 
@@ -64,9 +64,10 @@ def main():
         lower_parts = df.columns[string_index]
 
         df_lower = df[lower_parts].dropna(axis=0)
-
         n_frames = df_lower.shape[0]
-        total_frames += n_frames
+
+        trials_run += 1
+        frames_run += n_frames
 
         trial_lengths = np.zeros((n_frames, n_lengths))
 
@@ -91,14 +92,14 @@ def main():
     # %% Calculate run-time metrics
 
     time_elapsed = time.time() - t
-    frames_per_second = round(total_frames / time_elapsed)
+    frames_per_second = round(frames_run / time_elapsed)
 
     print("""
     Number of trials: {}\n
     Number of frames: {}\n
     Total time: {}\n
     Frames per second: {}""".format(
-        len(trials_to_run), total_frames, round(time_elapsed, 2),
+        trials_run, frames_run, round(time_elapsed, 2),
         frames_per_second))
 
 

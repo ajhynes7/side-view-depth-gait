@@ -43,7 +43,7 @@ def main():
     df_length = pd.read_csv(length_path, index_col=0)
 
     t = time.time()
-    total_frames = 0
+    trials_run, frames_run = 0, 0
 
     # %% Select best positions from each Kinect data file
 
@@ -115,19 +115,20 @@ def main():
         save_path = os.path.join(save_dir, file_name) + '.pkl'
         df_head_feet.to_pickle(save_path)
 
-        total_frames += len(frames)
+        trials_run += 1
+        frames_run += len(frames)
 
     # %% Calculate run-time metrics
 
     time_elapsed = time.time() - t
-    frames_per_second = np.round(total_frames / time_elapsed)
+    frames_per_second = np.round(frames_run / time_elapsed)
 
     print("""
     Number of trials: {}\n
     Number of frames: {}\n
     Total time: {}\n
     Frames per second: {}""".format(
-        len(trials_to_run), total_frames, np.round(time_elapsed, 2),
+        trials_run, frames_run, np.round(time_elapsed, 2),
         frames_per_second))
 
 
