@@ -8,7 +8,6 @@ from collections import OrderedDict
 import cv2
 import numpy as np
 import pandas as pd
-from scipy.ndimage.measurements import center_of_mass
 
 import analysis.images as im
 
@@ -17,30 +16,30 @@ def main():
 
     load_dir = os.path.join('data', 'kinect', 'labelled_trials')
 
-    labelled_trial_names = os.listdir(load_dir)
-
-    body_part_grayscale = OrderedDict({
-        'HEAD': 105,
-        'L_HIP': 93,
-        'R_HIP': 40,
-        'L_THIGH': 133,
-        'R_THIGH': 240,
-        'L_KNEE': 52,
-        'R_KNEE': 111,
-        'L_CALF': 36,
-        'R_CALF': 37,
-        'L_FOOT': 135,
-        'R_FOOT': 76,
-    })
-
     # Camera calibration parameters
     x_res, y_res = 565, 430
     f_xz, f_yz = 1.11146664619446, 0.833599984645844
 
+    part_rgb_dict = OrderedDict({
+        'HEAD': [255, 0, 255],
+        'L_HIP': [0, 62, 192],
+        'R_HIP': [192, 0, 62],
+        'L_THIGH': [192, 126, 126],
+        'R_THIGH': [126, 255, 255],
+        'L_KNEE': [126, 0, 126],
+        'R_KNEE': [0, 126, 126],
+        'L_CALF': [0, 62, 0],
+        'R_CALF': [0, 0, 126],
+        'L_FOOT': [0, 230, 0],
+        'R_FOOT': [0, 0, 255],
+    })
+
+    labelled_trial_names = os.listdir(load_dir)
+
     # Regex to extract frame number from file name
     pattern = re.compile(r'(\d+)\.png')
 
-    part_names, part_labels = zip(*body_part_grayscale.items())
+    part_names, rgb_vectors = zip(*part_rgb_dict.items())
 
     dict_truth = {}
 
@@ -61,45 +60,41 @@ def main():
 
             label_path, depth_path = label_paths[ii], depth_paths[ii]
 
-            label_image = cv2.imread(label_path, cv2.IMREAD_GRAYSCALE)
-            depth_image = cv2.imread(depth_path, cv2.IMREAD_ANYDEPTH)
+            label_image_rgb = cv2.imread(label_path, cv2.IMREAD_ANYCOLOR)
+            depth_image = cv2.imread(depth_path, cv2.IMREAD_ANYDEPTH) / 10
 
-            if np.all(np.in1d(part_labels, np.unique(label_image))):
-                # All body parts are visible in the label image
+            label_image = im.rgb_to_label(label_image_rgb, rgb_vectors)
 
-                centroids = np.array([
-                    center_of_mass(label_image == label)
-                    for label in part_labels
-                ])
+            for i, part_name in enumerate(part_rgb_dict):
 
-                # Round to nearest integer so that image can be indexed
-                centroid_coords = np.round(centroids).astype(int)
+                # Binary image of one body part
+                label = i + 1
+                part_binary = label_image == label
 
-                # Get depths and convert from mm to cm
-                depths = depth_image[centroid_coords[:, 0],
-                                     centroid_coords[:, 1]] / 10
+                if not np.any(part_binary):
+                    # There are no pixels for this part in the label image
+                    continue
 
-                # Points in image space, in form (x, y, z)
-                points_image = np.column_stack((np.fliplr(centroid_coords),
-                                                depths))
+                nonzero_row_col = np.argwhere(part_binary)
+                depths = depth_image[part_binary]
 
-                # Convert to real coordinates
-                points_real = np.apply_along_axis(im.image_to_real, 1,
-                                                  points_image, x_res, y_res,
-                                                  f_xz, f_yz)
+                image_points = np.column_stack(
+                    (nonzero_row_col[:, 1], nonzero_row_col[:, 0], depths))
 
-                for part_name, point in zip(part_names, points_real):
-                    df_trial.loc[frame, part_name] = point
+                median_image = np.median(image_points, axis=0)
+                median_real = im.image_to_real(
+                    median_image, x_res, y_res, f_xz, f_yz)
 
-        df_trial.dropna(axis=0, inplace=True)
+                df_trial.loc[frame, part_name] = median_real
 
         dict_truth[trial_name] = df_trial
 
-    # True positions from all labelled trials
-    df_truth = pd.concat(dict_truth)
-    df_truth.index.names = ['trial_name', 'frame']
+        # True positions from all labelled trials
+        df_truth = pd.concat(dict_truth)
+        df_truth.index.names = ['trial_name', 'frame']
 
-    df_truth.to_pickle(os.path.join('results', 'dataframes', 'df_truth.pkl'))
+        df_truth.to_pickle(
+            os.path.join('results', 'dataframes', 'df_truth.pkl'))
 
 
 if __name__ == '__main__':

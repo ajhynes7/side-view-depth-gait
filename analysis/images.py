@@ -103,3 +103,31 @@ def recalibrate_positions(positions_real_old, x_res_old, y_res_old, x_res,
         positions_real[i] = image_to_real(pos_image, x_res, y_res, f_xz, f_yz)
 
     return positions_real
+
+
+def rgb_to_label(image_rgb, rgb_vectors):
+    """
+    Convert an RGB image to a label image.
+
+    Parameters
+    ----------
+    image_rgb : ndarray
+        (n_rows, n_cols, 3) image
+    rgb_vectors : array_like
+        Each element is a [R, G, B] vector.
+
+    Returns
+    -------
+    label_image
+        (n_rows, n_cols) image.
+        2D label image.
+
+    """
+    label_image = np.zeros(image_rgb.shape[:-1])
+
+    for i, rgb_vector in enumerate(rgb_vectors):
+
+        mask = np.all(image_rgb == rgb_vector, axis=-1)
+        label_image[mask] = i + 1
+
+    return label_image
