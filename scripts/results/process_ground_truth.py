@@ -16,10 +16,6 @@ def main():
 
     load_dir = os.path.join('data', 'kinect', 'labelled_trials')
 
-    # Camera calibration parameters
-    x_res, y_res = 565, 430
-    f_xz, f_yz = 1.11146664619446, 0.833599984645844
-
     part_rgb_dict = OrderedDict({
         'HEAD': [255, 0, 255],
         'L_HIP': [0, 62, 192],
@@ -83,7 +79,7 @@ def main():
 
                 median_image = np.median(image_points, axis=0)
                 median_real = im.image_to_real(
-                    median_image, x_res, y_res, f_xz, f_yz)
+                    median_image, im.X_RES, im.Y_RES, im.F_XZ, im.F_YZ)
 
                 df_trial.loc[frame, part_name] = median_real
 

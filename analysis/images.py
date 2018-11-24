@@ -91,20 +91,6 @@ def real_to_image(point_real, x_res, y_res, f_xz, f_yz):
     return point_image
 
 
-def recalibrate_positions(positions_real_old, x_res_old, y_res_old, x_res,
-                          y_res, f_xz, f_yz):
-
-    positions_real = np.full(positions_real_old.shape, np.nan)
-
-    for i, pos_real_old in enumerate(positions_real_old):
-
-        pos_image = real_to_image(pos_real_old, x_res_old, y_res_old, f_xz,
-                                  f_yz)
-        positions_real[i] = image_to_real(pos_image, x_res, y_res, f_xz, f_yz)
-
-    return positions_real
-
-
 def rgb_to_label(image_rgb, rgb_vectors):
     """
     Convert an RGB image to a label image.
@@ -131,3 +117,35 @@ def rgb_to_label(image_rgb, rgb_vectors):
         label_image[mask] = i + 1
 
     return label_image
+
+
+def recalibrate_positions(positions_real_old, x_res_old, y_res_old, x_res,
+                          y_res, f_xz, f_yz):
+
+    positions_real = np.full(positions_real_old.shape, np.nan)
+
+    for i, pos_real_old in enumerate(positions_real_old):
+
+        pos_image = real_to_image(pos_real_old, x_res_old, y_res_old, f_xz,
+                                  f_yz)
+        positions_real[i] = image_to_real(pos_image, x_res, y_res, f_xz, f_yz)
+
+    return positions_real
+
+
+# Camera calibration parameters.
+
+# While the depth image files are 640 x 480, there is a large border in the
+# image, resulting in a smaller real resolution.
+# This needs to be taken into account when converting between
+# image coordinates and real world coordinates.
+
+# Original resolutions of depth images
+X_RES_ORIG, Y_RES_ORIG = 640, 480
+
+# Estimates of actual resolutions
+X_RES, Y_RES = 565, 430
+
+# Coefficients used to convert between image and real coordinates
+# calculated for the Kinect v1
+F_XZ, F_YZ = 1.11146664619446, 0.833599984645844
