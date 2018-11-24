@@ -85,12 +85,12 @@ def main():
 
         dict_truth[trial_name] = df_trial
 
-        # True positions from all labelled trials
-        df_truth = pd.concat(dict_truth)
-        df_truth.index.names = ['trial_name', 'frame']
+    # True positions from all labelled trials
+    df_truth = pd.concat(dict_truth)
+    df_truth.index.names = ['trial_name', 'frame']
 
-        df_truth.to_pickle(
-            os.path.join('results', 'dataframes', 'df_truth.pkl'))
+    df_truth.to_pickle(
+        os.path.join('results', 'dataframes', 'df_truth.pkl'))
 
 
 if __name__ == '__main__':
