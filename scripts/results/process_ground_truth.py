@@ -15,6 +15,7 @@ import analysis.images as im
 def main():
 
     load_dir = os.path.join('data', 'kinect', 'labelled_trials')
+    align_dir = os.path.join('data', 'kinect', 'alignment')
 
     part_rgb_dict = OrderedDict({
         'HEAD': [255, 0, 255],
@@ -32,10 +33,10 @@ def main():
 
     labelled_trial_names = os.listdir(load_dir)
 
+    part_names, rgb_vectors = zip(*part_rgb_dict.items())
+
     # Regex to extract frame number from file name
     pattern = re.compile(r'(\d+)\.png')
-
-    part_names, rgb_vectors = zip(*part_rgb_dict.items())
 
     dict_truth = {}
 
@@ -48,11 +49,15 @@ def main():
         depth_paths = sorted(glob.glob(os.path.join(depth_dir, '*.png')))
 
         depth_filenames = [os.path.basename(x) for x in depth_paths]
-        frames = [int(re.search(pattern, x).group(1)) for x in depth_filenames]
+        image_nums = [
+            int(re.search(pattern, x).group(1)) for x in depth_filenames
+        ]
 
-        df_trial = pd.DataFrame(index=frames, columns=part_names)
+        df_trial = pd.DataFrame(index=image_nums, columns=part_names)
 
-        for ii, frame in enumerate(frames):
+        # %% Iterate through labelled images for walking trial
+
+        for ii, image_num in enumerate(image_nums):
 
             label_path, depth_path = label_paths[ii], depth_paths[ii]
 
@@ -74,15 +79,36 @@ def main():
                 nonzero_row_col = np.argwhere(part_binary)
                 depths = depth_image[part_binary]
 
-                image_points = np.column_stack(
-                    (nonzero_row_col[:, 1], nonzero_row_col[:, 0], depths))
+                image_points = np.column_stack((nonzero_row_col[:, 1],
+                                                nonzero_row_col[:, 0], depths))
 
                 median_image = np.median(image_points, axis=0)
-                median_real = im.image_to_real(
-                    median_image, im.X_RES, im.Y_RES, im.F_XZ, im.F_YZ)
+                median_real = im.image_to_real(median_image, im.X_RES,
+                                               im.Y_RES, im.F_XZ, im.F_YZ)
 
-                df_trial.loc[frame, part_name] = median_real
+                df_trial.loc[image_num, part_name] = median_real
 
+        # %% Convert image file numbers to frame numbers
+
+        df_align = pd.read_csv(
+            os.path.join(align_dir, trial_name + '.txt'),
+            header=None,
+            names=['image_file'])
+
+        # Extract number from image file name
+        pattern = r'(\d+)\.png'
+        df_align['image_number'] = df_align.image_file.str.extract(pattern)
+        df_align = df_align.dropna()
+        df_align.image_number = pd.to_numeric(df_align.image_number)
+
+        # Dictionary mapping image file numbers to frames
+        image_to_frame = {
+            image_num: frame
+            for frame, image_num in enumerate(df_align.image_number.values)
+        }
+        df_trial.index = df_trial.index.map(image_to_frame)
+
+        df_trial = df_trial.dropna(how='all')
         dict_truth[trial_name] = df_trial
 
     # True positions from all labelled trials
