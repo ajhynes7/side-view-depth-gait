@@ -50,8 +50,7 @@ def main():
         })
 
         df_length_compare['Relative Error'] = df_length_compare.apply(
-            lambda row: st.relative_error(row['Estimated'],
-                                          row['Ground Truth']),
+            lambda row: st.relative_error(row['Estimated'], row['Ground Truth']),
             axis=1)
 
         dict_lengths[i + 1] = df_length_compare
