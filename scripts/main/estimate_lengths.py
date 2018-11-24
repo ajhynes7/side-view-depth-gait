@@ -1,4 +1,4 @@
-"""Script to estimate lengths of the body for each trial."""
+"""Estimate lengths of the body for each trial."""
 
 import glob
 import os

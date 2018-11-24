@@ -1,4 +1,4 @@
-"""Script to calculate gait parameters from Kinect data."""
+"""Calculate gait parameters from Kinect data."""
 
 import os
 

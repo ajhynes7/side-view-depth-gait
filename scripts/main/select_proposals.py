@@ -1,4 +1,4 @@
-"""Select the best body part positions from multiple hypotheses."""
+"""Select the best body part positions from multiple joint proposals."""
 
 import os
 import time
@@ -54,6 +54,8 @@ def main():
         lengths = df_length.loc[file_name]  # Read estimated lengths for trial
 
         file_path = os.path.join(load_dir, file_name + '.pkl')
+
+        # Position hypotheses (joint proposals)
         df_hypo = pd.read_pickle(file_path)
 
         # Delete rows missing a body part type (head, hip, etc.)
