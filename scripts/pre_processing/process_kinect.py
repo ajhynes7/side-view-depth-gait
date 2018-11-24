@@ -1,13 +1,5 @@
-"""
-Transform raw data from the Kinect into a pandas DataFrame.
+"""Transform raw data from the Kinect into a pandas DataFrame."""
 
-This script is intended to be run when the parent folder is the working
-directory.
-
-"""
-
-import copy
-import glob
 import os
 
 import numpy as np
@@ -22,25 +14,23 @@ def main():
 
     # Directories for all hypothetical points and highest confidence points
     save_dir_hypo = os.path.join('data', 'kinect', 'processed', 'hypothesis')
-    save_dir_conf = os.path.join('data', 'kinect', 'processed', 'confidence')
+
+    part_types = ['HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG', 'FOOT']
 
     # Number of columns for the position coordinates
     # Number should be sufficiently large and divisible by 3
     n_coord_cols = 99
 
-    # Parameters for recalibrating positions
-    x_res_old, y_res_old = 640, 480
-    x_res, y_res = 565, 430
+    # List of trials to run
+    running_path = os.path.join('data', 'kinect', 'running',
+                                'trials_to_run.csv')
+    trials_to_run = pd.read_csv(running_path, header=None, squeeze=True).values
 
-    f_xz, f_yz = 1.11146664619446, 0.833599984645844
+    for file_name in trials_to_run:
 
-    # %% Process all raw text files
+        file_path = os.path.join(load_dir, file_name + '.txt')
 
-    file_paths = glob.glob(os.path.join(load_dir, '*.txt'))
-
-    for file_path in file_paths:
-
-        df = pd.read_csv(
+        df_raw = pd.read_csv(
             file_path,
             skiprows=range(22),
             header=None,
@@ -49,80 +39,68 @@ def main():
             engine='python')
 
         # Change some column names
-        df.rename(columns={-2: 'Frame', -1: 'Part'}, inplace=True)
+        df_raw.rename(columns={-2: 'Frame', -1: 'Part'}, inplace=True)
 
-        # Replace any non-number strings with nan in the Frame column
-        df.Frame = df.Frame.replace(r'[^0-9]', np.nan, regex=True)
+        # Replace any non-number strings with nan in the frame column
+        df_raw.Frame = df_raw.Frame.replace(r'[^0-9]', np.nan, regex=True)
 
-        # Convert the strings in the frame column so the max function will work
-        df.Frame = pd.to_numeric(df.Frame)
+        # Convert the strings in the frame column so max function will work
+        df_raw.Frame = pd.to_numeric(df_raw.Frame)
 
-        max_frame = int(np.nanmax(df.Frame))
+        max_frame = int(np.nanmax(df_raw.Frame))
 
         # Crop the DataFrame at the max frame number
-        last_index = df[df.Frame == max_frame].index[-1]
-        df = df.loc[:last_index, :]
+        # (The text file loops back to the beginning)
+        last_index = df_raw[df_raw.Frame == max_frame].index[-1]
+        df_cropped = df_raw.loc[:last_index, :]
 
-        # Part names
-        parts = df.groupby('Part').groups.keys()
+        df_cropped = df_cropped.set_index(['Frame', 'Part'])
 
-        df_hypo = pd.concat(
-            [df.loc[:, ['Frame', 'Part']], df.iloc[:, 5:]], axis=1)
+        # Skip first 3 coordinate columns
+        # (these are the coords selected by confidence, in image space)
+        df_hypo_raw = df_cropped.iloc[:, 3:]
 
-        df_conf = df.iloc[:, range(5)]
+        # Drop rows with all nans
+        df_hypo_raw = df_hypo_raw.dropna(how='all')
 
-        has_data = df_hypo.loc[:, 3].notnull()
-        df_hypo, df_conf = df_hypo[has_data], df_conf[has_data]
+        # Frames with any position data
+        frames = df_hypo_raw.index.get_level_values(0).unique()
 
-        coord_counts = np.sum(df_hypo.iloc[:, 2:].notnull(), axis=1)
+        df_hypo_clean = pd.DataFrame(index=frames, columns=part_types)
 
-        dict_hypo = {
-            part: {f: np.nan
-                   for f in range(max_frame + 1)}
-            for part in parts
-        }
+        for frame in frames:
+            for part_type in part_types:
 
-        dict_conf = copy.deepcopy(dict_hypo)
+                df_frame = df_hypo_raw.loc[frame]
 
-        df_iterator = zip(df_hypo.iterrows(), df_conf.iterrows(), coord_counts)
+                # Coordinates of the part type
+                df_coords = df_frame[df_frame.index.str.contains(part_type)]
 
-        for (_, row_hypo), (_, row_conf), n_coords in df_iterator:
+                if not np.all(np.isnan(df_coords)):
 
-            frame, part = row_hypo.Frame, row_hypo.Part
+                    # Reshape into (n, 3) array
+                    array_part = np.reshape(df_coords.values, (-1, 3))
 
-            coords_hypo = row_hypo.values[2:2 + n_coords].astype(float)
-            coords_conf = row_conf.values[2:].astype(float)
+                    # Drop rows with nan to get positions
+                    points_hypo = array_part[
+                        ~np.any(np.isnan(array_part), axis=1)]
 
-            points_hypo_old = coords_hypo.reshape(-1, 3)
-            points_conf_old = coords_conf.reshape(-1, 3)
+                    df_hypo_clean.loc[frame, part_type] = points_hypo
 
-            # The hypothetical positions need to be converted from
-            # real to image then back to real using new parameters.
-            points_hypo = im.recalibrate_positions(points_hypo_old, x_res_old,
-                                                   y_res_old, x_res, y_res,
-                                                   f_xz, f_yz)
+                    # The hypothetical positions need to be converted from
+                    # real to image then back to real using new parameters.
+                    points_hypo = im.recalibrate_positions(
+                        points_hypo, im.X_RES_ORIG, im.Y_RES_ORIG,
+                        im.X_RES, im.Y_RES, im.F_XZ, im.F_YZ)
 
-            # The confidence points must be converted from
-            # image to real coordinates
-            points_conf = np.apply_along_axis(
-                im.image_to_real, 1, points_conf_old, x_res, y_res, f_xz, f_yz)
+                    df_hypo_clean.loc[frame, part_type] = points_hypo
 
-            dict_hypo[part][frame] = points_hypo
-            dict_conf[part][frame] = points_conf
-
-        df_final_hypo = pd.DataFrame(dict_hypo).rename_axis('Frame')
-        df_final_conf = pd.DataFrame(dict_conf).rename_axis('Frame')
-
-        # Save data
-
-        base_name = os.path.basename(file_path)  # File with extension
-        file_name = os.path.splitext(base_name)[0]  # File with no extension
+        # Rename some body parts to match names used in papers
+        df_hypo_clean = df_hypo_clean.rename(
+            columns={'UPPER_LEG': 'THIGH', 'LOWER_LEG': 'CALF'})
 
         save_path_hypo = os.path.join(save_dir_hypo, file_name) + '.pkl'
-        save_path_conf = os.path.join(save_dir_conf, file_name) + '.pkl'
-
-        df_final_hypo.to_pickle(save_path_hypo)
-        df_final_conf.to_pickle(save_path_conf)
+        df_hypo_clean.to_pickle(save_path_hypo)
 
 
 if __name__ == '__main__':
