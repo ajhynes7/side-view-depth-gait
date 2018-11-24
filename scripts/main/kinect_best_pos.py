@@ -8,7 +8,6 @@ import pandas as pd
 
 import analysis.math_funcs as mf
 import modules.pose_estimation as pe
-import modules.string_funcs as sf
 
 
 def cost_func(a, b):
@@ -24,14 +23,12 @@ def score_func(a, b):
 
 def main():
 
-    lower_part_types = [
-        'HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG', 'FOOT'
-    ]
-
     radii = [i for i in range(5, 30, 5)]
 
     part_connections = np.array([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5],
                                  [3, 5], [1, 3]])
+
+    part_labels = range(part_connections.max() + 1)
 
     # Reading data
     load_dir = os.path.join('data', 'kinect', 'processed', 'hypothesis')
@@ -52,29 +49,20 @@ def main():
                                 'trials_to_run.csv')
     trials_to_run = pd.read_csv(running_path, header=None, squeeze=True).values
 
-    for file_name in trials_to_run:
-
-        file_path = os.path.join(load_dir, file_name + '.pkl')
-
-        df = pd.read_pickle(file_path)
-
-        base_name = os.path.basename(file_path)  # File with extension
-        file_name = os.path.splitext(base_name)[0]  # File with no extension
+    for file_name in trials_to_run[:2]:
 
         lengths = df_length.loc[file_name]  # Read estimated lengths for trial
 
-        # Select frames with data
-        string_index, part_labels = sf.strings_with_any_substrings(
-            df.columns, lower_part_types)
+        file_path = os.path.join(load_dir, file_name + '.pkl')
+        df_hypo = pd.read_pickle(file_path)
 
-        lower_parts = df.columns[string_index]
+        # Delete rows missing a body part type (head, hip, etc.)
+        df_hypo = df_hypo.dropna()
 
-        df_lower = df[lower_parts].dropna(axis=0)
-
-        population_series = df_lower.apply(
+        population_series = df_hypo.apply(
             lambda row: pe.get_population(row, part_labels)[0], axis=1)
 
-        label_series = df_lower.apply(
+        label_series = df_hypo.apply(
             lambda row: pe.get_population(row, part_labels)[1], axis=1)
 
         # Expected lengths for all part connections,
