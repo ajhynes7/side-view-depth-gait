@@ -119,15 +119,34 @@ def rgb_to_label(image_rgb, rgb_vectors):
     return label_image
 
 
-def recalibrate_positions(positions_real_old, x_res_old, y_res_old, x_res,
+def recalibrate_positions(positions_real_orig, x_res_orig, y_res_orig, x_res,
                           y_res, f_xz, f_yz):
+    """
+    Change real world coordinates using new camera calibration parameters.
 
-    positions_real = np.full(positions_real_old.shape, np.nan)
+    Parameters
+    ----------
+    positions_real_orig : ndarray
+        Original positions in real world coordinates.
+    x_res_orig, y_res_orig : int
+        Original image resolutions.
+    x_res, y_res : int
+        New image resolutions.
+    f_xz, f_yz : int
+        Focal parameters.
 
-    for i, pos_real_old in enumerate(positions_real_old):
+    Returns
+    -------
+    positions_real : ndarray
+        Positions in new real world coordinates.
 
-        pos_image = real_to_image(pos_real_old, x_res_old, y_res_old, f_xz,
-                                  f_yz)
+    """
+    positions_real = np.full(positions_real_orig.shape, np.nan)
+
+    for i, pos_real_orig in enumerate(positions_real_orig):
+
+        pos_image = real_to_image(
+            pos_real_orig, x_res_orig, y_res_orig, f_xz, f_yz)
         positions_real[i] = image_to_real(pos_image, x_res, y_res, f_xz, f_yz)
 
     return positions_real
