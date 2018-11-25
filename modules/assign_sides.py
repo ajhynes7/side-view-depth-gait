@@ -4,11 +4,46 @@ import numpy as np
 from numpy.linalg import norm
 import pandas as pd
 
+import modules.linear_algebra as lin
 import modules.numpy_funcs as nf
 import modules.pandas_funcs as pf
 import modules.point_processing as pp
 import modules.signals as sig
 import modules.sliding_window as sw
+
+
+def direction_of_pass(df_pass):
+    """
+    Return vector representing overall direction of motion for a walking pass.
+
+    Parameters
+    ----------
+    df_pass : DataFrame
+        Head and foot positions at each frame in a walking pass.
+        Three columns: HEAD, L_FOOT, R_FOOT.
+
+    Returns
+    -------
+    line_point : ndarray
+        Point that lies on line of motion.
+    direction_pass : ndarray
+        Direction of motion for the walking pass.
+
+    """
+    # All head positions on one walking pass
+    head_points = np.stack(df_pass.HEAD)
+
+    # Line of best fit for head positions
+    line_point, line_direction = lin.best_fit_line(head_points)
+
+    vector_start_end = head_points[-1, :] - head_points[0, :]
+
+    direction_pass = line_direction
+    if np.dot(line_direction, vector_start_end) < 0:
+        # The direction of the best fit line should be reversed
+        direction_pass = -line_direction
+
+    return line_point, direction_pass
 
 
 def evaluate_foot_side(foot_points_1, foot_points_2, direction):
