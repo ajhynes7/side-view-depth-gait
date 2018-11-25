@@ -53,11 +53,10 @@ def main():
         # (The text file loops back to the beginning)
         last_index = df_raw[df_raw.Frame == max_frame].index[-1]
         df_cropped = df_raw.loc[:last_index, :]
-
         df_cropped = df_cropped.set_index(['Frame', 'Part'])
 
-        # Skip first 3 coordinate columns
-        # (these are the coords selected by confidence, in image space)
+        # Skip first three columns
+        # (these are the coordinates of the confidence position)
         df_hypo_raw = df_cropped.iloc[:, 3:]
 
         # Drop rows with all nans
@@ -74,30 +73,29 @@ def main():
                 df_frame = df_hypo_raw.loc[frame]
 
                 # Coordinates of the part type
-                df_coords = df_frame[df_frame.index.str.contains(part_type)]
+                coords = df_frame[df_frame.index.str.contains(
+                    part_type)].values
+                coords = coords[~np.isnan(coords)]
 
-                if not np.all(np.isnan(df_coords)):
+                if coords.size == 0:
+                    continue
 
-                    # Reshape into (n, 3) array
-                    array_part = np.reshape(df_coords.values, (-1, 3))
+                # Reshape into (n, 3) array
+                points_hypo = np.reshape(coords, (-1, 3))
 
-                    # Drop rows with nan to get positions
-                    points_hypo = array_part[
-                        ~np.any(np.isnan(array_part), axis=1)]
+                # The hypothetical positions now need to be converted from
+                # real to image then back to real using new parameters.
+                points_hypo = im.recalibrate_positions(
+                    points_hypo, im.X_RES_ORIG, im.Y_RES_ORIG, im.X_RES,
+                    im.Y_RES, im.F_XZ, im.F_YZ)
 
-                    df_hypo_clean.loc[frame, part_type] = points_hypo
-
-                    # The hypothetical positions need to be converted from
-                    # real to image then back to real using new parameters.
-                    points_hypo = im.recalibrate_positions(
-                        points_hypo, im.X_RES_ORIG, im.Y_RES_ORIG,
-                        im.X_RES, im.Y_RES, im.F_XZ, im.F_YZ)
-
-                    df_hypo_clean.loc[frame, part_type] = points_hypo
+                df_hypo_clean.loc[frame, part_type] = points_hypo
 
         # Rename some body parts to match names used in papers
-        df_hypo_clean = df_hypo_clean.rename(
-            columns={'UPPER_LEG': 'THIGH', 'LOWER_LEG': 'CALF'})
+        df_hypo_clean = df_hypo_clean.rename(columns={
+            'UPPER_LEG': 'THIGH',
+            'LOWER_LEG': 'CALF'
+        })
 
         save_path_hypo = os.path.join(save_dir_hypo, file_name) + '.pkl'
         df_hypo_clean.to_pickle(save_path_hypo)
