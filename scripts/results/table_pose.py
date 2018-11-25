@@ -64,8 +64,7 @@ def main():
 
             pairs_assigned.append(pair_assigned)
 
-            costs[i] = np.apply_along_axis(norm, 1,
-                                           pair_assigned - truth_points).sum()
+            costs[i] = norm(pair_assigned - truth_points, axis=1).sum()
 
         best_pair = pairs_assigned[np.argmin(costs)]
 
@@ -86,7 +85,7 @@ def main():
         points_true = np.stack((true_l, true_r))
 
         points_assigned = pp.correspond_points(points_true, points_selected)
-        dists = np.apply_along_axis(norm, 1, points_assigned - points_true)
+        dists = norm(points_assigned - points_true, axis=1)
 
         within_dist.loc[frame] = np.all(dists < max_dist)
         error_list.append(np.sum(dists))

@@ -4,7 +4,6 @@ import numpy as np
 from numpy.linalg import norm
 import pandas as pd
 
-import modules.linear_algebra as lin
 import modules.numpy_funcs as nf
 import modules.pandas_funcs as pf
 import modules.point_processing as pp
@@ -105,9 +104,9 @@ def assign_sides_pass(df_pass, direction_pass):
     """
     frames = df_pass.index.values
 
-    foot_pos_l = np.stack(df_pass.L_FOOT)
-    foot_pos_r = np.stack(df_pass.R_FOOT)
-    norms = np.apply_along_axis(norm, 1, foot_pos_l - foot_pos_r)
+    foot_points_l = np.stack(df_pass.L_FOOT)
+    foot_points_r = np.stack(df_pass.R_FOOT)
+    norms = norm(foot_points_l - foot_points_r, axis=1)
 
     # Detect peaks in the inverted foot distance signal.
     # These peaks are the frames when the feet are close together.

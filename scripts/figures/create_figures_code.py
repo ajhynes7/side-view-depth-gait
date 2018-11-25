@@ -60,7 +60,7 @@ def main():
 
     foot_pos_l = np.stack(df_pass.L_FOOT)
     foot_pos_r = np.stack(df_pass.R_FOOT)
-    norms = np.apply_along_axis(norm, 1, foot_pos_l - foot_pos_r)
+    norms = norm(foot_pos_l - foot_pos_r, axis=1)
 
     signal = 1 - sig.nan_normalize(norms)
     rms = sig.root_mean_square(signal)
