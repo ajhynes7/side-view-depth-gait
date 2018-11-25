@@ -215,7 +215,38 @@ def closest_point(points, target):
 
 
 def position_accuracy(points, targets, max_dist=10):
+    """
+    Calculate ratio of points within a distance from corresponding targets.
 
+    Parameters
+    ----------
+    points : ndarray
+        (n, d) array of n positions of dimension d.
+    targets : ndarray
+        (n, d) array of n target positions of dimension d.
+    max_dist : {int, float}
+        Maximum distance that a point can be from its target to be counted.
+
+    Returns
+    -------
+    float
+        Ratio of points within the max distance from their targets.
+
+    Examples
+    --------
+    >>> points = np.array([[1, 2], [2, 3], [10, 11], [15, -2]])
+    >>> targets = np.array([[1, 3], [10, 3], [12, 13], [14, -3]])
+
+    >>> position_accuracy(points, targets, max_dist=0)
+    0.0
+
+    >>> position_accuracy(points, targets, max_dist=5)
+    0.75
+
+    >>> position_accuracy(points, targets, max_dist=10)
+    1.0
+
+    """
     distances = norm(points - targets, axis=1)
 
     return np.mean(distances <= max_dist)
