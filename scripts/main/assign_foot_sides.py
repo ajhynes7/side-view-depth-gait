@@ -2,7 +2,6 @@
 
 from os.path import join
 
-import numpy as np
 import pandas as pd
 from sklearn.cluster import DBSCAN
 
@@ -37,28 +36,23 @@ def main():
         df_selected = df_selected.drop(frames_to_drop)
         labels = labels[~is_noise]
 
+        # Project points onto X-Z plane
+        df_selected_2d = df_selected.applymap(lambda point: point[[2, 0]])
+
         # Sort labels so that the frames are in temporal order
         labels = nf.map_to_whole(labels)
 
+        # %% Assign sides to each walking pass and combine passes
         # DataFrames for each walking pass in a trial
-        pass_dfs_3d = list(nf.group_by_label(df_selected, labels))
 
-        # Reduce dimension of head and foot positions on each walking pass
-        pass_dfs_2d = []
-        for df_pass in pass_dfs_3d:
-            pass_dfs_2d.append(
-                df_pass.applymap(lambda point: np.array([point[2], point[0]])))
+        pass_dfs_2d = list(nf.group_by_label(df_selected_2d, labels))
 
-        # %% Assign sides to each walking pass and combine passses
-
-        dict_passes = {}
-        pass_directions = []
+        dict_passes, pass_directions = {}, []
 
         for i, df_pass in enumerate(pass_dfs_2d):
             _, direction_pass = asi.direction_of_pass(df_pass)
 
             pass_directions.append(direction_pass)
-
             df_pass_assigned = asi.assign_sides_pass(df_pass, direction_pass)
 
             # Assign correct sides to feet
