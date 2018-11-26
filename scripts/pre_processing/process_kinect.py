@@ -39,21 +39,21 @@ def main():
             engine='python')
 
         # Change some column names
-        df_raw.rename(columns={-2: 'Frame', -1: 'Part'}, inplace=True)
+        df_raw.rename(columns={-2: 'frame', -1: 'part'}, inplace=True)
 
         # Replace any non-number strings with nan in the frame column
-        df_raw.Frame = df_raw.Frame.replace(r'[^0-9]', np.nan, regex=True)
+        df_raw.frame = df_raw.frame.replace(r'[^0-9]', np.nan, regex=True)
 
         # Convert the strings in the frame column so max function will work
-        df_raw.Frame = pd.to_numeric(df_raw.Frame)
+        df_raw.frame = pd.to_numeric(df_raw.frame)
 
-        max_frame = int(np.nanmax(df_raw.Frame))
+        max_frame = int(np.nanmax(df_raw.frame))
 
         # Crop the DataFrame at the max frame number
         # (The text file loops back to the beginning)
-        last_index = df_raw[df_raw.Frame == max_frame].index[-1]
+        last_index = df_raw[df_raw.frame == max_frame].index[-1]
         df_cropped = df_raw.loc[:last_index, :]
-        df_cropped = df_cropped.set_index(['Frame', 'Part'])
+        df_cropped = df_cropped.set_index(['frame', 'part'])
 
         # Skip first three columns
         # (these are the coordinates of the confidence position)

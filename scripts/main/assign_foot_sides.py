@@ -21,7 +21,7 @@ def main():
     running_path = join('data', 'kinect', 'running', 'trials_to_run.csv')
     trials_to_run = pd.read_csv(running_path, header=None, squeeze=True).values
 
-    for trial_name in trials_to_run[:3]:
+    for trial_name in trials_to_run:
 
         df_selected = pd.read_pickle(join(load_dir, trial_name + '.pkl'))
 

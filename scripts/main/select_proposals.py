@@ -49,11 +49,11 @@ def main():
                                 'trials_to_run.csv')
     trials_to_run = pd.read_csv(running_path, header=None, squeeze=True).values
 
-    for file_name in trials_to_run[:2]:
+    for trial_name in trials_to_run:
 
-        lengths = df_length.loc[file_name]  # Read estimated lengths for trial
+        lengths = df_length.loc[trial_name]  # Read estimated lengths for trial
 
-        file_path = os.path.join(load_dir, file_name + '.pkl')
+        file_path = os.path.join(load_dir, trial_name + '.pkl')
 
         # Position hypotheses (joint proposals)
         df_hypo = pd.read_pickle(file_path)
@@ -99,10 +99,10 @@ def main():
         # Combine into new DataFrame
         df_head_feet = pd.concat([head_pos, foot_pos_1, foot_pos_2], axis=1)
         df_head_feet.columns = ['HEAD', 'L_FOOT', 'R_FOOT']
-        df_head_feet.index.name = 'Frame'
+        df_head_feet.index.name = 'frame'
 
         # Save data
-        save_path = os.path.join(save_dir, file_name) + '.pkl'
+        save_path = os.path.join(save_dir, trial_name) + '.pkl'
         df_head_feet.to_pickle(save_path)
 
         trials_run += 1
@@ -117,9 +117,9 @@ def main():
     Number of trials: {}\n
     Number of frames: {}\n
     Total time: {}\n
-    Frames per second: {}""".format(
-        trials_run, frames_run, np.round(time_elapsed, 2),
-        frames_per_second))
+    Frames per second: {}""".format(trials_run, frames_run,
+                                    np.round(time_elapsed, 2),
+                                    frames_per_second))
 
 
 if __name__ == '__main__':

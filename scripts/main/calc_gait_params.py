@@ -13,7 +13,7 @@ def main():
 
     df_match = pd.read_csv(join('data', 'matching', 'match_kinect_zeno.csv'))
 
-    for trial_name in df_match.kinect.iloc[:1]:
+    for trial_name in df_match.kinect:
 
         df_assigned = pd.read_pickle(
             join(kinect_dir, 'assigned', trial_name + '.pkl'))
