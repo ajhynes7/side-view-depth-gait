@@ -1,5 +1,7 @@
 """Run all results scripts."""
 
+import matplotlib.pyplot as plt
+
 from scripts.results import (plot_labels, plot_results, process_ground_truth,
                              process_trials, table_bland, table_length_compare,
                              table_lengths, table_pose)
@@ -7,11 +9,15 @@ from scripts.results import (plot_labels, plot_results, process_ground_truth,
 
 def main():
 
+    # Customize font
+    plt.rc('text', usetex=True)
+    font = {'family': 'serif', 'weight': 'bold', 'size': 14}
+    plt.rc('font', **font)
+
     process_trials.main()
     process_ground_truth.main()
 
     plot_results.main()
-    plot_labels.main()
 
     table_bland.main()
     table_lengths.main()
