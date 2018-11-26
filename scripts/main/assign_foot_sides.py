@@ -13,13 +13,15 @@ import modules.numpy_funcs as nf
 def main():
 
     load_dir = join('data', 'kinect', 'best_pos')
-    save_dir = join('data', 'kinect', 'assigned')
+
+    assigned_dir = join('data', 'kinect', 'assigned')
+    direction_dir = join('data', 'kinect', 'direction')
 
     # List of trials to run
     running_path = join('data', 'kinect', 'running', 'trials_to_run.csv')
     trials_to_run = pd.read_csv(running_path, header=None, squeeze=True).values
 
-    for trial_name in trials_to_run[:2]:
+    for trial_name in trials_to_run[:3]:
 
         df_selected = pd.read_pickle(join(load_dir, trial_name + '.pkl'))
 
@@ -50,18 +52,26 @@ def main():
         # %% Assign sides to each walking pass and combine passses
 
         dict_passes = {}
+        pass_directions = []
 
         for i, df_pass in enumerate(pass_dfs_2d):
             _, direction_pass = asi.direction_of_pass(df_pass)
 
+            pass_directions.append(direction_pass)
+
+            df_pass_assigned = asi.assign_sides_pass(df_pass, direction_pass)
+
             # Assign correct sides to feet
-            dict_passes[i] = asi.assign_sides_pass(df_pass, direction_pass)
+            dict_passes[i] = df_pass_assigned
 
         df_assigned = pd.concat(dict_passes)
         df_assigned.index = df_assigned.index.set_names('pass', level=0)
 
-        save_path = join(save_dir, trial_name + '.pkl')
-        df_assigned.to_pickle(save_path)
+        direction_series = pd.Series(pass_directions)
+        direction_series.index.name = 'pass'
+
+        df_assigned.to_pickle(join(assigned_dir, trial_name + '.pkl'))
+        direction_series.to_pickle(join(direction_dir, trial_name + '.pkl'))
 
 
 if __name__ == '__main__':
