@@ -1,7 +1,6 @@
 """Estimate lengths of the body for each trial."""
 
-import glob
-import os
+from os.path import join
 import time
 
 import numpy as np
@@ -10,73 +9,51 @@ from scipy.spatial.distance import cdist
 
 import modules.iterable_funcs as itf
 import modules.pose_estimation as pe
-import modules.string_funcs as sf
-
-
-def cost_func(a, b):
-    """Cost function for weighting edges of graph."""
-    return (a - b)**2
 
 
 def main():
 
-    lower_part_types = [
-        'HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG', 'FOOT'
-    ]
+    kinect_dir = join('data', 'kinect')
+    hypo_dir = join(kinect_dir, 'processed', 'hypothesis')
 
-    load_dir = os.path.join('data', 'kinect', 'processed', 'hypothesis')
-    save_dir = os.path.join('data', 'kinect', 'lengths')
+    # List of trials to run
+    running_path = join('data', 'kinect', 'running', 'trials_to_run.csv')
+    trials_to_run = pd.read_csv(running_path, header=None, squeeze=True).values
 
-    save_name = 'kinect_lengths.csv'
+    # Read first DataFrame with position hypotheses to get number of lengths
+    df_hypo = pd.read_pickle(join(hypo_dir, trials_to_run[0] + '.pkl'))
 
-    file_paths = glob.glob(os.path.join(load_dir, '*.pkl'))
-    file_names = [os.path.splitext(os.path.basename(x))[0] for x in file_paths]
+    n_part_types = df_hypo.shape[1]
+    n_lengths = n_part_types - 1
+
+    part_labels = range(n_part_types)
 
     df_lengths = pd.DataFrame(
-        index=file_names, columns=range(len(lower_part_types) - 1))
-    df_lengths.index.name = 'file_name'
+        index=trials_to_run, columns=range(n_lengths))
+    df_lengths.index.name = 'trial_name'
 
     t = time.time()
     trials_run, frames_run = 0, 0
 
-    n_lengths = len(lower_part_types) - 1
-
     # %% Calculate lengths for each walking trial
 
-    # List of trials to run
-    running_path = os.path.join('data', 'kinect', 'running',
-                                'trials_to_run.csv')
-    trials_to_run = pd.read_csv(running_path, header=None, squeeze=True).values
+    for trial_name in trials_to_run:
 
-    # Pairs of consecutive body part indices
-    index_pairs = list(itf.pairwise(range(len(lower_part_types))))
+        file_path = join(kinect_dir, 'processed', 'hypothesis',
+                         trial_name + '.pkl')
+        df_hypo = pd.read_pickle(file_path).dropna()
 
-    for file_name in trials_to_run:
-
-        file_path = os.path.join(load_dir, file_name + '.pkl')
-
-        df = pd.read_pickle(file_path)
-
-        # Select frames with data
-        string_index, part_labels = sf.strings_with_any_substrings(
-            df.columns, lower_part_types)
-
-        lower_parts = df.columns[string_index]
-
-        df_lower = df[lower_parts].dropna(axis=0)
-        n_frames = df_lower.shape[0]
-
-        trials_run += 1
-        frames_run += n_frames
-
+        n_frames = df_hypo.shape[0]
         trial_lengths = np.zeros((n_frames, n_lengths))
 
-        for i, (_, frame_series) in enumerate(df_lower.iterrows()):
+        for i in range(n_frames):
+
+            frame_series = df_hypo.iloc[i]
 
             population, labels = pe.get_population(frame_series, part_labels)
             dist_matrix = cdist(population, population)
 
-            for idx_a, idx_b in index_pairs:
+            for idx_a, idx_b in itf.pairwise(part_labels):
 
                 pair_distances = dist_matrix[labels == idx_a][:, labels ==
                                                               idx_b]
@@ -84,10 +61,12 @@ def main():
                 trial_lengths[i, idx_a] = np.percentile(pair_distances, 25)
 
         # Fill in row of lengths DataFrame
-        df_lengths.loc[file_name] = np.median(trial_lengths, axis=0)
+        df_lengths.loc[trial_name] = np.median(trial_lengths, axis=0)
 
-    save_path = os.path.join(save_dir, save_name)
-    df_lengths.to_csv(save_path)
+        trials_run += 1
+        frames_run += n_frames
+
+    df_lengths.to_csv(join(kinect_dir, 'lengths', 'kinect_lengths.csv'))
 
     # %% Calculate run-time metrics
 
@@ -98,9 +77,8 @@ def main():
     Number of trials: {}\n
     Number of frames: {}\n
     Total time: {}\n
-    Frames per second: {}""".format(
-        trials_run, frames_run, round(time_elapsed, 2),
-        frames_per_second))
+    Frames per second: {}""".format(trials_run, frames_run,
+                                    round(time_elapsed, 2), frames_per_second))
 
 
 if __name__ == '__main__':
