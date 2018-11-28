@@ -28,8 +28,7 @@ def main():
 
     part_labels = range(n_part_types)
 
-    df_lengths = pd.DataFrame(
-        index=trials_to_run, columns=range(n_lengths))
+    df_lengths = pd.DataFrame(index=trials_to_run, columns=range(n_lengths))
     df_lengths.index.name = 'trial_name'
 
     t = time.time()
@@ -41,10 +40,15 @@ def main():
 
         file_path = join(kinect_dir, 'processed', 'hypothesis',
                          trial_name + '.pkl')
+
+        # Position hypotheses on each frame
         df_hypo = pd.read_pickle(file_path).dropna()
 
+        # Drop frames missing any of the body part types
+        df_hypo = df_hypo.dropna()
         n_frames = df_hypo.shape[0]
-        trial_lengths = np.zeros((n_frames, n_lengths))
+
+        lengths_estimated = [np.array([]) for _ in range(n_lengths)]
 
         for i in range(n_frames):
 
@@ -58,10 +62,11 @@ def main():
                 pair_distances = dist_matrix[labels == idx_a][:, labels ==
                                                               idx_b]
 
-                trial_lengths[i, idx_a] = np.percentile(pair_distances, 25)
+                lengths_estimated[idx_a] = np.append(lengths_estimated[idx_a],
+                                                     pair_distances)
 
-        # Fill in row of lengths DataFrame
-        df_lengths.loc[trial_name] = np.median(trial_lengths, axis=0)
+        trial_lengths = [np.percentile(x, 25) for x in lengths_estimated]
+        df_lengths.loc[trial_name] = trial_lengths
 
         trials_run += 1
         frames_run += n_frames
