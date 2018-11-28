@@ -46,20 +46,6 @@ def main():
     population = np.vstack([population, [-20, 0, 0]])
     labels = np.append(labels, max(labels))
 
-    # %% Plot population
-
-    fig = plt.figure()
-
-    pl.scatter_labels(population, labels, edgecolor='k')
-
-    plt.legend(part_types)
-    plt.xlim((-150, 0))
-    plt.xlabel('X')
-    plt.ylabel('Y', rotation=0)
-
-    save_path = os.path.join('figures', 'joint_proposals.pdf')
-    fig.savefig(save_path, dpi=1200)
-
     # %% Calculate paths
 
     label_adj_list = pe.lengths_to_adj_list(part_connections, lengths)
