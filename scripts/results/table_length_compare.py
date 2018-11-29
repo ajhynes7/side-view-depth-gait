@@ -63,3 +63,7 @@ def main():
     with open(save_path, 'w') as file:
 
         file.write(np.round(df_final, 2).to_latex())
+
+
+if __name__ == '__main__':
+    main()
