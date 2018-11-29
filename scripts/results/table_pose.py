@@ -45,78 +45,58 @@ def main():
     index_intersect = df_truth.index.intersection(df_selected.index)
 
     df_truth = df_truth.loc[index_intersect]
+    df_hypo = df_hypo.loc[index_intersect]
     df_selected = df_selected.loc[index_intersect]
     df_assigned = df_assigned.loc[index_intersect]
-    frames = df_truth.index
 
-    # %% Create modified truth
+    # %% Obtain numpy arrays from dataframes
 
-    df_truth_modified = pd.DataFrame(index=frames, columns=foot_parts)
+    proposals = df_hypo.FOOT.values
 
-    for frame in frames:
+    truth_l = np.stack(df_truth.L_FOOT)
+    truth_r = np.stack(df_truth.R_FOOT)
 
-        foot_proposals = df_hypo.loc[frame, 'FOOT']
-        true_foot_l, true_foot_r = df_truth.loc[frame, foot_parts]
+    selected_l = np.stack(df_selected.L_FOOT)
+    selected_r = np.stack(df_selected.R_FOOT)
 
-        proposal_closest_l, _ = pp.closest_point(foot_proposals,
-                                                 true_foot_l.reshape(1, -1))
-        proposal_closest_r, _ = pp.closest_point(foot_proposals,
-                                                 true_foot_r.reshape(1, -1))
+    assigned_l = np.stack(df_assigned.L_FOOT)
+    assigned_r = np.stack(df_assigned.R_FOOT)
 
-        df_truth_modified.loc[frame, foot_parts[0]] = proposal_closest_l
-        df_truth_modified.loc[frame, foot_parts[1]] = proposal_closest_r
+    # Match selected positions with truth
+    matched_l, matched_r = pp.match_pairs(selected_l, selected_r, truth_l,
+                                          truth_r)
 
-    # %% Match selected foot positions to truth
+    # Create modified truth
+    truth_mod_l = pp.closest_proposals(proposals, np.stack(df_truth.L_FOOT))
+    truth_mod_r = pp.closest_proposals(proposals, np.stack(df_truth.R_FOOT))
 
-    df_selected_matched = pd.DataFrame(index=frames, columns=foot_parts)
+    # %% Convert points to 2D (since side assignment is in 2D)
 
-    for frame in frames:
+    truth_2d_l = truth_l[:, [2, 0]]
+    truth_2d_r = truth_r[:, [2, 0]]
 
-        points_selected = np.stack(df_selected.loc[frame][foot_parts])
-        points_truth = np.stack(df_truth_modified.loc[frame])
+    truth_mod_2d_l = truth_mod_l[:, [2, 0]]
+    truth_mod_2d_r = truth_mod_r[:, [2, 0]]
 
-        matched_l, matched_r = pp.correspond_points(points_truth,
-                                                    points_selected)
+    # %% Calculate accuracies
 
-        df_selected_matched.loc[frame, foot_parts[0]] = matched_l
-        df_selected_matched.loc[frame, foot_parts[1]] = matched_r
+    acc_matched_l = pp.position_accuracy(matched_l, truth_l)
+    acc_matched_r = pp.position_accuracy(matched_r, truth_r)
 
-    # %% Accuracies of foot positions matched to truth
+    acc_matched_mod_l = pp.position_accuracy(matched_l, truth_mod_l)
+    acc_matched_mod_r = pp.position_accuracy(matched_r, truth_mod_r)
 
-    acc_matched_l = pp.position_accuracy(
-        np.stack(df_selected_matched.L_FOOT), np.stack(df_truth.L_FOOT))
-    acc_matched_r = pp.position_accuracy(
-        np.stack(df_selected_matched.R_FOOT), np.stack(df_truth.R_FOOT))
+    acc_assigned_l = pp.position_accuracy(assigned_l, truth_2d_l)
+    acc_assigned_r = pp.position_accuracy(assigned_r, truth_2d_r)
 
-    acc_matched_mod_l = pp.position_accuracy(
-        np.stack(df_selected_matched.L_FOOT),
-        np.stack(df_truth_modified.L_FOOT))
-    acc_matched_mod_r = pp.position_accuracy(
-        np.stack(df_selected_matched.R_FOOT),
-        np.stack(df_truth_modified.R_FOOT))
+    acc_assigned_mod_l = pp.position_accuracy(assigned_l, truth_mod_2d_l)
+    acc_assigned_mod_r = pp.position_accuracy(assigned_r, truth_mod_2d_r)
 
     df_acc_matched = pd.DataFrame(
         index=['Left', 'Right'],
         columns=['Truth', 'Modified'],
         data=[[acc_matched_l, acc_matched_mod_l],
               [acc_matched_r, acc_matched_mod_r]])
-
-    # %% Accuracies of foot positions after assigning sides
-
-    # Convert points to 2D (the sides are assigned to 2D foot points)
-    df_truth_2d = df_truth.applymap(lambda point: point[[2, 0]])
-    df_truth_modified_2d = df_truth_modified.applymap(
-        lambda point: point[[2, 0]])
-
-    acc_assigned_l = pp.position_accuracy(
-        np.stack(df_assigned.L_FOOT), np.stack(df_truth_2d.L_FOOT))
-    acc_assigned_r = pp.position_accuracy(
-        np.stack(df_assigned.R_FOOT), np.stack(df_truth_2d.R_FOOT))
-
-    acc_assigned_mod_l = pp.position_accuracy(
-        np.stack(df_assigned.L_FOOT), np.stack(df_truth_modified_2d.L_FOOT))
-    acc_assigned_mod_r = pp.position_accuracy(
-        np.stack(df_assigned.R_FOOT), np.stack(df_truth_modified_2d.R_FOOT))
 
     df_acc_assigned = pd.DataFrame(
         index=['Left', 'Right'],
