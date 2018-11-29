@@ -1,100 +1,131 @@
 """Compute metrics for pose estimation."""
 
-from itertools import combinations
 from os.path import join
 
 import numpy as np
 import pandas as pd
 
-from numpy.linalg import norm
-
 import modules.point_processing as pp
+
+
+def combine_dataframes(load_dir, trial_names):
+    """Combine dataframes from different walking trials."""
+    dataframe_dict = {}
+
+    for trial_name in trial_names:
+        dataframe_dict[trial_name] = pd.read_pickle(
+            join(load_dir, trial_name) + '.pkl')
+
+    return pd.concat(dataframe_dict)
 
 
 def main():
 
-    trial_name = '2014-12-03_P005_Post_002'
-    # trial_name = '2014-12-03_P007_Post_000'
+    kinect_dir = join('data', 'kinect')
 
-    best_pos_dir = join('data', 'kinect', 'best_pos')
-    hypo_dir = join('data', 'kinect', 'processed', 'hypothesis')
+    df_truth = pd.read_pickle('results/dataframes/df_truth.pkl')
+    trial_names = df_truth.index.get_level_values(0).unique().values
 
-    # Max distance for accuracy calculation
-    max_dist = 10
+    df_hypo = combine_dataframes(
+        join(kinect_dir, 'processed', 'hypothesis'), trial_names)
+    df_selected = combine_dataframes(join(kinect_dir, 'best_pos'), trial_names)
+    df_assigned = combine_dataframes(join(kinect_dir, 'assigned'), trial_names)
 
-    df_truth = pd.read_pickle(join('results', 'dataframes', 'df_truth.pkl'))
+    foot_parts = ['L_FOOT', 'R_FOOT']
 
-    # Selected head and foot positions in trial
-    df_selected = pd.read_pickle(join(best_pos_dir, trial_name) + '.pkl')
+    # Truth positions on frames with head and both feet
+    df_truth = df_truth.loc[:, ['HEAD'] + foot_parts].dropna()
 
-    # True head and foot positions in trial
-    df_truth_trial = df_truth.loc[trial_name][df_selected.columns]
+    # Drop index level for walking pass
+    # This gives it the same index as the other dataframes
+    df_assigned.index = df_assigned.index.droplevel(1)
 
-    # Position hypotheses (joint proposals)
-    df_hypo = pd.read_pickle(join(hypo_dir, trial_name) + '.pkl')
+    # %% Take frames with truth and selected positions
 
-    df_compare = pd.concat(
-        {
-            'Selected': df_selected,
-            'Truth': df_truth_trial,
-            'Hypotheses': df_hypo,
-        },
-        axis=1).dropna()
+    index_intersect = df_truth.index.intersection(df_selected.index)
 
-    image_frames = df_compare.index.values
+    df_truth = df_truth.loc[index_intersect]
+    df_selected = df_selected.loc[index_intersect]
+    df_assigned = df_assigned.loc[index_intersect]
+    frames = df_truth.index
 
-    # %% Compute modified truth (best pair of hypotheses)
+    # %% Create modified truth
 
-    df_truth_modified = pd.DataFrame(
-        index=image_frames, columns=['L_FOOT', 'R_FOOT'])
+    df_truth_modified = pd.DataFrame(index=frames, columns=foot_parts)
 
-    for frame, points_hypo in df_compare.Hypotheses.FOOT.items():
+    for frame in frames:
 
-        truth_points = np.stack(
-            df_compare.Truth.loc[frame][['L_FOOT', 'R_FOOT']])
-        pairs = list(combinations(points_hypo, 2))
+        foot_proposals = df_hypo.loc[frame, 'FOOT']
+        true_foot_l, true_foot_r = df_truth.loc[frame, foot_parts]
 
-        costs = np.zeros(len(pairs))
-        pairs_assigned = []
+        proposal_closest_l, _ = pp.closest_point(foot_proposals,
+                                                 true_foot_l.reshape(1, -1))
+        proposal_closest_r, _ = pp.closest_point(foot_proposals,
+                                                 true_foot_r.reshape(1, -1))
 
-        for i, pair in enumerate(pairs):
+        df_truth_modified.loc[frame, foot_parts[0]] = proposal_closest_l
+        df_truth_modified.loc[frame, foot_parts[1]] = proposal_closest_r
 
-            # Assign points in pair to the two truth points
-            pair_assigned = pp.correspond_points(truth_points, pair)
+    # %% Match selected foot positions to truth
 
-            pairs_assigned.append(pair_assigned)
+    df_selected_matched = pd.DataFrame(index=frames, columns=foot_parts)
 
-            costs[i] = norm(pair_assigned - truth_points, axis=1).sum()
+    for frame in frames:
 
-        best_pair = pairs_assigned[np.argmin(costs)]
+        points_selected = np.stack(df_selected.loc[frame][foot_parts])
+        points_truth = np.stack(df_truth_modified.loc[frame])
 
-        df_truth_modified.loc[frame]['L_FOOT'] = best_pair[0]
-        df_truth_modified.loc[frame]['R_FOOT'] = best_pair[1]
+        matched_l, matched_r = pp.correspond_points(points_truth,
+                                                    points_selected)
 
-    # %% Calculate accuracy
+        df_selected_matched.loc[frame, foot_parts[0]] = matched_l
+        df_selected_matched.loc[frame, foot_parts[1]] = matched_r
 
-    within_dist = pd.Series(index=image_frames)
-    error_list = []
+    # %% Accuracies of foot positions matched to truth
 
-    for frame, row in df_compare.iterrows():
+    acc_matched_l = pp.position_accuracy(
+        np.stack(df_selected_matched.L_FOOT), np.stack(df_truth.L_FOOT))
+    acc_matched_r = pp.position_accuracy(
+        np.stack(df_selected_matched.R_FOOT), np.stack(df_truth.R_FOOT))
 
-        selected_l, selected_r = row.Selected[['L_FOOT', 'R_FOOT']]
-        true_l, true_r = df_truth_trial.loc[frame][['L_FOOT', 'R_FOOT']]
+    acc_matched_mod_l = pp.position_accuracy(
+        np.stack(df_selected_matched.L_FOOT),
+        np.stack(df_truth_modified.L_FOOT))
+    acc_matched_mod_r = pp.position_accuracy(
+        np.stack(df_selected_matched.R_FOOT),
+        np.stack(df_truth_modified.R_FOOT))
 
-        points_selected = np.stack((selected_l, selected_r))
-        points_true = np.stack((true_l, true_r))
+    df_acc_matched = pd.DataFrame(
+        index=['Left', 'Right'],
+        columns=['Truth', 'Modified'],
+        data=[[acc_matched_l, acc_matched_mod_l],
+              [acc_matched_r, acc_matched_mod_r]])
 
-        points_assigned = pp.correspond_points(points_true, points_selected)
-        dists = norm(points_assigned - points_true, axis=1)
+    # %% Accuracies of foot positions after assigning sides
 
-        within_dist.loc[frame] = np.all(dists < max_dist)
-        error_list.append(np.sum(dists))
+    # Convert points to 2D (the sides are assigned to 2D foot points)
+    df_truth_2d = df_truth.applymap(lambda point: point[[2, 0]])
+    df_truth_modified_2d = df_truth_modified.applymap(
+        lambda point: point[[2, 0]])
 
-    accuracy = within_dist.value_counts(normalize=True)[True]
+    acc_assigned_l = pp.position_accuracy(
+        np.stack(df_assigned.L_FOOT), np.stack(df_truth_2d.L_FOOT))
+    acc_assigned_r = pp.position_accuracy(
+        np.stack(df_assigned.R_FOOT), np.stack(df_truth_2d.R_FOOT))
 
-    print("""
-    Error: {}\n
-    Accuracy: {}""".format(np.mean(error_list), accuracy))
+    acc_assigned_mod_l = pp.position_accuracy(
+        np.stack(df_assigned.L_FOOT), np.stack(df_truth_modified_2d.L_FOOT))
+    acc_assigned_mod_r = pp.position_accuracy(
+        np.stack(df_assigned.R_FOOT), np.stack(df_truth_modified_2d.R_FOOT))
+
+    df_acc_assigned = pd.DataFrame(
+        index=['Left', 'Right'],
+        columns=['Truth', 'Modified'],
+        data=[[acc_assigned_l, acc_assigned_mod_l],
+              [acc_assigned_r, acc_assigned_mod_r]])
+
+    print(df_acc_matched)
+    print(df_acc_assigned)
 
 
 if __name__ == '__main__':
