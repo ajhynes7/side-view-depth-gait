@@ -22,7 +22,6 @@ def main():
     df_lengths = pd.read_csv(
         os.path.join('data', 'kinect', 'lengths', 'kinect_lengths.csv'),
         index_col=0)
-    df_lengths.columns = range(len(df_lengths.columns))
 
     parts_l = ['HEAD'] + [x for x in part_names if x[0] == 'L']
     parts_r = ['HEAD'] + [x for x in part_names if x[0] == 'R']
@@ -31,8 +30,8 @@ def main():
 
     for i, trial_name in enumerate(trial_names):
 
-        df_truth_l = df_truth.loc[:, parts_l]
-        df_truth_r = df_truth.loc[:, parts_r]
+        df_truth_l = df_truth.loc[:, parts_l].dropna()
+        df_truth_r = df_truth.loc[:, parts_r].dropna()
 
         lengths_l = df_truth_l.apply(
             lambda row: pp.consecutive_dist(np.stack(row)), axis=1)
@@ -50,8 +49,7 @@ def main():
         })
 
         df_length_compare['Relative Error'] = df_length_compare.apply(
-            lambda row: st.relative_error(row['Estimated'],
-                                          row['Ground Truth']),
+            lambda row: st.relative_error(row['Estimated'], row['Ground Truth']),
             axis=1)
 
         dict_lengths[i + 1] = df_length_compare

@@ -26,10 +26,6 @@ def main():
     label_paths = sorted(glob.glob(os.path.join(label_dir, '*.png')))
     depth_paths = sorted(glob.glob(os.path.join(depth_dir, '*.png')))
 
-    # Camera calibration parameters
-    x_res, y_res = 565, 430
-    f_xz, f_yz = 1.11146664619446, 0.833599984645844
-
     df_truth = pd.read_pickle(
         os.path.join('results', 'dataframes', 'df_truth.pkl'))
 
@@ -41,8 +37,8 @@ def main():
     depth_image = cv2.imread(depth_path, cv2.IMREAD_ANYDEPTH)
 
     points_real = np.stack(df_truth.loc[trial_name, frame])
-    points_image = np.apply_along_axis(im.real_to_image, 1, points_real, x_res,
-                                       y_res, f_xz, f_yz)
+    points_image = np.apply_along_axis(im.real_to_image, 1, points_real,
+                                       im.X_RES, im.Y_RES, im.F_XZ, im.F_YZ)
 
     # Label image
     fig = plt.figure()

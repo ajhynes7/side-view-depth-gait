@@ -91,15 +91,80 @@ def real_to_image(point_real, x_res, y_res, f_xz, f_yz):
     return point_image
 
 
-def recalibrate_positions(positions_real_old, x_res_old, y_res_old, x_res,
+def rgb_to_label(image_rgb, rgb_vectors):
+    """
+    Convert an RGB image to a label image.
+
+    Parameters
+    ----------
+    image_rgb : ndarray
+        (n_rows, n_cols, 3) image
+    rgb_vectors : array_like
+        Each element is a [R, G, B] vector.
+
+    Returns
+    -------
+    label_image
+        (n_rows, n_cols) image.
+        2D label image.
+
+    """
+    label_image = np.zeros(image_rgb.shape[:-1])
+
+    for i, rgb_vector in enumerate(rgb_vectors):
+
+        mask = np.all(image_rgb == rgb_vector, axis=-1)
+        label_image[mask] = i + 1
+
+    return label_image
+
+
+def recalibrate_positions(positions_real_orig, x_res_orig, y_res_orig, x_res,
                           y_res, f_xz, f_yz):
+    """
+    Change real world coordinates using new camera calibration parameters.
 
-    positions_real = np.full(positions_real_old.shape, np.nan)
+    Parameters
+    ----------
+    positions_real_orig : ndarray
+        Original positions in real world coordinates.
+    x_res_orig, y_res_orig : int
+        Original image resolutions.
+    x_res, y_res : int
+        New image resolutions.
+    f_xz, f_yz : int
+        Focal parameters.
 
-    for i, pos_real_old in enumerate(positions_real_old):
+    Returns
+    -------
+    positions_real : ndarray
+        Positions in new real world coordinates.
 
-        pos_image = real_to_image(pos_real_old, x_res_old, y_res_old, f_xz,
-                                  f_yz)
+    """
+    positions_real = np.full(positions_real_orig.shape, np.nan)
+
+    for i, pos_real_orig in enumerate(positions_real_orig):
+
+        pos_image = real_to_image(
+            pos_real_orig, x_res_orig, y_res_orig, f_xz, f_yz)
         positions_real[i] = image_to_real(pos_image, x_res, y_res, f_xz, f_yz)
 
     return positions_real
+
+
+# Camera calibration parameters.
+
+# While the depth image files are 640 x 480, there is a large border in the
+# image, resulting in a smaller real resolution.
+# This needs to be taken into account when converting between
+# image coordinates and real world coordinates.
+
+# Original resolutions of depth images
+X_RES_ORIG, Y_RES_ORIG = 640, 480
+
+# Estimates of actual resolutions
+X_RES, Y_RES = 565, 430
+
+# Coefficients used to convert between image and real coordinates
+# calculated for the Kinect v1
+F_XZ, F_YZ = 1.11146664619446, 0.833599984645844

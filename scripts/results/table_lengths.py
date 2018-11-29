@@ -20,7 +20,7 @@ def main():
 
     # Extract date and participant from file name
     pattern = '(?P<date>\d{4}-\d{2}-\d{2})_P(?P<participant>\d{3})'
-    df_regex = df_lengths_matched.file_name.str.extract(pattern)
+    df_regex = df_lengths_matched.trial_name.str.extract(pattern)
     df_expanded = pd.concat((df_lengths_matched, df_regex), axis=1, sort=False)
 
     df_grouped = df_expanded.groupby('participant').agg(['mean', 'std'])

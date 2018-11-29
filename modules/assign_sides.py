@@ -12,6 +12,40 @@ import modules.signals as sig
 import modules.sliding_window as sw
 
 
+def direction_of_pass(df_pass):
+    """
+    Return vector representing overall direction of motion for a walking pass.
+
+    Parameters
+    ----------
+    df_pass : DataFrame
+        Head and foot positions at each frame in a walking pass.
+        Three columns: HEAD, L_FOOT, R_FOOT.
+
+    Returns
+    -------
+    line_point : ndarray
+        Point that lies on line of motion.
+    direction_pass : ndarray
+        Direction of motion for the walking pass.
+
+    """
+    # All head positions on one walking pass
+    head_points = np.stack(df_pass.HEAD)
+
+    # Line of best fit for head positions
+    line_point, line_direction = lin.best_fit_line(head_points)
+
+    vector_start_end = head_points[-1, :] - head_points[0, :]
+
+    direction_pass = line_direction
+    if np.dot(line_direction, vector_start_end) < 0:
+        # The direction of the best fit line should be reversed
+        direction_pass = -line_direction
+
+    return line_point, direction_pass
+
+
 def evaluate_foot_side(foot_points_1, foot_points_2, direction):
     """
     Yield a value indicating the side (left/right) of a foot.
@@ -105,9 +139,9 @@ def assign_sides_pass(df_pass, direction_pass):
     """
     frames = df_pass.index.values
 
-    foot_pos_l = np.stack(df_pass.L_FOOT)
-    foot_pos_r = np.stack(df_pass.R_FOOT)
-    norms = np.apply_along_axis(norm, 1, foot_pos_l - foot_pos_r)
+    foot_points_l = np.stack(df_pass.L_FOOT)
+    foot_points_r = np.stack(df_pass.R_FOOT)
+    norms = norm(foot_points_l - foot_points_r, axis=1)
 
     # Detect peaks in the inverted foot distance signal.
     # These peaks are the frames when the feet are close together.

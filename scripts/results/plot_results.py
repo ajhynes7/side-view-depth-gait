@@ -24,17 +24,6 @@ def main():
     df_trials_k = df_total_k.groupby('trial_id').median()
     df_trials_z = df_total_z.groupby('trial_id').median()
 
-    # %% Plotting
-
-    plt.rc('text', usetex=True)
-
-    font = {
-        'family': 'serif',
-        'weight': 'bold',
-        'size': 14,
-    }
-    plt.rc('font', **font)  # pass in the font dict as kwargs
-
     for param in gait_params:
 
         measures_k, measures_z = df_trials_k[param], df_trials_z[param]

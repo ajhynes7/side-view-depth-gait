@@ -2,9 +2,8 @@
 
 import matplotlib.pyplot as plt
 
-import scripts.figures.body_graph as body_graph
-import scripts.figures.create_figures_code as create_figures_code
-import scripts.figures.spheres as spheres
+from scripts.figures import (body_graph, create_figures_code, joint_proposals,
+                             spheres)
 
 
 def main():
@@ -16,6 +15,7 @@ def main():
 
     # Run scripts to make figures
     body_graph.main()
+    joint_proposals.main()
     spheres.main()
     create_figures_code.main()
 

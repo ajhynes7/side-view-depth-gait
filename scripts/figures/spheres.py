@@ -1,25 +1,14 @@
 """Generate diagram of sphere process to select best feet."""
 
-import os
+from os.path import join
 
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial.distance import cdist
 
-import analysis.math_funcs as mf
 import analysis.plotting as pl
 import modules.pose_estimation as pe
-
-
-def cost_func(a, b):
-    """Cost function for weighting edges of graph."""
-    return (a - b)**2
-
-
-def score_func(a, b):
-    """Score function for scoring links between body parts."""
-    x = 1 / mf.norm_ratio(a, b)
-    return -(x - 1)**2 + 1
+from scripts.main.select_proposals import cost_func, score_func
 
 
 def main():
@@ -31,9 +20,9 @@ def main():
 
     part_types = ['Head', 'Hip', 'Thigh', 'Knee', 'Calf', 'Foot']
 
-    load_dir = os.path.join('data', 'saved_variables')
-    population = np.load(os.path.join(load_dir, 'population.npy'))
-    labels = np.load(os.path.join(load_dir, 'labels.npy'))
+    load_dir = join('data', 'saved_variables')
+    population = np.load(join(load_dir, 'population.npy'))
+    labels = np.load(join(load_dir, 'labels.npy'))
 
     # Remove some points to make the figure clearer
     to_keep = np.concatenate((np.arange(29), [31]))
@@ -45,20 +34,6 @@ def main():
     # Add noisy foot
     population = np.vstack([population, [-20, 0, 0]])
     labels = np.append(labels, max(labels))
-
-    # %% Plot population
-
-    fig = plt.figure()
-
-    pl.scatter_labels(population, labels, edgecolor='k')
-
-    plt.legend(part_types)
-    plt.xlim((-150, 0))
-    plt.xlabel('X')
-    plt.ylabel('Y', rotation=0)
-
-    save_path = os.path.join('figures', 'joint_proposals.pdf')
-    fig.savefig(save_path, dpi=1200)
 
     # %% Calculate paths
 
@@ -79,12 +54,35 @@ def main():
     path_extra = np.append(paths[-1, :-1], n_pop - 1)
     paths = np.vstack([paths, path_extra])
 
+    # %% Plot joint proposals
+
+    fig = plt.figure()
+
+    pl.scatter_labels(population, labels, edgecolor='k', s=50)
+    plt.legend(part_types, loc=[0.45, 0.5], edgecolor='k')
+    plt.axis('equal')
+    plt.axis('off')
+
+    save_path = join('figures', 'sphere_proposals.pdf')
+    fig.savefig(save_path, dpi=1200)
+
+    # %% Plot proposals on shortest paths
+
+    pop_reduced, paths_reduced = pe.reduce_population(population, paths)
+    labels_reduced = labels[np.unique(paths)]
+
+    fig = plt.figure()
+
+    pl.scatter_labels(pop_reduced, labels_reduced, edgecolor='k', s=50)
+    plt.axis('equal')
+    plt.axis('off')
+
+    save_path = join('figures', 'sphere_proposals_reduced.pdf')
+    fig.savefig(save_path, dpi=1200)
+
     # %% Plot spheres
 
     r = 10
-
-    path_nums = np.unique(paths)
-    pop_reduced, paths_reduced = pe.reduce_population(population, paths)
 
     n_pop_reduced = pop_reduced.shape[0]
     path_vectors = pe.get_path_vectors(paths_reduced, n_pop_reduced)
@@ -106,16 +104,16 @@ def main():
         inside_spheres = pe.in_spheres(within_radius, has_sphere)
         pl.plot_links(pop_reduced, score_matrix, inside_spheres)
 
-        pl.scatter2(pop_reduced, c='k', zorder=5)
+        pl.scatter_labels(
+            pop_reduced, labels_reduced, s=50, edgecolor='k', zorder=5)
 
         has_sphere = np.any(path_vectors[pairs[i]], 0)
-
         pl.plot_spheres(pop_reduced[has_sphere], r, ax)
 
         plt.axis('equal')
         plt.axis('off')
 
-        save_path = os.path.join('figures', 'spheres_{}.pdf')
+        save_path = join('figures', 'spheres_{}.pdf')
         fig.savefig(save_path.format(i), dpi=1200)
 
 

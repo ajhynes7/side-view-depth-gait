@@ -23,46 +23,11 @@ import numpy as np
 from numpy.linalg import norm
 import pandas as pd
 
-import modules.assign_sides as asi
 import modules.linear_algebra as lin
 import modules.numpy_funcs as nf
 import modules.pandas_funcs as pf
 import modules.phase_detection as pde
 import modules.sliding_window as sw
-
-
-def direction_of_pass(df_pass):
-    """
-    Return vector representing overall direction of motion for a walking pass.
-
-    Parameters
-    ----------
-    df_pass : DataFrame
-        Head and foot positions at each frame in a walking pass.
-        Three columns: HEAD, L_FOOT, R_FOOT.
-
-    Returns
-    -------
-    line_point : ndarray
-        Point that lies on line of motion.
-    direction_pass : ndarray
-        Direction of motion for the walking pass.
-
-    """
-    # All head positions on one walking pass
-    head_points = np.stack(df_pass.HEAD)
-
-    # Line of best fit for head positions
-    line_point, line_direction = lin.best_fit_line(head_points)
-
-    vector_start_end = head_points[-1, :] - head_points[0, :]
-
-    direction_pass = line_direction
-    if np.dot(line_direction, vector_start_end) < 0:
-        # The direction of the best fit line should be reversed
-        direction_pass = -line_direction
-
-    return line_point, direction_pass
 
 
 def spatial_parameters(pos_a_i, pos_b, pos_a_f):
@@ -291,30 +256,39 @@ def walking_pass_parameters(df_pass, direction_pass):
         return df_pass_parameters
 
 
-def combine_walking_passes(pass_dfs):
+def combine_walking_passes(df_assigned, direction_series):
     """
     Combine gait parameters from all walking passes in a trial.
 
     Parameters
     ----------
-    pass_dfs : list
-        Each element is a df_pass (see module docstring).
+    df_assigned : DataFrame
+        Each row contains head and foot positions
+        after assigning L/R sides to the feet.
+        MultiIndex of form (pass, frame)
+
+    direction_series : Series
+        Row i is the direction vector of walking pass i.
 
     Returns
     -------
-    df_final : DataFrame
+    df_trial : DataFrame
         Each row represents a single stride.
         There can be multiple strides in a walking pass.
         Columns are gait parameters for left/right sides.
 
     """
-    list_dfs = []
-    for i, df_pass in enumerate(pass_dfs):
+    # List of DataFrames with gait parameters
+    param_dfs = []
 
-        _, direction_pass = direction_of_pass(df_pass)
+    n_passes = direction_series.size
 
-        # Assign correct sides to feet
-        df_pass = asi.assign_sides_pass(df_pass, direction_pass)
+    for pass_number in range(n_passes):
+
+        df_assigned_pass = df_assigned.loc[pass_number]
+        direction_pass = direction_series.loc[pass_number]
+
+        df_pass = df_assigned_pass
 
         # Ensure there are no missing frames in the walking pass
         df_pass = pf.make_index_consecutive(df_pass)
@@ -326,10 +300,13 @@ def combine_walking_passes(pass_dfs):
 
         if df_pass_parameters is not None:
             # Add column to record the walking pass
-            df_pass_parameters['pass'] = i
+            df_pass_parameters['pass'] = pass_number
 
-        list_dfs.append(df_pass_parameters)
+        param_dfs.append(df_pass_parameters)
 
-    df_trial = pd.concat(list_dfs, sort=True).reset_index(drop=True)
+    # Gait parameters of full walking trial
+    df_trial = pd.concat(param_dfs, sort=True).reset_index(drop=True)
+
+    df_trial = df_trial.set_index(['pass', 'stride', 'side'])
 
     return df_trial

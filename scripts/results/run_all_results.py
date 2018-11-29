@@ -1,22 +1,28 @@
 """Run all results scripts."""
 
-import scripts.results.bland_table as bland_table
-import scripts.results.combine_trials as combine_trials
-import scripts.results.length_table as length_table
-import scripts.results.plot_results as plot_results
-import scripts.results.process_ground_truth as process_ground_truth
+import matplotlib.pyplot as plt
+
+from scripts.results import (plot_labels, plot_results, process_ground_truth,
+                             process_trials, table_bland, table_length_compare,
+                             table_lengths, table_pose)
 
 
 def main():
 
-    # Save dataframes
-    combine_trials.main()
+    # Customize font
+    plt.rc('text', usetex=True)
+    font = {'family': 'serif', 'weight': 'bold', 'size': 14}
+    plt.rc('font', **font)
+
+    process_trials.main()
     process_ground_truth.main()
 
     plot_results.main()
 
-    bland_table.main()
-    length_table.main()
+    table_bland.main()
+    table_lengths.main()
+    table_length_compare.main()
+    table_pose.main()
 
 
 if __name__ == '__main__':

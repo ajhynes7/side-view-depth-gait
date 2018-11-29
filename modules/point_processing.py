@@ -61,7 +61,7 @@ def consecutive_dist(points):
     """
     differences = np.diff(points, axis=0)
 
-    return np.apply_along_axis(norm, 1, differences)
+    return norm(differences, axis=1)
 
 
 def correspond_points(points_prev, points_curr):
@@ -173,3 +173,80 @@ def track_two_objects(points_1, points_2):
     points_assigned_2 = np.stack(point_list_2)
 
     return points_assigned_1, points_assigned_2
+
+
+def closest_point(points, target):
+    """
+    Select the closest point to a target from a set of points.
+
+    Parameters
+    ----------
+    points : ndarray
+        Points in space. Each row is a position vector.
+    target : ndarray
+        Target position.
+
+    Returns
+    -------
+    point_closest : ndarray
+        The closest point to the target.
+    index_closest : int
+        Index of the closest point.
+
+    Examples
+    --------
+    >>> points = np.array([[1, 2], [2, 3], [10, 11]])
+    >>> target = np.array([10, 10])
+    >>> point_closest, index = closest_point(points, target)
+
+    >>> point_closest
+    array([10, 11])
+
+    >>> index
+    2
+
+    """
+    distances = norm(points - target, axis=1)
+
+    index_closest = np.argmin(distances)
+    point_closest = points[index_closest]
+
+    return point_closest, index_closest
+
+
+def position_accuracy(points, targets, max_dist=10):
+    """
+    Calculate ratio of points within a distance from corresponding targets.
+
+    Parameters
+    ----------
+    points : ndarray
+        (n, d) array of n positions of dimension d.
+    targets : ndarray
+        (n, d) array of n target positions of dimension d.
+    max_dist : {int, float}
+        Maximum distance that a point can be from its target to be counted.
+
+    Returns
+    -------
+    float
+        Ratio of points within the max distance from their targets.
+
+    Examples
+    --------
+    >>> points = np.array([[1, 2], [2, 3], [10, 11], [15, -2]])
+    >>> targets = np.array([[1, 3], [10, 3], [12, 13], [14, -3]])
+
+    >>> position_accuracy(points, targets, max_dist=0)
+    0.0
+
+    >>> position_accuracy(points, targets, max_dist=5)
+    0.75
+
+    >>> position_accuracy(points, targets, max_dist=10)
+    1.0
+
+    """
+    distances = norm(points - targets, axis=1)
+
+    return np.mean(distances <= max_dist)

@@ -1,4 +1,4 @@
-"""Select the best body part positions from multiple hypotheses."""
+"""Select the best body part positions from multiple joint proposals."""
 
 import os
 import time
@@ -8,7 +8,6 @@ import pandas as pd
 
 import analysis.math_funcs as mf
 import modules.pose_estimation as pe
-import modules.string_funcs as sf
 
 
 def cost_func(a, b):
@@ -24,14 +23,12 @@ def score_func(a, b):
 
 def main():
 
-    lower_part_types = [
-        'HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG', 'FOOT'
-    ]
-
     radii = [i for i in range(5, 30, 5)]
 
     part_connections = np.array([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5],
                                  [3, 5], [1, 3]])
+
+    part_labels = range(part_connections.max() + 1)
 
     # Reading data
     load_dir = os.path.join('data', 'kinect', 'processed', 'hypothesis')
@@ -52,29 +49,22 @@ def main():
                                 'trials_to_run.csv')
     trials_to_run = pd.read_csv(running_path, header=None, squeeze=True).values
 
-    for file_name in trials_to_run:
+    for trial_name in trials_to_run:
 
-        file_path = os.path.join(load_dir, file_name + '.pkl')
+        lengths = df_length.loc[trial_name]  # Read estimated lengths for trial
 
-        df = pd.read_pickle(file_path)
+        file_path = os.path.join(load_dir, trial_name + '.pkl')
 
-        base_name = os.path.basename(file_path)  # File with extension
-        file_name = os.path.splitext(base_name)[0]  # File with no extension
+        # Position hypotheses (joint proposals)
+        df_hypo = pd.read_pickle(file_path)
 
-        lengths = df_length.loc[file_name]  # Read estimated lengths for trial
+        # Delete rows missing a body part type (head, hip, etc.)
+        df_hypo = df_hypo.dropna()
 
-        # Select frames with data
-        string_index, part_labels = sf.strings_with_any_substrings(
-            df.columns, lower_part_types)
-
-        lower_parts = df.columns[string_index]
-
-        df_lower = df[lower_parts].dropna(axis=0)
-
-        population_series = df_lower.apply(
+        population_series = df_hypo.apply(
             lambda row: pe.get_population(row, part_labels)[0], axis=1)
 
-        label_series = df_lower.apply(
+        label_series = df_hypo.apply(
             lambda row: pe.get_population(row, part_labels)[1], axis=1)
 
         # Expected lengths for all part connections,
@@ -109,10 +99,10 @@ def main():
         # Combine into new DataFrame
         df_head_feet = pd.concat([head_pos, foot_pos_1, foot_pos_2], axis=1)
         df_head_feet.columns = ['HEAD', 'L_FOOT', 'R_FOOT']
-        df_head_feet.index.name = 'Frame'
+        df_head_feet.index.name = 'frame'
 
         # Save data
-        save_path = os.path.join(save_dir, file_name) + '.pkl'
+        save_path = os.path.join(save_dir, trial_name) + '.pkl'
         df_head_feet.to_pickle(save_path)
 
         trials_run += 1
@@ -127,9 +117,9 @@ def main():
     Number of trials: {}\n
     Number of frames: {}\n
     Total time: {}\n
-    Frames per second: {}""".format(
-        trials_run, frames_run, np.round(time_elapsed, 2),
-        frames_per_second))
+    Frames per second: {}""".format(trials_run, frames_run,
+                                    np.round(time_elapsed, 2),
+                                    frames_per_second))
 
 
 if __name__ == '__main__':

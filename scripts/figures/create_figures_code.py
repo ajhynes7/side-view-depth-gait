@@ -22,16 +22,8 @@ import modules.sliding_window as sw
 
 def main():
 
-    file_name = '2014-12-08_P004_Post_000'
-
-    hypo_dir = os.path.join('data', 'kinect', 'processed', 'hypothesis')
     best_pos_dir = os.path.join('data', 'kinect', 'best_pos')
-
-    hypo_paths = glob.glob(os.path.join(hypo_dir, '*.pkl'))
-    best_pos_paths = glob.glob(os.path.join(best_pos_dir, '*.pkl'))
-
-    hypo_paths = [x for x in hypo_paths if file_name in x]
-    best_pos_paths = [x for x in best_pos_paths if file_name in x]
+    best_pos_paths = sorted(glob.glob(os.path.join(best_pos_dir, '*.pkl')))
 
     df_head_feet = pd.read_pickle(best_pos_paths[0])
 
@@ -60,13 +52,13 @@ def main():
 
     foot_pos_l = np.stack(df_pass.L_FOOT)
     foot_pos_r = np.stack(df_pass.R_FOOT)
-    norms = np.apply_along_axis(norm, 1, foot_pos_l - foot_pos_r)
+    norms = norm(foot_pos_l - foot_pos_r, axis=1)
 
     signal = 1 - sig.nan_normalize(norms)
     rms = sig.root_mean_square(signal)
 
-    peak_frames, _ = sw.detect_peaks(frames, signal,
-                                     window_length=3, min_height=rms)
+    peak_frames, _ = sw.detect_peaks(
+        frames, signal, window_length=3, min_height=rms)
 
     fig = plt.figure()
 
@@ -75,8 +67,8 @@ def main():
     pl.scatter_series(foot_dist, c='k', s=15)
     plt.plot(foot_dist, c='k', linewidth=0.7)
 
-    plt.vlines(x=peak_frames, ymin=foot_dist.max(),
-               ymax=foot_dist.min(), color='r')
+    plt.vlines(
+        x=peak_frames, ymin=foot_dist.max(), ymax=foot_dist.min(), color='r')
 
     plt.xlabel('Frame')
     plt.ylabel('Foot Distance [cm]')
@@ -86,23 +78,23 @@ def main():
 
     # %% Step Signal
 
-    _, direction_pass = gp.direction_of_pass(df_pass)
+    _, direction_pass = asi.direction_of_pass(df_pass)
 
     # Assign correct sides to feet
     df_pass = asi.assign_sides_pass(df_pass, direction_pass)
 
     # Ensure there are no missing frames in the walking pass
     df_pass = pf.make_index_consecutive(df_pass)
-    df_pass = df_pass.applymap(lambda x: x if isinstance(x, np.ndarray)
-                               else np.full(3, np.nan))
+    df_pass = df_pass.applymap(
+        lambda x: x if isinstance(x, np.ndarray) else np.full(3, np.nan))
 
     foot_series = df_pass.R_FOOT
     frames_pass = df_pass.index.values
 
     foot_points = np.stack(foot_series)
 
-    step_signal = lin.line_coordinate_system(np.zeros(3), direction_pass,
-                                             foot_points)
+    step_signal = lin.line_coordinate_system(
+        np.zeros(3), direction_pass, foot_points)
 
     is_stance = pde.detect_phases(step_signal)
 
