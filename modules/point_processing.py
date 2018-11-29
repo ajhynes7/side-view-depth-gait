@@ -214,6 +214,55 @@ def closest_point(points, target):
     return point_closest, index_closest
 
 
+def closest_proposals(proposals, targets):
+
+    closest = np.zeros(targets.shape)
+
+    for i, target in enumerate(targets):
+
+        # Proposals for current target
+        target_proposals = proposals[i]
+
+        close_point, _ = closest_point(target_proposals, target)
+        closest[i, :] = close_point
+
+    return closest
+
+
+def assign_pair(point_pair, target_pair):
+
+    dist_matrix = cdist(point_pair, target_pair)
+
+    sum_diagonal = dist_matrix.trace()
+    sum_reverse = np.fliplr(dist_matrix).trace()
+
+    assigned_pair = point_pair
+
+    if sum_reverse < sum_diagonal:
+        assigned_pair = np.flip(point_pair, axis=0)
+
+    return assigned_pair
+
+
+def match_pairs(points_1, points_2, targets_1, targets_2):
+
+    points_shape = points_1.shape
+    assigned_1 = np.zeros(points_shape)
+    assigned_2 = np.zeros(points_shape)
+
+    for i in range(points_shape[0]):
+
+        point_pair = np.vstack((points_1[i], points_2[i]))
+        target_pair = np.vstack((targets_1[i], targets_2[i]))
+
+        assigned_pair = assign_pair(point_pair, target_pair)
+
+        assigned_1[i, :] = assigned_pair[0]
+        assigned_2[i, :] = assigned_pair[1]
+
+    return assigned_1, assigned_2
+
+
 def position_accuracy(points, targets, max_dist=10):
     """
     Calculate ratio of points within a distance from corresponding targets.
