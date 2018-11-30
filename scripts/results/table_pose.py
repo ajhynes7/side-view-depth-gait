@@ -114,8 +114,11 @@ def main():
         data=[[acc_assigned_l, acc_assigned_r, acc_assigned],
               [acc_assigned_mod_l, acc_assigned_mod_r, acc_assigned_mod]])
 
-    print(df_acc_matched)
-    print(df_acc_assigned)
+    with open(join('results', 'tables', 'accuracy_matched.txt'), 'w') as file:
+        file.write(np.round(df_acc_matched, 2).to_latex())
+
+    with open(join('results', 'tables', 'accuracy_assigned.txt'), 'w') as file:
+        file.write(np.round(df_acc_assigned, 2).to_latex())
 
 
 if __name__ == '__main__':
