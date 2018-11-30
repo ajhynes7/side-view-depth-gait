@@ -14,9 +14,10 @@ def main():
     font = {'family': 'serif', 'weight': 'bold', 'size': 14}
     plt.rc('font', **font)
 
-    process_trials.main()
-    process_ground_truth.main()
+    #process_trials.main()
+    #process_ground_truth.main()
 
+    #plot_labels.main()
     plot_results.main()
 
     table_bland.main()

@@ -23,6 +23,9 @@ def main():
         os.path.join('data', 'kinect', 'lengths', 'kinect_lengths.csv'),
         index_col=0)
 
+    # Convert columns from strings to numbers so indices will align
+    df_lengths.columns = range(len(df_lengths.columns))
+
     parts_l = ['HEAD'] + [x for x in part_names if x[0] == 'L']
     parts_r = ['HEAD'] + [x for x in part_names if x[0] == 'R']
 
