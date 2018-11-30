@@ -104,6 +104,9 @@ def main():
         data=[[acc_assigned_l, acc_assigned_mod_l],
               [acc_assigned_r, acc_assigned_mod_r]])
 
+    print(pp.double_position_accuracy(matched_l, matched_r, truth_l, truth_r))
+    print(pp.double_position_accuracy(matched_l, matched_r, truth_mod_l, truth_mod_r))
+
     print(df_acc_matched)
     print(df_acc_assigned)
 

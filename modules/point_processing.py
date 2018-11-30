@@ -299,3 +299,13 @@ def position_accuracy(points, targets, max_dist=10):
     distances = norm(points - targets, axis=1)
 
     return np.mean(distances <= max_dist)
+
+
+def double_position_accuracy(points_1, points_2, targets_1, targets_2, max_dist=10):
+
+    within_dist_1 = norm(points_1 - targets_1, axis=1) <= max_dist
+    within_dist_2 = norm(points_2 - targets_2, axis=1) <= max_dist
+
+    within_both = np.column_stack((within_dist_1, within_dist_2)).all(axis=1)
+
+    return within_both.mean()
