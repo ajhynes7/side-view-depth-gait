@@ -180,3 +180,48 @@ def compare_measurements(df_1, df_2, compare_funcs):
                                                        df_2[measurement])
 
     return df_results
+
+
+def icc_21(x1, x2):
+    """
+    Compute intraclass correlation coefficient of type (2, 1) for two raters.
+
+    Measure of absolute agreement between two raters.
+
+    Parameters
+    ----------
+    x1, x2 : array_like
+        Measurements of raters 1 and 2
+
+    Returns
+    -------
+    float
+        ICC(2, 1)
+
+    Examples
+    --------
+    >>> x1 = [1, 2, 3, 10, 20]
+    >>> x2 = [2, 1, 2, 11, 20]
+
+    >>> np.round(icc_21(x1, x2), 3)
+    0.974
+
+    >>> np.round(icc_21(x1, [3, 5, 6, 8, 21]), 3)
+    0.816
+
+    >>> np.round(icc_21(x1, [3, 5, 6, 5, 2]), 3)
+    -0.607
+
+    """
+    x_stacked = np.column_stack((x1, x2))
+    n, k = x_stacked.shape
+
+    mean_square_rows = np.var(x_stacked, axis=0).mean()
+    mean_square_cols = np.var(x_stacked, axis=1).mean()
+    mean_square_error = mean_squared_error(x1, x2)
+
+    num = mean_square_rows - mean_square_error
+    denom = mean_square_rows + (k - 1) * mean_square_error + k / n * (
+        mean_square_cols - mean_square_error)
+
+    return num / denom

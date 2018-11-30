@@ -145,8 +145,8 @@ def recalibrate_positions(positions_real_orig, x_res_orig, y_res_orig, x_res,
 
     for i, pos_real_orig in enumerate(positions_real_orig):
 
-        pos_image = real_to_image(
-            pos_real_orig, x_res_orig, y_res_orig, f_xz, f_yz)
+        pos_image = real_to_image(pos_real_orig, x_res_orig, y_res_orig, f_xz,
+                                  f_yz)
         positions_real[i] = image_to_real(pos_image, x_res, y_res, f_xz, f_yz)
 
     return positions_real
