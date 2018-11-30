@@ -83,7 +83,7 @@ def sigmoid(x, a=1):
         Main argument to the function.
 
     a : {int, float}, optional
-        Coefficient for x (the default is 1)
+        Coefficient for x (default 1)
         This changes the shape of the sigmoid curve.
 
     Returns

@@ -182,46 +182,56 @@ def compare_measurements(df_1, df_2, compare_funcs):
     return df_results
 
 
-def icc_21(x1, x2):
-    """
-    Compute intraclass correlation coefficient of type (2, 1) for two raters.
+def icc_mean_squares(x1, x2):
 
-    Measure of absolute agreement between two raters.
+    x_stacked = np.column_stack((x1, x2))
+
+    mean_square_rows = np.var(x_stacked, axis=0).mean()
+    mean_square_cols = np.var(x_stacked, axis=1).mean()
+    mean_square_error = mean_squared_error(x1, x2)
+
+    return mean_square_rows, mean_square_cols, mean_square_error
+
+
+def icc_two(x1, x2, type=(2, 1)):
+    """
+    Compute intraclass correlation coefficient (ICC) for two measurement sets.
 
     Parameters
     ----------
     x1, x2 : array_like
-        Measurements of raters 1 and 2
+        Measurements sets 1 and 2.
+
+    type : tuple, optional
+        Type of ICC (default (2, 1))
 
     Returns
     -------
     float
-        ICC(2, 1)
+        Intraclass correlation coefficient.
 
     Examples
     --------
     >>> x1 = [1, 2, 3, 10, 20]
     >>> x2 = [2, 1, 2, 11, 20]
 
-    >>> np.round(icc_21(x1, x2), 3)
+    >>> np.round(icc_two(x1, x2, type=(2, 1)), 3)
     0.974
 
-    >>> np.round(icc_21(x1, [3, 5, 6, 8, 21]), 3)
+    >>> np.round(icc_two(x1, [3, 5, 6, 8, 21], type=(2, 1)), 3)
     0.816
 
-    >>> np.round(icc_21(x1, [3, 5, 6, 5, 2]), 3)
-    -0.607
-
     """
-    x_stacked = np.column_stack((x1, x2))
-    n, k = x_stacked.shape
+    n, k = len(x1), 2
 
-    mean_square_rows = np.var(x_stacked, axis=0).mean()
-    mean_square_cols = np.var(x_stacked, axis=1).mean()
-    mean_square_error = mean_squared_error(x1, x2)
+    ms_r, ms_c, ms_e = icc_mean_squares(x1, x2)
 
-    num = mean_square_rows - mean_square_error
-    denom = mean_square_rows + (k - 1) * mean_square_error + k / n * (
-        mean_square_cols - mean_square_error)
+    if type == (2, 1):
+        num = ms_r - ms_e
+        denom = ms_r + (k - 1) * ms_e + k / n * (ms_c - ms_e)
+
+    elif type == (3, 1):
+        num = ms_r - ms_e
+        denom = ms_r + (k - 1) * ms_e
 
     return num / denom

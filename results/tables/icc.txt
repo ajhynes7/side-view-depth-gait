@@ -1,0 +1,14 @@
+\begin{tabular}{lrr}
+\toprule
+{} &  ICC(2, 1) &  ICC(3, 1) \\
+\midrule
+absolute\_step\_length     &      0.922 &      0.921 \\
+stance\_percentage        &     -0.749 &     -0.730 \\
+stance\_percentage\_double &     -0.701 &     -0.684 \\
+step\_length              &      0.949 &      0.949 \\
+stride\_length            &      0.961 &      0.961 \\
+stride\_time              &      0.090 &      0.089 \\
+stride\_velocity          &      0.388 &      0.384 \\
+stride\_width             &     -0.021 &     -0.021 \\
+\bottomrule
+\end{tabular}
