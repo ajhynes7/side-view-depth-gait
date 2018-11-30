@@ -1,0 +1,14 @@
+\begin{tabular}{lrrrr}
+\toprule
+{} &   bias &  lower\_limit &  upper\_limit &  range\_ \\
+\midrule
+absolute\_step\_length     &  0.021 &       -0.019 &        0.062 &   0.080 \\
+stance\_percentage        &  0.135 &        0.072 &        0.197 &   0.125 \\
+stance\_percentage\_double &  0.457 &        0.194 &        0.719 &   0.525 \\
+step\_length              &  0.014 &       -0.027 &        0.054 &   0.081 \\
+stride\_length            &  0.003 &       -0.038 &        0.043 &   0.081 \\
+stride\_time              & -0.182 &       -0.306 &       -0.057 &   0.249 \\
+stride\_velocity          &  0.161 &        0.016 &        0.305 &   0.289 \\
+stride\_width             &  0.414 &       -0.316 &        1.144 &   1.460 \\
+\bottomrule
+\end{tabular}

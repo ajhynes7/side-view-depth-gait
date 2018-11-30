@@ -1,0 +1,8 @@
+\begin{tabular}{lrrr}
+\toprule
+{} &  Left &  Right &  Both \\
+\midrule
+Truth    &  0.89 &   0.87 &  0.77 \\
+Modified &  0.99 &   0.98 &  0.98 \\
+\bottomrule
+\end{tabular}

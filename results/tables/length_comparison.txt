@@ -1,0 +1,27 @@
+\begin{tabular}{llrrr}
+\toprule
+  &   &  Estimated &  Ground Truth &  Relative Error \\
+Link & Trial &            &               &                 \\
+\midrule
+0 & 1 &      66.86 &           NaN &             NaN \\
+  & 2 &      66.65 &           NaN &             NaN \\
+1 & 1 &      18.47 &           NaN &             NaN \\
+  & 2 &      16.73 &           NaN &             NaN \\
+2 & 1 &      18.16 &           NaN &             NaN \\
+  & 2 &      15.26 &           NaN &             NaN \\
+3 & 1 &      26.24 &           NaN &             NaN \\
+  & 2 &      25.66 &           NaN &             NaN \\
+4 & 1 &      24.48 &           NaN &             NaN \\
+  & 2 &      22.63 &           NaN &             NaN \\
+0 & 1 &        NaN &         70.64 &             NaN \\
+  & 2 &        NaN &         70.64 &             NaN \\
+1 & 1 &        NaN &         19.47 &             NaN \\
+  & 2 &        NaN &         19.47 &             NaN \\
+2 & 1 &        NaN &         16.13 &             NaN \\
+  & 2 &        NaN &         16.13 &             NaN \\
+3 & 1 &        NaN &         22.90 &             NaN \\
+  & 2 &        NaN &         22.90 &             NaN \\
+4 & 1 &        NaN &         23.58 &             NaN \\
+  & 2 &        NaN &         23.58 &             NaN \\
+\bottomrule
+\end{tabular}
