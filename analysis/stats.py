@@ -4,7 +4,7 @@ from collections import namedtuple
 
 import numpy as np
 import pandas as pd
-from statsmodels import robust
+from sklearn.metrics import mean_squared_error
 
 import analysis.math_funcs as mf
 
@@ -97,46 +97,6 @@ def relative_error(measured, actual, absolute=False):
         error = abs(error)
 
     return error
-
-
-def mad_outliers(x, c):
-    """
-    Remove outliers from an array using the median absolute deviation (MAD).
-
-    Values beyond the median ± c(MAD) are set to NaN.
-
-    Parameters
-    ----------
-    x : array_like
-        Input array.
-    c : {int, float}
-        Coefficient for MAD.
-
-    Returns
-    -------
-    x_filtered : ndarray
-        Array with same shape as input x, but with outliers set to NaN
-        and all values as floats.
-
-    Examples
-    --------
-    >>> mad_outliers([2.0, 3.0, 100.0, 3.0], 2.5)
-    array([ 2.,  3., nan,  3.])
-
-    >>> mad_outliers([5, 6, 4, 20], 3)
-    array([ 5.,  6.,  4., nan])
-
-    """
-    mad = robust.mad(x)
-    median = np.median(x)
-
-    lower_bound = median - c * mad
-    upper_bound = median + c * mad
-
-    x_filtered = np.array(x).astype(float)
-    x_filtered[np.logical_or(x < lower_bound, x > upper_bound)] = np.nan
-
-    return x_filtered
 
 
 def bland_altman(differences):

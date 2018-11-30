@@ -14,7 +14,6 @@ Requirements:
 - matplotlib
 - pandas
 - sklearn
-- statsmodels
 
 
 .. toctree::
