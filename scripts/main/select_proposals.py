@@ -23,7 +23,7 @@ def score_func(a, b):
 
 def main():
 
-    radii = [i for i in range(5, 30, 5)]
+    radii = [i for i in range(6)]
 
     part_connections = np.array([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5],
                                  [3, 5], [1, 3]])

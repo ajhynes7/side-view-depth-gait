@@ -3,16 +3,16 @@
   &   &  Estimated &  Ground Truth &  Relative Error \\
 Link & Trial &            &               &                 \\
 \midrule
-0 & 1 &      66.86 &           NaN &             NaN \\
-  & 2 &      66.65 &           NaN &             NaN \\
-1 & 1 &      18.47 &           NaN &             NaN \\
-  & 2 &      16.73 &           NaN &             NaN \\
-2 & 1 &      18.16 &           NaN &             NaN \\
-  & 2 &      15.26 &           NaN &             NaN \\
-3 & 1 &      26.24 &           NaN &             NaN \\
-  & 2 &      25.66 &           NaN &             NaN \\
-4 & 1 &      24.48 &           NaN &             NaN \\
-  & 2 &      22.63 &           NaN &             NaN \\
+0 & 1 &      62.99 &           NaN &             NaN \\
+  & 2 &      60.42 &           NaN &             NaN \\
+1 & 1 &      16.64 &           NaN &             NaN \\
+  & 2 &      15.75 &           NaN &             NaN \\
+2 & 1 &      17.07 &           NaN &             NaN \\
+  & 2 &      14.19 &           NaN &             NaN \\
+3 & 1 &      25.37 &           NaN &             NaN \\
+  & 2 &      24.88 &           NaN &             NaN \\
+4 & 1 &      23.69 &           NaN &             NaN \\
+  & 2 &      22.15 &           NaN &             NaN \\
 0 & 1 &        NaN &         70.64 &             NaN \\
   & 2 &        NaN &         70.64 &             NaN \\
 1 & 1 &        NaN &         19.47 &             NaN \\
