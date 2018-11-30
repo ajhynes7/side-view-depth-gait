@@ -82,30 +82,37 @@ def main():
 
     acc_matched_l = pp.position_accuracy(matched_l, truth_l)
     acc_matched_r = pp.position_accuracy(matched_r, truth_r)
-
     acc_matched_mod_l = pp.position_accuracy(matched_l, truth_mod_l)
     acc_matched_mod_r = pp.position_accuracy(matched_r, truth_mod_r)
 
     acc_assigned_l = pp.position_accuracy(assigned_l, truth_2d_l)
     acc_assigned_r = pp.position_accuracy(assigned_r, truth_2d_r)
-
     acc_assigned_mod_l = pp.position_accuracy(assigned_l, truth_mod_2d_l)
     acc_assigned_mod_r = pp.position_accuracy(assigned_r, truth_mod_2d_r)
 
+    acc_matched = pp.double_position_accuracy(
+        matched_l, matched_r, truth_l, truth_r)
+    acc_matched_mod = pp.double_position_accuracy(
+        matched_l, matched_r, truth_mod_l, truth_mod_r)
+
+    acc_assigned = pp.double_position_accuracy(
+        assigned_l, assigned_r, truth_2d_l, truth_2d_r)
+    acc_assigned_mod = pp.double_position_accuracy(
+        assigned_l, assigned_r, truth_mod_2d_l, truth_mod_2d_r)
+
+    # %% Organize into tables
+
     df_acc_matched = pd.DataFrame(
-        index=['Left', 'Right'],
-        columns=['Truth', 'Modified'],
-        data=[[acc_matched_l, acc_matched_mod_l],
-              [acc_matched_r, acc_matched_mod_r]])
+        index=['Truth', 'Modified'],
+        columns=['Left', 'Right', 'Both'],
+        data=[[acc_matched_l, acc_matched_r, acc_matched],
+              [acc_matched_mod_l, acc_matched_mod_r, acc_matched_mod]])
 
     df_acc_assigned = pd.DataFrame(
-        index=['Left', 'Right'],
-        columns=['Truth', 'Modified'],
-        data=[[acc_assigned_l, acc_assigned_mod_l],
-              [acc_assigned_r, acc_assigned_mod_r]])
-
-    print(pp.double_position_accuracy(matched_l, matched_r, truth_l, truth_r))
-    print(pp.double_position_accuracy(matched_l, matched_r, truth_mod_l, truth_mod_r))
+        index=['Truth', 'Modified'],
+        columns=['Left', 'Right', 'Both'],
+        data=[[acc_assigned_l, acc_assigned_r, acc_assigned],
+              [acc_assigned_mod_l, acc_assigned_mod_r, acc_assigned_mod]])
 
     print(df_acc_matched)
     print(df_acc_assigned)
