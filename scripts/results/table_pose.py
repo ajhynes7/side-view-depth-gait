@@ -5,6 +5,7 @@ from os.path import join
 import numpy as np
 import pandas as pd
 
+import modules.assign_sides as asi
 import modules.point_processing as pp
 
 
@@ -23,7 +24,7 @@ def main():
 
     kinect_dir = join('data', 'kinect')
 
-    df_truth = pd.read_pickle('results/dataframes/df_truth.pkl')
+    df_truth = pd.read_pickle(join('results', 'dataframes', 'df_truth.pkl'))
     trial_names = df_truth.index.get_level_values(0).unique().values
 
     df_hypo = combine_dataframes(
@@ -72,11 +73,13 @@ def main():
 
     # %% Convert points to 2D (since side assignment is in 2D)
 
-    truth_2d_l = truth_l[:, [2, 0]]
-    truth_2d_r = truth_r[:, [2, 0]]
+    truth_2d_l = np.apply_along_axis(asi.convert_to_2d, 1, truth_l)
+    truth_2d_r = np.apply_along_axis(asi.convert_to_2d, 1, truth_r)
 
-    truth_mod_2d_l = truth_mod_l[:, [2, 0]]
-    truth_mod_2d_r = truth_mod_r[:, [2, 0]]
+    truth_mod_2d_l = np.apply_along_axis(asi.convert_to_2d, 1, truth_mod_l)
+    truth_mod_2d_r = np.apply_along_axis(asi.convert_to_2d, 1, truth_mod_r)
+
+
 
     # %% Calculate accuracies
 

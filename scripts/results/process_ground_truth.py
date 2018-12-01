@@ -57,19 +57,19 @@ def main():
 
         # %% Iterate through labelled images for walking trial
 
-        for ii, image_num in enumerate(image_nums):
+        for i, image_num in enumerate(image_nums):
 
-            label_path, depth_path = label_paths[ii], depth_paths[ii]
+            label_path, depth_path = label_paths[i], depth_paths[i]
 
             label_image_rgb = cv2.imread(label_path, cv2.IMREAD_ANYCOLOR)
             depth_image = cv2.imread(depth_path, cv2.IMREAD_ANYDEPTH) / 10
 
             label_image = im.rgb_to_label(label_image_rgb, rgb_vectors)
 
-            for i, part_name in enumerate(part_rgb_dict):
+            for j, part_name in enumerate(part_rgb_dict):
 
                 # Binary image of one body part
-                label = i + 1
+                label = j + 1
                 part_binary = label_image == label
 
                 if not np.any(part_binary):

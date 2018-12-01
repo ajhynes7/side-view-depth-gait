@@ -226,39 +226,39 @@ def line_coordinate_system(line_point, direction, points):
     return coordinates
 
 
-def side_line_2d(point_a, point_b, point_p):
+def side_value_2d(point_a, point_b, direction):
     """
-    Determine if a point is left or right of a line in two-dimensional space.
+    Return value for side of point A relative to point B given a direction.
+
+    A positive value indicates that A is to the right of B.
 
     Parameters
     ----------
     point_a, point_b : array_like
-        2D points A and B that define a line.
-    point_p : array_like
-        2D point P in the plane.
+        2D points A and B
+    direction : array_like
+        2D direction vector.
 
     Returns
     -------
-    int
-        Integer indicating the side of point P to the line AB
-        -1 is left, 0 is straight, 1 is right.
+    float
+        Value indicating the side of A relative to B.
 
     Examples
     --------
-    >>> point_a, point_b = [0, 0], [0, 1]
-    >>> point_p = [5, 1]
+    >>> side_value_2d([10, 2], [-5, 1], [0, 1])
+    15.0
 
-    >>> side_line_2d(point_a, point_b, [5, 1])
-    1
+    >>> side_value_2d([10, 2], [-5, 1], [0, -1])
+    -15.0
 
-    >>> side_line_2d(point_a, point_b, [-2, 5])
-    -1
+    >>> side_value_2d([10, 2], [8, -2], [1, 0])
+    -4.0
 
-    >>> side_line_2d(point_a, point_b, [0, 10])
-    0
+    >>> side_value_2d([10, 2], [8, -2], [-1, 0])
+    4.0
 
     """
-    direction_ab = np.subtract(point_b, point_a)
-    direction_ap = np.subtract(point_p, point_a)
+    vector_to_a = np.subtract(point_a, point_b)
 
-    return np.sign(np.cross(direction_ap, direction_ab))
+    return np.float(np.cross(vector_to_a, direction))

@@ -12,6 +12,17 @@ import modules.signals as sig
 import modules.sliding_window as sw
 
 
+def convert_to_2d(point):
+
+    x, _, depth = point
+
+    # Take the negative of depth so that orientation on xy plane is correct.
+    # This is important for assigning sides to the feet.
+    x_2d, y_2d = -depth, x
+
+    return np.array([x_2d, y_2d])
+
+
 def direction_of_pass(df_pass):
     """
     Return vector representing overall direction of motion for a walking pass.
@@ -46,32 +57,6 @@ def direction_of_pass(df_pass):
     return line_point, direction_pass
 
 
-def evaluate_foot_side(foot_points_1, foot_points_2, direction):
-    """
-    Yield a value indicating the side (left/right) of a foot.
-
-    A positive value indicates right, while negative indicates left.
-
-    Parameters
-    ----------
-    foot_points_1, foot_points_2 : ndarray
-        (n, d) array of foot positions.
-    direction : ndarray
-        Vector for direction of motion.
-
-    Returns
-    -------
-    side_values : ndarray
-        (n, ) array of values indicating left/right direction for foot 1.
-
-    """
-    mean_foot_points = (foot_points_1 + foot_points_2) / 2
-    targets = foot_points_1 - mean_foot_points
-
-    side_values = np.array([np.cross(direction, target) for target in targets])
-
-    return side_values
-
 
 def assign_sides_portion(df_walk, direction):
     """
@@ -99,18 +84,20 @@ def assign_sides_portion(df_walk, direction):
     foot_points_r = np.stack(df_walk.R_FOOT)
 
     # Find a motion correspondence so the foot sides do not switch abruptly
-    foot_points_l, foot_points_r = pp.track_two_objects(
+    foot_points_a, foot_points_b = pp.track_two_objects(
         foot_points_l, foot_points_r)
 
-    df_assigned = df_walk.copy()
-    df_assigned.L_FOOT = pf.series_of_rows(foot_points_l, index=df_walk.index)
-    df_assigned.R_FOOT = pf.series_of_rows(foot_points_r, index=df_walk.index)
+    side_total = 0
+    for foot_point_a, foot_point_b in zip(foot_points_a, foot_points_b):
+        side_total += lin.side_value_2d(foot_point_a, foot_point_b, direction)
 
-    side_values = evaluate_foot_side(foot_points_l, foot_points_r, direction)
-
-    if np.sum(side_values) > 0:
+    if side_total > 0:
         # The left foot should be labelled the right foot, and vice versa
-        df_assigned = pf.swap_columns(df_assigned, 'L_FOOT', 'R_FOOT')
+        foot_points_a, foot_points_b = foot_points_b, foot_points_a
+
+    df_assigned = df_walk.copy()
+    df_assigned.L_FOOT = pf.series_of_rows(foot_points_a, index=df_walk.index)
+    df_assigned.R_FOOT = pf.series_of_rows(foot_points_b, index=df_walk.index)
 
     return df_assigned
 
