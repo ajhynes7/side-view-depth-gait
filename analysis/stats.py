@@ -186,6 +186,7 @@ def icc(M, type=(2, 1)):
     [summary]
 
     [description]
+    Reference: McGraw and Wong, 1996
 
     Parameters
     ----------
@@ -203,19 +204,21 @@ def icc(M, type=(2, 1)):
     --------
     >>> M = np.array([[7, 9], [10, 13], [8, 4]])
 
-    >>> np.round(icc(M, type=(2, 1)), 3)
+    >>> np.round(icc(M, type=(1, 1)), 4)
+    0.5246
+    >>> np.round(icc(M, type=(2, 1)), 4)
     0.463
-
-    >>> np.round(icc(M, type=(3, 1)), 3)
-    0.368
+    >>> np.round(icc(M, type=(3, 1)), 4)
+    0.3676
 
     >>> M = np.array([[60, 61], [60, 65], [58, 62], [10, 10]])
 
-    >>> np.round(icc(M, type=(2, 1)), 3)
+    >>> np.round(icc(M, type=(1, 1)), 4)
     0.992
-
-    >>> np.round(icc(M, type=(3, 1)), 3)
-    0.996
+    >>> np.round(icc(M, type=(2, 1)), 4)
+    0.992
+    >>> np.round(icc(M, type=(3, 1)), 4)
+    0.9957
 
     """
     n, k = M.shape
@@ -228,9 +231,9 @@ def icc(M, type=(2, 1)):
 
     MSE = (SStotal - MSR * (n - 1) - MSC * (k - 1)) / ((n - 1) * (k - 1))
 
-    if type == (2, 1):
+    if type == (1, 1):
         num = MSR - MSW
-        denom = MSR + (k + 1) * MSW
+        denom = MSR + (k - 1) * MSW
 
     elif type == (2, 1):
         num = MSR - MSE
