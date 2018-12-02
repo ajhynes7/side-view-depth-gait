@@ -4,7 +4,6 @@ from collections import namedtuple
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import mean_squared_error
 
 import analysis.math_funcs as mf
 
@@ -227,13 +226,17 @@ def icc(M, type=(2, 1)):
     MSW = np.sum(np.var(M, axis=1, ddof=1)) / n
     MSC = np.var(np.mean(M, axis=0), ddof=1) * n
 
-    MSE = (SStotal - MSR *(n - 1) - MSC * (k - 1))/ ((n - 1) * (k - 1))
+    MSE = (SStotal - MSR * (n - 1) - MSC * (k - 1)) / ((n - 1) * (k - 1))
 
     if type == (2, 1):
+        num = MSR - MSW
+        denom = MSR + (k + 1) * MSW
+
+    elif type == (2, 1):
         num = MSR - MSE
         denom = MSR + (k - 1) * MSE + k / n * (MSC - MSE)
 
-    if type == (3, 1):
+    elif type == (3, 1):
         num = MSR - MSE
         denom = MSR + (k - 1) * MSE
 

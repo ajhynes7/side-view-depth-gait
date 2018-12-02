@@ -33,8 +33,9 @@ def main():
         bland_alt = st.bland_altman(differences)
         bland_alt_tuples.append(bland_alt)
 
-        icc_21.append(st.icc_two(measures_1, measures_2, type=(2, 1)))
-        icc_31.append(st.icc_two(measures_1, measures_2, type=(3, 1)))
+        measures = np.column_stack((measures_1, measures_2))
+        icc_21.append(st.icc(measures, type=(2, 1)))
+        icc_31.append(st.icc(measures, type=(3, 1)))
 
     df_bland = pd.DataFrame.from_records(
         bland_alt_tuples, index=gait_params, columns=bland_alt._fields)
@@ -50,6 +51,7 @@ def main():
 
     with open(join('results', 'tables', 'icc.txt'), 'w') as file:
         file.write(np.round(df_icc, 3).to_latex())
+
 
 if __name__ == '__main__':
     main()
