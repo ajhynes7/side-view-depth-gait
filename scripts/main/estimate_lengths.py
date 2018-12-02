@@ -48,7 +48,7 @@ def main():
         df_hypo = df_hypo.dropna()
         n_frames = df_hypo.shape[0]
 
-        lengths_estimated = [np.array([]) for _ in range(n_lengths)]
+        lengths_estimated = np.zeros((n_frames, n_lengths))
 
         for i in range(n_frames):
 
@@ -59,13 +59,16 @@ def main():
 
             for idx_a, idx_b in itf.pairwise(part_labels):
 
-                pair_distances = dist_matrix[labels == idx_a][:, labels ==
-                                                              idx_b]
+                distances = dist_matrix[labels == idx_a][:, labels == idx_b]
 
-                lengths_estimated[idx_a] = np.append(lengths_estimated[idx_a],
-                                                     pair_distances)
+                if idx_a == 0:
+                    length_estimated = np.median(distances)
+                else:
+                    length_estimated = np.percentile(distances, 25)
 
-        trial_lengths = [np.percentile(x, 25) for x in lengths_estimated]
+                lengths_estimated[i, idx_a] = length_estimated
+
+        trial_lengths = np.median(lengths_estimated, axis=0)
         df_lengths.loc[trial_name] = trial_lengths
 
         trials_run += 1
