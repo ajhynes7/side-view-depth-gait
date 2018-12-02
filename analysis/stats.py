@@ -182,56 +182,59 @@ def compare_measurements(df_1, df_2, compare_funcs):
     return df_results
 
 
-def icc_mean_squares(x1, x2):
-
-    x_stacked = np.column_stack((x1, x2))
-
-    mean_square_rows = np.var(x_stacked, axis=0).mean()
-    mean_square_cols = np.var(x_stacked, axis=1).mean()
-    mean_square_error = mean_squared_error(x1, x2)
-
-    return mean_square_rows, mean_square_cols, mean_square_error
-
-
-def icc_two(x1, x2, type=(2, 1)):
+def icc(M, type=(2, 1)):
     """
-    Compute intraclass correlation coefficient (ICC) for two measurement sets.
+    [summary]
+
+    [description]
 
     Parameters
     ----------
-    x1, x2 : array_like
-        Measurements sets 1 and 2.
-
+    M : [type]
+        [description]
     type : tuple, optional
-        Type of ICC (default (2, 1))
+        [description] (the default is (2, 1), which [default_description])
 
     Returns
     -------
-    float
-        Intraclass correlation coefficient.
+    [type]
+        [description]
 
     Examples
     --------
-    >>> x1 = [1, 2, 3, 10, 20]
-    >>> x2 = [2, 1, 2, 11, 20]
+    >>> M = np.array([[7, 9], [10, 13], [8, 4]])
 
-    >>> np.round(icc_two(x1, x2, type=(2, 1)), 3)
-    0.974
+    >>> np.round(icc(M, type=(2, 1)), 3)
+    0.463
 
-    >>> np.round(icc_two(x1, [3, 5, 6, 8, 21], type=(2, 1)), 3)
-    0.816
+    >>> np.round(icc(M, type=(3, 1)), 3)
+    0.368
+
+    >>> M = np.array([[60, 61], [60, 65], [58, 62], [10, 10]])
+
+    >>> np.round(icc(M, type=(2, 1)), 3)
+    0.992
+
+    >>> np.round(icc(M, type=(3, 1)), 3)
+    0.996
 
     """
-    n, k = len(x1), 2
+    n, k = M.shape
 
-    ms_r, ms_c, ms_e = icc_mean_squares(x1, x2)
+    SStotal = M.var(ddof=1) * (n * k - 1)
+
+    MSR = np.var(np.mean(M, axis=1), ddof=1) * k
+    MSW = np.sum(np.var(M, axis=1, ddof=1)) / n
+    MSC = np.var(np.mean(M, axis=0), ddof=1) * n
+
+    MSE = (SStotal - MSR *(n - 1) - MSC * (k - 1))/ ((n - 1) * (k - 1))
 
     if type == (2, 1):
-        num = ms_r - ms_e
-        denom = ms_r + (k - 1) * ms_e + k / n * (ms_c - ms_e)
+        num = MSR - MSE
+        denom = MSR + (k - 1) * MSE + k / n * (MSC - MSE)
 
-    elif type == (3, 1):
-        num = ms_r - ms_e
-        denom = ms_r + (k - 1) * ms_e
+    if type == (3, 1):
+        num = MSR - MSE
+        denom = MSR + (k - 1) * MSE
 
     return num / denom
