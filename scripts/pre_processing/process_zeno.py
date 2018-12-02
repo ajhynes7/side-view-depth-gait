@@ -84,13 +84,11 @@ labels = [
     'Stride Velocity (cm./sec.)',
     'Stride Time (sec.)',
     'Stance %',
-    'Total D. Support %',
 ]
 
 new_labels = [
     'absolute_step_length', 'step_length', 'stride_length', 'stride_width',
     'stride_velocity', 'stride_time', 'stance_percentage',
-    'stance_percentage_double'
 ]
 
 label_dict = {k: v for k, v in zip(labels, new_labels)}

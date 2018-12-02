@@ -121,7 +121,8 @@ def group_stance_frames(df_phase):
     ----------
     df_phase : DataFrame
         Index is 'frame'.
-        Columns are 'phase', 'stride', 'position'.
+        Columns are 'phase', 'stride', 'position',
+        'first_contact', 'last_contact'.
 
     Returns
     -------
@@ -137,8 +138,8 @@ def group_stance_frames(df_phase):
     >>> df.index.name = 'frame'
 
     >>> group_stance_frames(df)
-       stride  frame    position
-    0       0  175.5  [2.0, 3.0]
+       stride  frame    position  first_contact  last_contact
+    0       0  175.5  [2.0, 3.0]            175           176
 
     """
     df_stance = df_phase[df_phase.phase == 'stance'].reset_index()
@@ -147,6 +148,12 @@ def group_stance_frames(df_phase):
     df_grouped = pf.apply_to_grouped(df_stance, 'stride', column_funcs)
 
     df_grouped.position = df_grouped.position.apply(np.nanmedian, axis=0)
+
+    # Record first and last stance frame of each stride
+    contact_frames = df_stance.groupby('stride').frame.agg(['min', 'max'])
+    contact_frames.columns = ['first_contact', 'last_contact']
+
+    df_grouped = pd.concat((df_grouped, contact_frames), axis=1)
 
     return df_grouped.reset_index()
 

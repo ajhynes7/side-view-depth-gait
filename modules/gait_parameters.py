@@ -24,7 +24,6 @@ from numpy.linalg import norm
 import pandas as pd
 
 import modules.linear_algebra as lin
-import modules.numpy_funcs as nf
 import modules.pandas_funcs as pf
 import modules.phase_detection as pde
 import modules.sliding_window as sw
@@ -136,51 +135,21 @@ def stride_parameters(foot_a_i, foot_b, foot_a_f, *, fps=30):
 
     spatial = spatial_parameters(pos_a_i, pos_b, pos_a_f)
 
-    stride_time = (foot_a_f.frame - foot_a_i.frame) / fps
+    stride_time = (foot_a_f.first_contact - foot_a_i.first_contact) / fps
+    stance_time = (foot_a_i.last_contact - foot_a_i.first_contact) / fps
+
+    stance_percentage = (stance_time / stride_time) * 100
     stride_velocity = spatial.stride_length / stride_time
 
     stride_info = {'stride': foot_a_i.stride, 'side': foot_a_i.side}
 
     temporal_params = {
         'stride_time': stride_time,
+        'stance_percentage': stance_percentage,
         'stride_velocity': stride_velocity
     }
 
     return {**stride_info, **temporal_params, **spatial._asdict()}
-
-
-def stance_parameters(is_stance_l, is_stance_r):
-    """
-    Calculate gait parameters involved with the stance to swing ratio.
-
-    Parameters
-    ----------
-    is_stance_l : ndarray
-        Vector of booleans.
-        Element is True if corresponding left foot is in the stance phase.
-    is_stance_r : bool
-        Vector of booleans.
-        Element is True if corresponding right foot is in the stance phase.
-
-    Returns
-    -------
-    parameters : dict
-        Dictionary with stance parameters, e.g. double stance percentage.
-
-    """
-    stance_vectors = [is_stance_l, is_stance_r, is_stance_l & is_stance_r]
-
-    stance_l, stance_r, stance_double = [
-        nf.ratio_nonzero(x) * 100 for x in stance_vectors
-    ]
-
-    df_stance = pd.DataFrame({
-        'side': ['L', 'R'],
-        'stance_percentage': [stance_l, stance_r],
-        'stance_percentage_double': stance_double,
-    })
-
-    return df_stance
 
 
 def foot_contacts_to_gait(df_contact):
@@ -232,13 +201,6 @@ def walking_pass_parameters(df_pass, direction_pass):
         Columns are parameters names.
 
     """
-    df_phase_l = pde.get_phase_dataframe(df_pass.L_FOOT, direction_pass)
-    df_phase_r = pde.get_phase_dataframe(df_pass.R_FOOT, direction_pass)
-
-    is_stance_l = df_phase_l.phase.values == 'stance'
-    is_stance_r = df_phase_r.phase.values == 'stance'
-    df_stance = stance_parameters(is_stance_l, is_stance_r)
-
     df_contact_l = pde.get_contacts(df_pass.L_FOOT, direction_pass)
     df_contact_r = pde.get_contacts(df_pass.R_FOOT, direction_pass)
 
@@ -247,13 +209,9 @@ def walking_pass_parameters(df_pass, direction_pass):
 
     df_contact = pd.concat([df_contact_l, df_contact_r]).sort_values('frame')
 
-    df_gait = foot_contacts_to_gait(df_contact)
+    df_pass_parameters = foot_contacts_to_gait(df_contact)
 
-    if not df_gait.empty:
-        df_pass_parameters = pd.merge(
-            df_gait, df_stance, left_on='side', right_on='side')
-
-        return df_pass_parameters
+    return df_pass_parameters
 
 
 def combine_walking_passes(df_assigned, direction_series):
