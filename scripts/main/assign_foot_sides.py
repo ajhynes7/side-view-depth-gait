@@ -37,8 +37,8 @@ def main():
         labels = labels[~is_noise]
 
         # Project points onto X-Z plane
-        df_selected_2d = df_selected.applymap(lambda point:
-                                              asi.convert_to_2d(point))
+        df_selected_2d = df_selected.applymap(
+            lambda point: asi.convert_to_2d(point))
 
         # Sort labels so that the frames are in temporal order
         labels = nf.map_to_whole(labels)

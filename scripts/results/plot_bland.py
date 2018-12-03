@@ -1,4 +1,4 @@
-"""Generate plots of results."""
+"""Generate Bland-Altman and direct comparison plots."""
 
 import os
 

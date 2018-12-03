@@ -57,7 +57,6 @@ def direction_of_pass(df_pass):
     return line_point, direction_pass
 
 
-
 def assign_sides_portion(df_walk, direction):
     """
     Assign correct sides to feet during a section of a walking pass.
