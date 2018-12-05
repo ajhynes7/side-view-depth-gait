@@ -18,6 +18,9 @@ def main():
 
     lengths = np.array([60, 20, 15, 20, 20])
 
+    # Location of part type legend
+    legend_location = [0.45, 0.5]
+
     part_types = ['Head', 'Hip', 'Thigh', 'Knee', 'Calf', 'Foot']
 
     load_dir = join('data', 'saved_variables')
@@ -59,7 +62,7 @@ def main():
     fig = plt.figure()
 
     pl.scatter_labels(population, labels, edgecolor='k', s=50)
-    plt.legend(part_types, loc=[0.45, 0.5], edgecolor='k')
+    plt.legend(part_types, loc=legend_location, edgecolor='k')
     plt.axis('equal')
     plt.axis('off')
 
@@ -96,16 +99,21 @@ def main():
     n_figs = len(pairs)
 
     for i in range(n_figs):
+
         fig, ax = plt.subplots()
-
-        has_sphere = np.any(path_vectors[pairs[i]], 0)
-
-        within_radius = dist_matrix < r
-        inside_spheres = pe.in_spheres(within_radius, has_sphere)
-        pl.plot_links(pop_reduced, score_matrix, inside_spheres)
 
         pl.scatter_labels(
             pop_reduced, labels_reduced, s=50, edgecolor='k', zorder=5)
+
+        if i == 0:
+            # Add legend to first figures
+            plt.legend(part_types, loc=legend_location, edgecolor='k')
+
+        has_sphere = np.any(path_vectors[pairs[i]], 0)
+        within_radius = dist_matrix < r
+
+        inside_spheres = pe.in_spheres(within_radius, has_sphere)
+        pl.plot_links(pop_reduced, score_matrix, inside_spheres)
 
         has_sphere = np.any(path_vectors[pairs[i]], 0)
         pl.plot_spheres(pop_reduced[has_sphere], r, ax)
