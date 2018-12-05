@@ -27,10 +27,6 @@ def main():
 
     df_head_feet = pd.read_pickle(best_pos_paths[0])
 
-    # Convert all position vectors to float type
-    # so they can be easily input to linear algebra functions
-    df_head_feet = df_head_feet.applymap(pd.to_numeric)
-
     # Cluster frames with mean shift to locate the walking passes
     frames = df_head_feet.index
 
@@ -45,6 +41,9 @@ def main():
     pass_dfs = list(nf.group_by_label(df_head_feet, labels))
 
     df_pass = pass_dfs[0]
+
+    # Convert to 2D
+    df_pass = df_pass.applymap(lambda point: asi.convert_to_2d(point))
 
     # %% Foot Distance
 
@@ -93,8 +92,9 @@ def main():
 
     foot_points = np.stack(foot_series)
 
-    step_signal = lin.line_coordinate_system(
-        np.zeros(3), direction_pass, foot_points)
+    line_point = np.zeros(direction_pass.shape)
+    step_signal = lin.line_coordinate_system(line_point, direction_pass,
+                                             foot_points)
 
     is_stance = pde.detect_phases(step_signal)
 
