@@ -1,15 +1,16 @@
-*deprecated*
-untitled*
+
 .*
 *.pyc
-*.pdf
-*html*
+*.html
 
-.hypothesis
-docs/_build
-docs/separate
-docs/stubs
+Untitled*
+
+docs/_build/
+docs/separate/
+docs/stubs/
+
 data/
+figures/
 
 results/figures/
 results/dataframes/
