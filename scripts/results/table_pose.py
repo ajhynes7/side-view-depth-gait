@@ -79,8 +79,6 @@ def main():
     truth_mod_2d_l = np.apply_along_axis(asi.convert_to_2d, 1, truth_mod_l)
     truth_mod_2d_r = np.apply_along_axis(asi.convert_to_2d, 1, truth_mod_r)
 
-
-
     # %% Calculate accuracies
 
     acc_matched_l = pp.position_accuracy(matched_l, truth_l)
@@ -93,13 +91,13 @@ def main():
     acc_assigned_mod_l = pp.position_accuracy(assigned_l, truth_mod_2d_l)
     acc_assigned_mod_r = pp.position_accuracy(assigned_r, truth_mod_2d_r)
 
-    acc_matched = pp.double_position_accuracy(
-        matched_l, matched_r, truth_l, truth_r)
-    acc_matched_mod = pp.double_position_accuracy(
-        matched_l, matched_r, truth_mod_l, truth_mod_r)
+    acc_matched = pp.double_position_accuracy(matched_l, matched_r, truth_l,
+                                              truth_r)
+    acc_matched_mod = pp.double_position_accuracy(matched_l, matched_r,
+                                                  truth_mod_l, truth_mod_r)
 
-    acc_assigned = pp.double_position_accuracy(
-        assigned_l, assigned_r, truth_2d_l, truth_2d_r)
+    acc_assigned = pp.double_position_accuracy(assigned_l, assigned_r,
+                                               truth_2d_l, truth_2d_r)
     acc_assigned_mod = pp.double_position_accuracy(
         assigned_l, assigned_r, truth_mod_2d_l, truth_mod_2d_r)
 

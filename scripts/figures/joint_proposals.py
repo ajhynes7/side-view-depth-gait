@@ -3,10 +3,10 @@
 import glob
 import os
 from os.path import join
+import pickle
 import re
 
 import cv2
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -18,10 +18,11 @@ import modules.pose_estimation as pe
 
 def main():
 
-    load_dir = join('data', 'kinect', 'labelled_trials')
+    kinect_dir = join('data', 'kinect')
 
-    hypo_dir = join('data', 'kinect', 'processed', 'hypothesis')
-    align_dir = join('data', 'kinect', 'alignment')
+    load_dir = join(kinect_dir, 'labelled_trials')
+    hypo_dir = join(kinect_dir, 'processed', 'hypothesis')
+    align_dir = join(kinect_dir, 'alignment')
 
     part_types = ['Head', 'Hip', 'Thigh', 'Knee', 'Calf', 'Foot']
     file_index = 271
@@ -36,27 +37,13 @@ def main():
     depth_image = cv2.imread(depth_path, cv2.IMREAD_ANYDEPTH)
     df_hypo = pd.read_pickle(join(hypo_dir, trial_name) + '.pkl')
 
-    # %% Convert image file numbers to frame numbers
-
-    df_align = pd.read_csv(
-        join(align_dir, trial_name + '.txt'),
-        header=None,
-        names=['image_file'])
-
-    # Extract number from image file name
-    pattern = r'(\d+)\.png'
-    df_align['image_number'] = df_align.image_file.str.extract(pattern)
-    df_align = df_align.dropna()
-    df_align.image_number = pd.to_numeric(df_align.image_number)
-
-    # Dictionary mapping image file numbers to frames
-    image_to_frame = {
-        image_num: frame
-        for frame, image_num in enumerate(df_align.image_number.values)
-    }
-
     match_object = re.search(r'(\d+).png', depth_path)
     image_number = int(match_object.group(1))
+
+    # Load dictionary to convert image numbers to frames
+    with open(join(align_dir, "{}.pkl".format(trial_name)), 'rb') as handle:
+        image_to_frame = pickle.load(handle)
+
     frame = image_to_frame[image_number]
 
     hypotheses = df_hypo.loc[frame]

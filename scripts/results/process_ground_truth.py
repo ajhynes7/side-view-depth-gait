@@ -1,9 +1,11 @@
 """Extract ground truth positions from labelled images."""
 
+from collections import OrderedDict
 import glob
 import os
+from os.path import basename, join
+import pickle
 import re
-from collections import OrderedDict
 
 import cv2
 import numpy as np
@@ -14,8 +16,8 @@ import analysis.images as im
 
 def main():
 
-    load_dir = os.path.join('data', 'kinect', 'labelled_trials')
-    align_dir = os.path.join('data', 'kinect', 'alignment')
+    load_dir = join('data', 'kinect', 'labelled_trials')
+    align_dir = join('data', 'kinect', 'alignment')
 
     part_rgb_dict = OrderedDict({
         'HEAD': [255, 0, 255],
@@ -42,13 +44,13 @@ def main():
 
     for trial_name in labelled_trial_names:
 
-        label_dir = os.path.join(load_dir, trial_name, 'label')
-        depth_dir = os.path.join(load_dir, trial_name, 'depth16bit')
+        label_dir = join(load_dir, trial_name, 'label')
+        depth_dir = join(load_dir, trial_name, 'depth16bit')
 
-        label_paths = sorted(glob.glob(os.path.join(label_dir, '*.png')))
-        depth_paths = sorted(glob.glob(os.path.join(depth_dir, '*.png')))
+        label_paths = sorted(glob.glob(join(label_dir, '*.png')))
+        depth_paths = sorted(glob.glob(join(depth_dir, '*.png')))
 
-        depth_filenames = [os.path.basename(x) for x in depth_paths]
+        depth_filenames = [basename(x) for x in depth_paths]
         image_nums = [
             int(re.search(pattern, x).group(1)) for x in depth_filenames
         ]
@@ -88,24 +90,11 @@ def main():
 
                 df_trial.loc[image_num, part_name] = median_real
 
-        # %% Convert image file numbers to frame numbers
+        # Load dictionary to convert image numbers to frames
+        with open(join(align_dir, "{}.pkl".format(trial_name)),
+                  'rb') as handle:
+            image_to_frame = pickle.load(handle)
 
-        df_align = pd.read_csv(
-            os.path.join(align_dir, trial_name + '.txt'),
-            header=None,
-            names=['image_file'])
-
-        # Extract number from image file name
-        pattern = r'(\d+)\.png'
-        df_align['image_number'] = df_align.image_file.str.extract(pattern)
-        df_align = df_align.dropna()
-        df_align.image_number = pd.to_numeric(df_align.image_number)
-
-        # Dictionary mapping image file numbers to frames
-        image_to_frame = {
-            image_num: frame
-            for frame, image_num in enumerate(df_align.image_number.values)
-        }
         df_trial.index = df_trial.index.map(image_to_frame)
 
         df_trial = df_trial.dropna(how='all')
@@ -115,7 +104,7 @@ def main():
     df_truth = pd.concat(dict_truth)
     df_truth.index.names = ['trial_name', 'frame']
 
-    df_truth.to_pickle(os.path.join('results', 'dataframes', 'df_truth.pkl'))
+    df_truth.to_pickle(join('results', 'dataframes', 'df_truth.pkl'))
 
 
 if __name__ == '__main__':
