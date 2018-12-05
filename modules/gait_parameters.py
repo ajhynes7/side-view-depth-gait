@@ -207,6 +207,7 @@ def walking_pass_parameters(df_pass, direction_pass):
     df_contact_l['side'] = 'L'
     df_contact_r['side'] = 'R'
 
+    # Combine left and right contact instances and sort by frame
     df_contact = pd.concat([df_contact_l, df_contact_r]).sort_values('frame')
 
     df_pass_parameters = foot_contacts_to_gait(df_contact)

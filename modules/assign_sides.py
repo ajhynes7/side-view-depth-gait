@@ -86,6 +86,7 @@ def assign_sides_portion(df_walk, direction):
     foot_points_a, foot_points_b = pp.track_two_objects(
         foot_points_l, foot_points_r)
 
+    # Find the side of foot point a relative to foot point b
     side_total = 0
     for foot_point_a, foot_point_b in zip(foot_points_a, foot_points_b):
         side_total += lin.side_value_2d(foot_point_a, foot_point_b, direction)
