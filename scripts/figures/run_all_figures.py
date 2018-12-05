@@ -3,7 +3,7 @@
 import matplotlib.pyplot as plt
 
 from scripts.figures import (body_graph, create_figures_code, joint_proposals,
-                             spheres)
+                             spheres, truth_positions)
 
 
 def main():
@@ -18,6 +18,7 @@ def main():
     joint_proposals.main()
     spheres.main()
     create_figures_code.main()
+    truth_positions.main()
 
 
 if __name__ == '__main__':

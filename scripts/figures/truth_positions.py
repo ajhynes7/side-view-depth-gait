@@ -1,4 +1,4 @@
-"""Plot label and depth images with body segment centroids."""
+"""Plot label and depth images with ground truth positions."""
 
 import glob
 import os
@@ -17,7 +17,6 @@ def main():
 
     load_dir = join('data', 'kinect', 'labelled_trials')
     align_dir = join('data', 'kinect', 'alignment')
-    save_dir = join('results', 'plots')
 
     labelled_trial_names = os.listdir(load_dir)
 
@@ -54,18 +53,18 @@ def main():
     plt.scatter(points_image[:, 0], points_image[:, 1], c='w', edgecolor='k')
     plt.axis('off')
 
-    fig.savefig(join(save_dir, 'label_image'))
+    fig.savefig(join('figures', 'label_image'))
 
     # Depth image
     fig = plt.figure()
 
     plt.scatter(points_image[:, 0], points_image[:, 1], c='w')
-    plt.imshow(depth_image)
+    plt.imshow(depth_image, cmap='gray')
 
     plt.scatter(points_image[:, 0], points_image[:, 1], c='w', edgecolor='k')
     plt.axis('off')
 
-    fig.savefig(join(save_dir, 'depth_image'))
+    fig.savefig(join('figures', 'depth_image'))
 
 
 if __name__ == '__main__':
