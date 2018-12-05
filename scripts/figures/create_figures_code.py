@@ -11,7 +11,6 @@ from sklearn.cluster import DBSCAN
 
 import analysis.plotting as pl
 import modules.assign_sides as asi
-import modules.gait_parameters as gp
 import modules.linear_algebra as lin
 import modules.numpy_funcs as nf
 import modules.pandas_funcs as pf
