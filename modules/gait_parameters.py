@@ -95,7 +95,8 @@ def stride_parameters(foot_a_i, foot_b, foot_a_f, *, fps=30):
     ----------
     foot_a_i : namedtuple
         Represents the initial foot on side A.
-        Includes fields of 'stride', 'frame', 'side', 'position'.
+        Includes fields of 'stride', 'side', 'position', 'first_contact',
+        'last_contact'.
     foot_b : namedtuple
         Represents the foot on side B.
     foot_a_f : namedtuple
@@ -110,11 +111,12 @@ def stride_parameters(foot_a_i, foot_b, foot_a_f, *, fps=30):
 
     Examples
     --------
-    >>> Foot = namedtuple('Foot', ['stride', 'frame', 'side', 'position'])
+    >>> names = ['stride', 'side', 'position', 'first_contact', 'last_contact']
+    >>> Foot = namedtuple('Foot', names)
 
-    >>> foot_l_1 = Foot(1, 200, 'L', np.array([764.253, 28.798]))
-    >>> foot_r_1 = Foot(1, 215, 'R', np.array([696.834, 37.141]))
-    >>> foot_l_2 = Foot(2, 230, 'R', np.array([637.172, 24.508]))
+    >>> foot_l_1 = Foot(1, 'L', np.array([764, 28]), 180, 220)
+    >>> foot_r_1 = Foot(1, 'R', np.array([696, 37]), 200, 230)
+    >>> foot_l_2 = Foot(2, 'R', np.array([637, 24]), 230, 245)
 
     >>> params = stride_parameters(foot_l_1, foot_r_1, foot_l_2)
 
@@ -123,11 +125,13 @@ def stride_parameters(foot_a_i, foot_b, foot_a_f, *, fps=30):
     >>> params['stride']
     1
     >>> np.round(params['step_length'], 1)
-    60.1
+    59.4
     >>> np.round(params['stride_width'], 1)
-    10.6
+    11.1
     >>> np.round(params['stride_velocity'], 1)
-    127.2
+    76.2
+    >>> params['stance_percentage']
+    80.0
 
     """
     pos_a_i, pos_a_f = foot_a_i.position, foot_a_f.position
