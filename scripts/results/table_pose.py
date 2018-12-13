@@ -54,9 +54,11 @@ def main():
 
     proposals = df_hypo.FOOT.values
 
+    truth_head = np.stack(df_truth.HEAD)
     truth_l = np.stack(df_truth.L_FOOT)
     truth_r = np.stack(df_truth.R_FOOT)
 
+    selected_head = np.stack(df_selected.HEAD)
     selected_l = np.stack(df_selected.L_FOOT)
     selected_r = np.stack(df_selected.R_FOOT)
 
@@ -81,6 +83,8 @@ def main():
 
     # %% Calculate accuracies
 
+    acc_head = pp.position_accuracy(truth_head, selected_head)
+
     acc_matched_l = pp.position_accuracy(matched_l, truth_l)
     acc_matched_r = pp.position_accuracy(matched_r, truth_r)
     acc_matched_mod_l = pp.position_accuracy(matched_l, truth_mod_l)
@@ -103,6 +107,11 @@ def main():
 
     # %% Organize into tables
 
+    df_acc_head = pd.DataFrame(
+        index=['Truth'],
+        columns=['Head'],
+        data=acc_head)
+
     df_acc_matched = pd.DataFrame(
         index=['Truth', 'Modified'],
         columns=['Left', 'Right', 'Both'],
@@ -115,11 +124,15 @@ def main():
         data=[[acc_assigned_l, acc_assigned_r, acc_assigned],
               [acc_assigned_mod_l, acc_assigned_mod_r, acc_assigned_mod]])
 
-    with open(join('results', 'tables', 'accuracy_matched.txt'), 'w') as file:
-        file.write(np.round(df_acc_matched, 2).to_latex())
+    table_dir = join('results', 'tables')
 
-    with open(join('results', 'tables', 'accuracy_assigned.txt'), 'w') as file:
-        file.write(np.round(df_acc_assigned, 2).to_latex())
+    file_names = ['accuracy_head', 'accuracy_matched', 'accuracy_assigned']
+    data_frames = [df_acc_head, df_acc_matched, df_acc_assigned]
+
+    for file_name, data_frame in zip(file_names, data_frames):
+
+        with open(join(table_dir, file_name + '.txt'), 'w') as file:
+            file.write(data_frame.round(2).to_latex())
 
 
 if __name__ == '__main__':

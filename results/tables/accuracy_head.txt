@@ -1,0 +1,7 @@
+\begin{tabular}{lr}
+\toprule
+{} &  Head \\
+\midrule
+Truth &  0.98 \\
+\bottomrule
+\end{tabular}
