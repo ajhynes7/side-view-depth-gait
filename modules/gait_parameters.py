@@ -270,6 +270,4 @@ def combine_walking_passes(df_assigned, direction_series):
     # Gait parameters of full walking trial
     df_trial = pd.concat(param_dfs, sort=True).reset_index(drop=True)
 
-    df_trial = df_trial.set_index(['pass', 'stride', 'side'])
-
     return df_trial
