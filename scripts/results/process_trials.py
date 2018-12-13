@@ -52,6 +52,10 @@ def main():
     df_total_z = df_total_z.applymap(
         lambda x: abs(x) if isinstance(x, float) else x)
 
+    # Drop column of stride numbers (not required for results)
+    df_total_k = df_total_k.drop('stride', axis=1)
+    df_total_z = df_total_z.drop('stride', axis=1)
+
     # Save total dataframes for easy analysis
     df_total_k.to_pickle(
         os.path.join('results', 'dataframes', 'df_total_k.pkl'))
