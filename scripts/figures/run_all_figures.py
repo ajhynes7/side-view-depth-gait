@@ -2,8 +2,8 @@
 
 import matplotlib.pyplot as plt
 
-from scripts.figures import (body_graph, create_figures_code, joint_proposals,
-                             spheres, truth_positions)
+from scripts.figures import (body_graph, joint_proposals, signals,
+                             truth_positions)
 
 
 def main():
@@ -16,8 +16,7 @@ def main():
     # Run scripts to make figures
     body_graph.main()
     joint_proposals.main()
-    spheres.main()
-    create_figures_code.main()
+    signals.main()
     truth_positions.main()
 
 

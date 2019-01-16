@@ -1,4 +1,4 @@
-"""Create figures using functions from the main code."""
+"""Plot foot distance and step signal."""
 
 import glob
 import os
