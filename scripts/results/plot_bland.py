@@ -1,6 +1,6 @@
 """Generate Bland-Altman and direct comparison plots."""
 
-import os
+from os.path import join
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,12 +11,12 @@ import analysis.stats as st
 
 def main():
 
-    dataframe_dir = os.path.join('results', 'dataframes')
-    save_dir = os.path.join('results', 'plots')
+    dataframe_dir = join('results', 'dataframes')
+    save_dir = join('results', 'plots')
 
     # Load dataframes with all results
-    df_total_k = pd.read_pickle(os.path.join(dataframe_dir, 'df_total_k.pkl'))
-    df_total_z = pd.read_pickle(os.path.join(dataframe_dir, 'df_total_z.pkl'))
+    df_total_k = pd.read_pickle(join(dataframe_dir, 'df_total_k.pkl'))
+    df_total_z = pd.read_pickle(join(dataframe_dir, 'df_total_z.pkl'))
 
     # Columns that represent gait parameters
     gait_params = df_total_k.select_dtypes(float).columns
@@ -37,7 +37,12 @@ def main():
 
         fig, ax = plt.subplots()
 
-        plt.scatter(means, differences, c='k', s=10)
+        ax.scatter(means, differences, c='k', s=20)
+
+        # Enlarge y range
+        y_lims = np.array(ax.get_ylim())
+        y_range = y_lims[1] - y_lims[0]
+        ax.set_ylim(y_lims + 0.5 * y_range * np.array([-1, 1]))
 
         # Remove right and top borders
         ax.spines['right'].set_visible(False)
@@ -52,19 +57,21 @@ def main():
         ax.set_yticklabels(
             [r'{:.0f}\%'.format(x * 100) for x in ax.get_yticks()])
 
-        plt.xlabel('Mean of two measurements [cm]')
-        plt.ylabel('Relative difference')
+        ax.tick_params(labelsize=15)
+        ax.locator_params(nbins=5)
+
+        plt.xlabel('Mean of two measurements [cm]', fontsize=20)
+        plt.ylabel('Relative difference', fontsize=20)
 
         fig.savefig(
-            os.path.join(save_dir, 'bland_{}.pdf'.format(param)),
-            format='pdf',
-            dpi=1200)
+            join(save_dir, 'bland_{}.pdf'.format(param)),
+            bbox_inches='tight')
 
         # %% Direct comparison plot
 
         fig, ax = plt.subplots()
 
-        ax.scatter(measures_z, measures_k, c='k', s=10)
+        ax.scatter(measures_z, measures_k, c='k', s=20)
 
         lims = [
             np.min([ax.get_xlim(), ax.get_ylim()]),
@@ -78,13 +85,15 @@ def main():
         plt.gca().spines['right'].set_visible(False)
         plt.gca().spines['top'].set_visible(False)
 
-        plt.xlabel("Zeno Walkway [cm]")
-        plt.ylabel("Kinect [cm]")
+        ax.tick_params(labelsize=15)
+        ax.locator_params(nbins=5)
+
+        plt.xlabel("Zeno Walkway [cm]", fontsize=20)
+        plt.ylabel("Kinect [cm]", fontsize=20)
 
         fig.savefig(
-            os.path.join(save_dir, 'compare_{}.pdf'.format(param)),
-            format='pdf',
-            dpi=1200)
+            join(save_dir, 'compare_{}.pdf'.format(param)),
+            bbox_inches='tight')
 
 
 if __name__ == '__main__':
