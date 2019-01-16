@@ -57,11 +57,11 @@ def main():
         ax.set_yticklabels(
             [r'{:.0f}\%'.format(x * 100) for x in ax.get_yticks()])
 
-        ax.tick_params(labelsize=15)
+        ax.tick_params(labelsize=25)
         ax.locator_params(nbins=5)
 
-        plt.xlabel('Mean of two measurements [cm]', fontsize=20)
-        plt.ylabel('Relative difference', fontsize=20)
+        plt.xlabel('Mean of two measurements [cm]', fontsize=30)
+        plt.ylabel('Relative difference', fontsize=30)
 
         fig.savefig(
             join(save_dir, 'bland_{}.pdf'.format(param)),
@@ -85,11 +85,11 @@ def main():
         plt.gca().spines['right'].set_visible(False)
         plt.gca().spines['top'].set_visible(False)
 
-        ax.tick_params(labelsize=15)
+        ax.tick_params(labelsize=25)
         ax.locator_params(nbins=5)
 
-        plt.xlabel("Zeno Walkway [cm]", fontsize=20)
-        plt.ylabel("Kinect [cm]", fontsize=20)
+        plt.xlabel("Zeno Walkway [cm]", fontsize=30)
+        plt.ylabel("Kinect [cm]", fontsize=30)
 
         fig.savefig(
             join(save_dir, 'compare_{}.pdf'.format(param)),
