@@ -2,11 +2,11 @@
 
 from itertools import tee
 
+import hypothesis.strategies as st
+from hypothesis import given
 import numpy as np
 
-import hypothesis.strategies as st
 import modules.iterable_funcs as itf
-from hypothesis import given
 
 sequences = st.one_of(
     st.lists(elements=st.integers(), min_size=1, max_size=50),
