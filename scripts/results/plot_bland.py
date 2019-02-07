@@ -58,14 +58,13 @@ def main():
             [r'{:.0f}\%'.format(x * 100) for x in ax.get_yticks()])
 
         ax.tick_params(labelsize=25)
-        ax.locator_params(nbins=5)
 
         plt.xlabel('Mean of two measurements [cm]', fontsize=30)
         plt.ylabel('Relative difference', fontsize=30)
+        plt.tight_layout()
 
         fig.savefig(
-            join(save_dir, 'bland_{}.pdf'.format(param)),
-            bbox_inches='tight')
+            join(save_dir, 'bland_{}.png'.format(param)))
 
         # %% Direct comparison plot
 
@@ -86,14 +85,13 @@ def main():
         plt.gca().spines['top'].set_visible(False)
 
         ax.tick_params(labelsize=25)
-        ax.locator_params(nbins=5)
 
         plt.xlabel("Zeno Walkway [cm]", fontsize=30)
         plt.ylabel("Kinect [cm]", fontsize=30)
+        plt.tight_layout()
 
         fig.savefig(
-            join(save_dir, 'compare_{}.pdf'.format(param)),
-            bbox_inches='tight')
+            join(save_dir, 'compare_{}.png'.format(param)))
 
 
 if __name__ == '__main__':
