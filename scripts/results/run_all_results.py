@@ -2,8 +2,8 @@
 
 import matplotlib.pyplot as plt
 
-from scripts.results import (align_frames, plot_bland, plot_accuracy_radii,
-                             process_ground_truth, process_trials, table_gait,
+from scripts.results import (align_frames, gait_analysis, plot_accuracy_radii,
+                             process_ground_truth, process_trials,
                              table_length_compare, table_lengths, table_pose)
 
 
@@ -21,10 +21,10 @@ def main():
     table_lengths.main()
     table_length_compare.main()
     table_pose.main()
-    table_gait.main()
 
-    plot_bland.main()
     plot_accuracy_radii.main()
+
+    gait_analysis.main()
 
 
 if __name__ == '__main__':
