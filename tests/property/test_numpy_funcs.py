@@ -1,12 +1,13 @@
 """Tests for functions using numpy."""
 
+import hypothesis.strategies as st
 import numpy as np
 import pytest
-
-import hypothesis.strategies as st
-import modules.numpy_funcs as nf
 from hypothesis import assume, given
 from hypothesis.extra.numpy import arrays
+
+import modules.numpy_funcs as nf
+
 
 ints = st.integers(min_value=-1e6, max_value=1e6)
 positive_ints = st.integers(min_value=1, max_value=1e6)
@@ -31,7 +32,7 @@ def test_to_column(array):
 @given(arrays(float, array_lengths, st.floats(allow_nan=True)))
 def test_remove_nan(array):
     """Test removing nans from an array."""
-    # Assume the the input has at least one nan.
+    # Assume that the input has at least one nan
     assume(np.any(np.isnan(array)))
 
     removed = nf.remove_nan(array)

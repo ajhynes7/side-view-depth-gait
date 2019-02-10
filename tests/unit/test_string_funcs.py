@@ -1,3 +1,5 @@
+"""Test functions for string manipulation."""
+
 import modules.string_funcs as sf
 
 
