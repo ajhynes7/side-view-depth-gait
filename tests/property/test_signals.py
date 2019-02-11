@@ -1,11 +1,12 @@
 """Test functions for signal processing."""
 
-import numpy as np
-
 import hypothesis.strategies as st
-import modules.signals as sig
+import numpy as np
 from hypothesis import assume, given
 from hypothesis.extra.numpy import arrays
+
+import modules.signals as sig
+
 
 ints = st.integers(min_value=-1e6, max_value=1e6)
 

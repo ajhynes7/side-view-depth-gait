@@ -1,8 +1,8 @@
 """Functions for plotting points and visualizing results."""
 
 import matplotlib.pyplot as plt
-from matplotlib import cm
 import numpy as np
+from matplotlib import cm
 
 
 def scatter_labels(points, labels, **kwargs):
@@ -43,45 +43,6 @@ def scatter2(points, **kwargs):
         points = points.reshape(1, -1)
 
     plt.scatter(points[:, 0], points[:, 1], **kwargs)
-
-
-def scatter3(ax, points, **kwargs):
-    """
-    Produce a 3D scatter plot.
-
-    Parameters
-    ----------
-    ax : Axes3D object
-        Axis for plotting.
-    points : ndarray
-        (n, 3) array of n points in three dimensions.
-        One-dimensional array with shape (3, ) also allowed.
-    kwargs : dict, optional
-        Additional keywords passed to `scatter`.
-
-    """
-    if points.ndim == 1:
-        # Convert to 2d array
-        points = points.reshape(1, -1)
-
-    ax.scatter(points[:, 0], points[:, 1], points[:, 2], **kwargs)
-
-
-def scatter_order(points, order, **kwargs):
-    """
-    Produce a scatter plot using a specified order of the (x, y) coordinates.
-
-    Parameters
-    ----------
-    points : ndarray
-        (n, 2) array of n points with dimension 2.
-    order : array_like
-        Order of the coordinates
-    kwargs : dict, optional
-        Additional keywords passed to `scatter`.
-
-    """
-    plt.scatter(points[:, order[0]], points[:, order[1]], **kwargs)
 
 
 def scatter_series(series, **kwargs):
@@ -134,89 +95,6 @@ def connect_two_sets(points_1, points_2, **kwargs):
     for point_1 in points_1:
         for point_2 in points_2:
             connect_points(point_1, point_2, **kwargs)
-
-
-def connect_points_3(ax, point_1, point_2, **kwargs):
-    """
-    Connect two 3D points.
-
-    Parameters
-    ----------
-    ax : Axes3D object
-        Axis for plotting.
-    point_1, point_2 : array_like
-        Points to connect.
-    kwargs : dict, optional
-        Additional keywords passed to `plot`.
-
-    """
-    x1, y1, z1 = point_1
-    x2, y2, z2 = point_2
-
-    return ax.plot([x1, x2], [y1, y2], [z1, z2], **kwargs)
-
-
-def plot_vector_3(ax, point, direction, **kwargs):
-    """
-    Plot a 3D vector.
-
-    Parameters
-    ----------
-    ax : Axes3D object
-        Axis for plotting.
-    point : array_like
-        Position of the vector tail.
-    direction : array_like
-        Direction of the vector.
-    kwargs : dict, optional
-        Additional keywords passed to `quiver3D`.
-
-    """
-    x, y, z = point
-    u, v, w = direction
-
-    ax.quiver3D(x, y, z, u, v, w, **kwargs)
-
-
-def plot_groups(data_groups, plot_func, **kwargs):
-    """
-    Apply a plotting function to each group of data in an iterable.
-
-    Parameters
-    ----------
-    data_groups : iterable
-        Each element is an array of data points.
-    plot_func : function
-        Function used to plot each group of data
-    kwargs : dict, optional
-        Additional keywords passed to `plot_func`.
-
-    """
-    for data in data_groups:
-
-        plot_func(data, **kwargs)
-
-
-def plot_foot_peaks(foot_dist, peak_frames):
-    """
-    Plot the peaks in the foot distance signal.
-
-    Parameters
-    ----------
-    foot_dist : ndarray
-        Foot distance signal.
-    peak_frames : iterable
-        Sequence of frames where a peak occurs.
-
-    """
-    _, ax = plt.subplots()
-
-    ax.plot(foot_dist, color='k', linewidth=0.7)
-
-    ax.vlines(x=peak_frames, ymin=0, ymax=foot_dist.max(), colors='r')
-
-    plt.xlabel('Frame number')
-    plt.ylabel('Distance between feet [cm]')
 
 
 def plot_spheres(points, r, ax):

@@ -139,53 +139,6 @@ def dag_shortest_paths(graph, order, source_nodes):
     return prev, dist
 
 
-def min_shortest_path(prev, dist, node_labels, l):
-    """
-    Find the minimum shortest path to nodes with a given label l.
-
-    Parameters
-    ----------
-    prev : dict
-        For each node u in the graph, prev[u] is the previous node
-        on the shortest path to u.
-    dist : dict
-        For each node u in the graph, dist[u] is the total distance (weight)
-        of the shortest path to u.
-    node_labels : dict
-        node_labels[u] is the label of node u.
-    l : any type
-        One of the labels of the nodes.
-
-    Returns
-    -------
-    list
-        Minimum shortest path to nodes with label l.
-
-    Examples
-    --------
-    >>> prev = {0: np.nan, 1: np.nan, 2: 0, 3: 1, 8: 3}
-    >>> dist = {0: 0, 1: 0, 2: 20, 3: 5, 8: 11}
-
-    >>> node_labels = {0: 0, 1: 0, 2: 1, 3: 1, 8: 1}
-
-    >>> min_shortest_path(prev, dist, node_labels, 1)
-    [1, 3]
-
-    """
-    # Nodes in the graph with label l
-    nodes_l = [v for v, label in node_labels.items() if label == l]
-
-    # Path distance to all nodes with label l
-    dist_to_l_nodes = [dist[v] for v in dist if node_labels[v] == l]
-
-    # Index of node labelled l with min path distance
-    min_index = np.argmin(dist_to_l_nodes)
-
-    last_node = nodes_l[min_index]
-
-    return trace_path(prev, last_node)
-
-
 def trace_path(prev, target_node):
     """
     Trace back a path through a graph.
@@ -223,41 +176,6 @@ def trace_path(prev, target_node):
 
     # Reverse the list to get the path in order
     return path[::-1]
-
-
-def weight_along_path(graph, path):
-    """
-    Compute the total weight of a path in a graph.
-
-    Parameters
-    ----------
-    graph : dict
-        Adjacency list.
-        graph[u][v] is the weight from node u to node v.
-        There must be a key for each node u in the graph.
-    path : array_like
-        List of nodes comprising a path on the graph.
-
-    Returns
-    -------
-    total_weight : {float, int}
-        The sum of weights along the path.
-
-    Examples
-    --------
-    >>> graph = {0: {1: 10, 2: 20}, 1: {3: 5}, 2: {3: 8}, 3: {8: 6}, 8: {}}
-    >>> path = [0, 1, 3, 8]
-
-    >>> weight_along_path(graph, path)
-    21
-
-    """
-    total_weight = 0
-
-    for a, b in itf.pairwise(path):
-        total_weight += graph[a][b]
-
-    return total_weight
 
 
 def labelled_nodes_to_graph(node_labels, label_adj_list):

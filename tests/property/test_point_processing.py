@@ -1,12 +1,13 @@
 """Tests for processing points."""
 
-import numpy as np
-from scipy.spatial.distance import cdist
-
 import hypothesis.strategies as st
-import modules.point_processing as pp
+import numpy as np
 from hypothesis import assume, given
 from hypothesis.extra.numpy import arrays
+from scipy.spatial.distance import cdist
+
+import modules.point_processing as pp
+
 
 ints = st.integers(min_value=-1e6, max_value=1e6)
 

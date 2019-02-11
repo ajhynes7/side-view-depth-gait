@@ -1,5 +1,4 @@
 
-.*
 
 *.html
 *.ipynb
@@ -7,13 +6,15 @@
 *.png
 *.pyc
 
-Untitled*
+.coverage
+.*/
 
 docs/_build/
 docs/separate/
 docs/stubs/
 
 data/
+htmlcov
 
 results/figures/
 results/dataframes/

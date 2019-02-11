@@ -1,13 +1,14 @@
 """Tests for linear algebra module."""
 
+import hypothesis.strategies as st
 import numpy as np
 import pytest
-from numpy.linalg import norm
-
-import hypothesis.strategies as st
-import modules.linear_algebra as lin
 from hypothesis import assume, given
 from hypothesis.extra.numpy import arrays
+from numpy.linalg import norm
+
+import modules.linear_algebra as lin
+
 
 floats = st.floats(min_value=-1e6, max_value=1e6)
 ints = st.integers(min_value=-1e6, max_value=1e6)
@@ -15,24 +16,64 @@ ints_nonzero = ints.filter(lambda x: x != 0)
 
 n_points = st.one_of(st.integers(min_value=2, max_value=10))
 
-non_zero_vector = st.lists(
-    ints, min_size=2, max_size=5).filter(lambda x: any(x))
+non_zero_vector = st.lists(ints, min_size=2, max_size=5).filter(lambda x: any(x))
 
 shapes = st.tuples(
-    st.integers(min_value=2, max_value=10),
-    st.integers(min_value=2, max_value=10))
+    st.integers(min_value=2, max_value=10), st.integers(min_value=2, max_value=10)
+)
 
 # Strategy for generating shapes of numpy arrays with dimension 2 or 3
 shapes_2_3 = st.tuples(
-    st.integers(min_value=2, max_value=10),
-    st.integers(min_value=2, max_value=3))
+    st.integers(min_value=2, max_value=10), st.integers(min_value=2, max_value=3)
+)
 
-array_like_nonzero = st.lists(
-    ints, min_size=3, max_size=3).filter(lambda x: any(x))
+array_like_nonzero = st.lists(ints, min_size=3, max_size=3).filter(lambda x: any(x))
 
-point_3 = arrays('int', (3, ), ints)
+point_3 = arrays('int', (3,), ints)
 
 points_2_3 = arrays('int', shapes_2_3, ints)
+
+
+def unit(v, **kwargs):
+    """
+    Return the unit vector of v.
+
+    Parameters
+    ----------
+    v : array_like
+        Input vector.
+    kwargs : dict, optional
+        Additional keywords passed to `np.isclose`.
+
+    Returns
+    -------
+    ndarray
+        Unit vector.
+
+    Raises
+    ------
+    ValueError
+        When the vector norm is zero.
+
+    Examples
+    --------
+    >>> unit([5, 0, 0])
+    array([1., 0., 0.])
+
+    >>> unit([0, -2])
+    array([ 0., -1.])
+
+    >>> unit([0, 0])
+    Traceback (most recent call last):
+    ValueError: The vector norm is zero.
+
+    """
+    length = norm(v)
+
+    if np.isclose(length, 0, **kwargs):
+        raise ValueError("The vector norm is zero.")
+
+    return v / length
 
 
 def is_perpendicular(u, v, **kwargs):
@@ -172,7 +213,7 @@ def angle_between(u, v, degrees=False):
     0.0
 
     """
-    cos_theta = np.dot(lin.unit(u), lin.unit(v))
+    cos_theta = np.dot(unit(u), unit(v))
 
     # The allowed domain for arccos is [-1, 1]
     if cos_theta > 1:
@@ -197,12 +238,12 @@ def test_unit(vector):
     idempotent.
 
     """
-    unit_vector = lin.unit(vector)
+    unit_vector = unit(vector)
 
     assert np.allclose(norm(unit_vector), 1)
 
     # Unit function is idempotent
-    assert np.allclose(unit_vector, lin.unit(unit_vector))
+    assert np.allclose(unit_vector, unit(unit_vector))
 
 
 @given(non_zero_vector, non_zero_vector)
@@ -224,7 +265,7 @@ def test_parallel(u, v):
         angle_0 = np.isclose(angle_uv, 0, atol=1e-5)
         angle_180 = np.isclose(angle_uv, 180)
 
-        assert (angle_0 or angle_180)
+        assert angle_0 or angle_180
 
 
 @given(array_like_nonzero, array_like_nonzero, array_like_nonzero)
@@ -241,7 +282,7 @@ def test_collinear(point_a, point_b, point_c):
         max_index = np.argmax(dists)
 
         max_dist = dists[max_index]
-        non_max_dists = dists[:max_index] + dists[max_index + 1:]
+        non_max_dists = dists[:max_index] + dists[max_index + 1 :]
 
         assert np.isclose(max_dist, sum(non_max_dists))
 
@@ -286,30 +327,3 @@ def test_best_fit_line(points):
     assert np.isclose(norm(direction), norm(direction_rev))
 
     assert np.isclose(norm(direction), 1)
-
-
-@pytest.mark.parametrize("points, centroid, direction", [
-    (np.array([[0, 0, 0], [1, 0, 0], [2, 0, 0]]), np.array([1, 0, 0]),
-     np.array([1, 0, 0])),
-    (np.array([[0, 0], [4, 0]]), np.array([2, 0]), np.array([1, 0])),
-    (np.array([[0, 0], [0, -10]]), np.array([0, -5]), np.array([0, -1])),
-])
-def test_best_fit_line_examples(points, centroid, direction):
-    """Test specific examples of best fit line."""
-    centroid_calc, direction_calc = lin.best_fit_line(points)
-
-    assert np.allclose(centroid, np.round(centroid_calc, 2))
-    assert np.allclose(direction, direction_calc)
-
-
-@pytest.mark.parametrize("a, b, expected", [
-    (np.array([2, 0]), np.array([-2, 0]), np.pi),
-    (np.array([5, 5, 5]), np.array([1, 1, 1]), 0),
-    (np.array([1, 0]), np.array([1, 1]), np.pi / 4),
-    (np.array([1, 0]), np.array([-5, -5]), 3 * np.pi / 4),
-])
-def test_angle_between_examples(a, b, expected):
-    """Test specific examples of the angle between two vectors."""
-    angle = angle_between(a, b)
-
-    assert np.allclose(angle, expected)
