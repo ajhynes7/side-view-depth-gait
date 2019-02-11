@@ -20,6 +20,64 @@ array_1d = arrays(int, array_lengths, ints)
 array_like_1d = st.lists(ints, min_size=1, max_size=50)
 
 
+def is_sorted(array):
+    """
+    Check if array is sorted in ascending order.
+
+    Parameters
+    ----------
+    array : array_like
+        Input array.
+
+    Returns
+    -------
+    bool
+        True if array is in ascending order.
+
+    Examples
+    --------
+    >>> is_sorted([1, 2, 3])
+    True
+
+    >>> is_sorted([-10, -5, 0, 8])
+    True
+
+    >>> is_sorted([-5, 0, 4, 3, 6, 8])
+    False
+
+    """
+    return np.all(np.diff(array) >= 0)
+
+
+def all_consecutive(array):
+    """
+    Check if elements in array are all consecutive.
+
+    Parameters
+    ----------
+    array : array_like
+        Input array.
+
+    Returns
+    -------
+    bool
+        True if all elements are consecutive
+
+    Examples
+    --------
+    >>> all_consecutive([1, 2, 3])
+    True
+
+    >>> all_consecutive([1, 2, 4])
+    False
+
+    >>> all_consecutive([1.1, 2.1, 3.1])
+    True
+
+    """
+    return np.all(np.diff(array) == 1)
+
+
 @given(array_like_1d)
 def test_to_column(array):
     """Test converting an array_like to a column ndarray."""
@@ -54,20 +112,11 @@ def test_find_indices(data):
 
 
 @given(array_like_1d)
-def test_ratio_non_zero(array):
-    """Test finding the ratio of non zero elements to all elements."""
-    ratio = nf.ratio_nonzero(array)
-
-    assert isinstance(ratio, float)
-    assert ratio <= len(array)
-
-
-@given(array_like_1d)
 def test_all_consecutive(array):
     """Test checking that an array has all consecutive values."""
     consecutive_test_2 = np.ptp(array) + 1 == len(array)
 
-    assert nf.all_consecutive(array) == consecutive_test_2
+    assert all_consecutive(array) == consecutive_test_2
 
 
 @given(array_like_1d)
@@ -76,7 +125,7 @@ def test_unique_no_sort(array):
     unique_preserved = nf.unique_no_sort(array)
     unique_regular = np.unique(array)
 
-    if nf.is_sorted(array):
+    if is_sorted(array):
         # If the array is already sorted, the two unique arrays should be equal
         assert np.array_equal(unique_preserved, unique_regular)
 
@@ -158,7 +207,7 @@ def test_make_consecutive(array):
     array_consec, index = nf.make_consecutive(array)
 
     assert np.array_equal(array_consec[index], np.unique(array))
-    assert nf.all_consecutive(array_consec)
+    assert all_consecutive(array_consec)
 
 
 @given(st.data())
@@ -180,7 +229,7 @@ def test_expand_arrays(data):
     else:
         x_expanded, y_expanded = nf.expand_arrays(x, y)
 
-        assert nf.all_consecutive(x_expanded)
+        assert all_consecutive(x_expanded)
 
         assert len(x_expanded) == len(y_expanded)
         assert len(nf.remove_nan(y_expanded)) == len(x)

@@ -1,49 +1,6 @@
 """Operations dealing with linear algebra, such as projection and distances."""
 
 import numpy as np
-from numpy.linalg import norm
-
-
-def unit(v, **kwargs):
-    """
-    Return the unit vector of v.
-
-    Parameters
-    ----------
-    v : array_like
-        Input vector.
-    kwargs : dict, optional
-        Additional keywords passed to `np.isclose`.
-
-    Returns
-    -------
-    ndarray
-        Unit vector.
-
-    Raises
-    ------
-    ValueError
-        When the vector norm is zero.
-
-    Examples
-    --------
-    >>> unit([5, 0, 0])
-    array([1., 0., 0.])
-
-    >>> unit([0, -2])
-    array([ 0., -1.])
-
-    >>> unit([0, 0])
-    Traceback (most recent call last):
-    ValueError: The vector norm is zero.
-
-    """
-    length = norm(v)
-
-    if np.isclose(length, 0, **kwargs):
-        raise ValueError("The vector norm is zero.")
-
-    return v / length
 
 
 def project_point_line(point_p, line_point_a, line_point_b):
@@ -95,37 +52,6 @@ def project_point_line(point_p, line_point_a, line_point_b):
 
     # Project point onto line
     return line_point_a + coeff * vec_ab
-
-
-def project_point_plane(point, point_plane, normal):
-    """
-    Project a point onto a plane.
-
-    Parameters
-    ----------
-    point : ndarray
-        Point in space.
-    point_plane : ndarray
-        Point on plane.
-    normal : ndarray
-        Normal vector of plane.
-
-    Returns
-    -------
-    ndarray
-        Projection of point P onto the plane..
-
-    Examples
-    --------
-    >>> point_plane, normal = np.array([0, 0, 0]), np.array([0, 0, 1])
-
-    >>> project_point_plane(np.array([10, 2, 5]), point_plane, normal)
-    array([10.,  2.,  0.])
-
-    """
-    unit_normal = unit(normal)
-
-    return point - np.dot(point - point_plane, unit_normal) * unit_normal
 
 
 def best_fit_line(points):
