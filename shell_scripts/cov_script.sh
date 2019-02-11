@@ -1,8 +1,11 @@
 #!/bin/bash
 
-coverage run -a kinect_lengths.py
-coverage run -a kinect_best_pos.py
-coverage run -a kinect_gait_parameters.py
+coverage run -a -m scripts.pre_processing.process_kinect
+coverage run -a -m scripts.pre_processing.process_zeno
+
+coverage run -a -m scripts.main.run_all_main
+coverage run -a -m scripts.results.run_all_results
+coverage run -a -m scripts.figures.run_all_figures
 
 coverage report
 coverage html
