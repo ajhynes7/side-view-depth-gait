@@ -33,35 +33,65 @@ def test_adj_list_to_matrix(adj_list, matrix_expected):
 
         assert gr.adj_matrix_to_list(adj_matrix) == adj_list
 
-def test_paths(target_node, path):
 
-    prev, _ = gr.dag_shortest_paths(G, V, source_nodes)
-    assert gr.trace_path(prev, target_node) == path
+@pytest.mark.parametrize(
+    "node_target, path", [
+        (0, [0]),
+        (1, [1]),
+        (2, [1, 2]),
+        (3, [1, 2, 3]), 
+        (4, [1, 2, 4]), 
+        (5, [1, 2, 4, 5]), 
+    ],
+)
+def test_shortest_paths(node_target, path):
+
+    prev, _ = gr.dag_shortest_paths(graph, order, nodes_source)
+    assert gr.trace_path(prev, node_target) == path
 
 
+def test_labelled_nodes_to_graph():
 
-G = {
-    0: {
-        1: 2,
-        2: 5
-    },
-    1: {
-        3: 10,
-        2: 4
-    },
-    2: {
-        3: 3,
-        4: 1
-    },
-    3: {
-        4: 15,
-        5: 6
-    },
-    4: {
-        5: 3
-    },
-    5: {}
+    assert gr.labelled_nodes_to_graph(node_labels, label_adj_list) == graph_parts
+
+
+graph = {
+    0: {1: 2, 2: 5},
+    1: {3: 10, 2: 4},
+    2: {3: 3, 4: 1},
+    3: {4: 15, 5: 6},
+    4: {5: 3},
+    5: {},
 }
 
-source_nodes = {0, 1}
-V = [v for v in G]
+nodes_source = {0, 1}
+order = [node for node in graph]
+
+
+label_adj_list = {
+    'head': {'hip': 60},
+    'hip': {'thigh': 15},
+    'thigh': {},
+}
+
+node_labels = {
+    0: 'head',
+    1: 'hip',
+    2: 'hip',
+    3: 'thigh',
+    4: 'thigh',
+    5: 'thigh',
+}
+
+graph_parts = {
+    0: {1: 60, 2: 60},
+    1: {3: 15, 4: 15, 5: 15},
+    2: {3: 15, 4: 15, 5: 15},
+    3: {},
+    4: {},
+    5: {},
+}
+
+
+
+
