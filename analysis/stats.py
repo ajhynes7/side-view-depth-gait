@@ -146,20 +146,20 @@ def icc(M, type_icc=(2, 1)):
     --------
     >>> M = np.array([[7, 9], [10, 13], [8, 4]])
 
-    >>> np.round(icc(M, type=(1, 1)), 4)
+    >>> np.round(icc(M, type_icc=(1, 1)), 4)
     0.5246
-    >>> np.round(icc(M, type=(2, 1)), 4)
+    >>> np.round(icc(M, type_icc=(2, 1)), 4)
     0.463
-    >>> np.round(icc(M, type=(3, 1)), 4)
+    >>> np.round(icc(M, type_icc=(3, 1)), 4)
     0.3676
 
     >>> M = np.array([[60, 61], [60, 65], [58, 62], [10, 10]])
 
-    >>> np.round(icc(M, type=(1, 1)), 4)
+    >>> np.round(icc(M, type_icc=(1, 1)), 4)
     0.992
-    >>> np.round(icc(M, type=(2, 1)), 4)
+    >>> np.round(icc(M, type_icc=(2, 1)), 4)
     0.992
-    >>> np.round(icc(M, type=(3, 1)), 4)
+    >>> np.round(icc(M, type_icc=(3, 1)), 4)
     0.9957
 
     """
@@ -173,15 +173,15 @@ def icc(M, type_icc=(2, 1)):
 
     MSE = (SStotal - MSR * (n - 1) - MSC * (k - 1)) / ((n - 1) * (k - 1))
 
-    if type == (1, 1):
+    if type_icc == (1, 1):
         num = MSR - MSW
         denom = MSR + (k - 1) * MSW
 
-    elif type == (2, 1):
+    elif type_icc == (2, 1):
         num = MSR - MSE
         denom = MSR + (k - 1) * MSE + k / n * (MSC - MSE)
 
-    elif type == (3, 1):
+    elif type_icc == (3, 1):
         num = MSR - MSE
         denom = MSR + (k - 1) * MSE
 
