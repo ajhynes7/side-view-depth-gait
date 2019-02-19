@@ -20,7 +20,8 @@ def main():
     trial_names = df_truth.index.get_level_values(0).unique().values
 
     df_hypo = combine_dataframes(
-        join(kinect_dir, 'processed', 'hypothesis'), trial_names)
+        join(kinect_dir, 'processed', 'hypothesis'), trial_names
+    )
     df_selected = combine_dataframes(join(kinect_dir, 'best_pos'), trial_names)
 
     foot_parts = ['L_FOOT', 'R_FOOT']
@@ -72,15 +73,18 @@ def main():
         selected_r = np.stack(df_selected.R_FOOT)
 
         # Match selected positions with truth
-        matched_l, matched_r = pp.match_pairs(selected_l, selected_r, truth_l,
-                                              truth_r)
+        matched_l, matched_r = pp.match_pairs(
+            selected_l, selected_r, truth_l, truth_r
+        )
 
         truth_accs.append(
-            pp.double_position_accuracy(matched_l, matched_r, truth_l,
-                                        truth_r))
+            pp.double_position_accuracy(matched_l, matched_r, truth_l, truth_r)
+        )
         truth_mod_accs.append(
-            pp.double_position_accuracy(matched_l, matched_r, truth_mod_l,
-                                        truth_mod_r))
+            pp.double_position_accuracy(
+                matched_l, matched_r, truth_mod_l, truth_mod_r
+            )
+        )
 
     # %% Create plot of accuracy vs radii
 

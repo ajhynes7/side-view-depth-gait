@@ -15,7 +15,8 @@ def combine_dataframes(load_dir, trial_names):
 
     for trial_name in trial_names:
         dataframe_dict[trial_name] = pd.read_pickle(
-            join(load_dir, trial_name) + '.pkl')
+            join(load_dir, trial_name) + '.pkl'
+        )
 
     return pd.concat(dataframe_dict)
 
@@ -28,7 +29,8 @@ def main():
     trial_names = df_truth.index.get_level_values(0).unique().values
 
     df_hypo = combine_dataframes(
-        join(kinect_dir, 'processed', 'hypothesis'), trial_names)
+        join(kinect_dir, 'processed', 'hypothesis'), trial_names
+    )
     df_selected = combine_dataframes(join(kinect_dir, 'best_pos'), trial_names)
     df_assigned = combine_dataframes(join(kinect_dir, 'assigned'), trial_names)
 
@@ -66,8 +68,9 @@ def main():
     assigned_r = np.stack(df_assigned.R_FOOT)
 
     # Match selected positions with truth
-    matched_l, matched_r = pp.match_pairs(selected_l, selected_r, truth_l,
-                                          truth_r)
+    matched_l, matched_r = pp.match_pairs(
+        selected_l, selected_r, truth_l, truth_r
+    )
 
     # Create modified truth
     truth_mod_l = pp.closest_proposals(proposals, np.stack(df_truth.L_FOOT))
@@ -95,34 +98,43 @@ def main():
     acc_assigned_mod_l = pp.position_accuracy(assigned_l, truth_mod_2d_l)
     acc_assigned_mod_r = pp.position_accuracy(assigned_r, truth_mod_2d_r)
 
-    acc_matched = pp.double_position_accuracy(matched_l, matched_r, truth_l,
-                                              truth_r)
-    acc_matched_mod = pp.double_position_accuracy(matched_l, matched_r,
-                                                  truth_mod_l, truth_mod_r)
+    acc_matched = pp.double_position_accuracy(
+        matched_l, matched_r, truth_l, truth_r
+    )
+    acc_matched_mod = pp.double_position_accuracy(
+        matched_l, matched_r, truth_mod_l, truth_mod_r
+    )
 
-    acc_assigned = pp.double_position_accuracy(assigned_l, assigned_r,
-                                               truth_2d_l, truth_2d_r)
+    acc_assigned = pp.double_position_accuracy(
+        assigned_l, assigned_r, truth_2d_l, truth_2d_r
+    )
     acc_assigned_mod = pp.double_position_accuracy(
-        assigned_l, assigned_r, truth_mod_2d_l, truth_mod_2d_r)
+        assigned_l, assigned_r, truth_mod_2d_l, truth_mod_2d_r
+    )
 
     # %% Organize into tables
 
     df_acc_head = pd.DataFrame(
-        index=['Truth'],
-        columns=['Head'],
-        data=acc_head)
+        index=['Truth'], columns=['Head'], data=acc_head
+    )
 
     df_acc_matched = pd.DataFrame(
         index=['Truth', 'Modified'],
         columns=['Left', 'Right', 'Both'],
-        data=[[acc_matched_l, acc_matched_r, acc_matched],
-              [acc_matched_mod_l, acc_matched_mod_r, acc_matched_mod]])
+        data=[
+            [acc_matched_l, acc_matched_r, acc_matched],
+            [acc_matched_mod_l, acc_matched_mod_r, acc_matched_mod],
+        ],
+    )
 
     df_acc_assigned = pd.DataFrame(
         index=['Truth', 'Modified'],
         columns=['Left', 'Right', 'Both'],
-        data=[[acc_assigned_l, acc_assigned_r, acc_assigned],
-              [acc_assigned_mod_l, acc_assigned_mod_r, acc_assigned_mod]])
+        data=[
+            [acc_assigned_l, acc_assigned_r, acc_assigned],
+            [acc_assigned_mod_l, acc_assigned_mod_r, acc_assigned_mod],
+        ],
+    )
 
     table_dir = join('results', 'tables')
 

@@ -79,12 +79,19 @@ def spatial_parameters(pos_a_i, pos_b, pos_a_f):
     step_length = norm(pos_a_f - pos_b_proj)
     stride_width = norm(pos_b - pos_b_proj)
 
-    Spatial = namedtuple('Spatial', [
-        'absolute_step_length', 'step_length', 'stride_length', 'stride_width'
-    ])
+    Spatial = namedtuple(
+        'Spatial',
+        [
+            'absolute_step_length',
+            'step_length',
+            'stride_length',
+            'stride_width',
+        ],
+    )
 
-    return Spatial(absolute_step_length, step_length, stride_length,
-                   stride_width)
+    return Spatial(
+        absolute_step_length, step_length, stride_length, stride_width
+    )
 
 
 def stride_parameters(foot_a_i, foot_b, foot_a_f, *, fps=30):
@@ -150,7 +157,7 @@ def stride_parameters(foot_a_i, foot_b, foot_a_f, *, fps=30):
     temporal_params = {
         'stride_time': stride_time,
         'stance_percentage': stance_percentage,
-        'stride_velocity': stride_velocity
+        'stride_velocity': stride_velocity,
     }
 
     return {**stride_info, **temporal_params, **spatial._asdict()}
@@ -256,8 +263,10 @@ def combine_walking_passes(df_assigned, direction_series):
         # Ensure there are no missing frames in the walking pass
         df_pass = pf.make_index_consecutive(df_pass)
         df_pass = df_pass.applymap(
-            lambda x: x if isinstance(x, np.ndarray)
-            else np.full(direction_pass.size, np.nan))
+            lambda x: x
+            if isinstance(x, np.ndarray)
+            else np.full(direction_pass.size, np.nan)
+        )
 
         df_pass_parameters = walking_pass_parameters(df_pass, direction_pass)
 

@@ -113,7 +113,8 @@ def plot_spheres(points, r, ax):
     """
     for point in points:
         circle = plt.Circle(
-            (point[0], point[1]), radius=r, color="black", fill=False)
+            (point[0], point[1]), radius=r, color="black", fill=False
+        )
         ax.add_patch(circle)
 
 
@@ -145,4 +146,5 @@ def plot_links(points, score_matrix, inside_spheres):
                         point_j,
                         c=cm.bwr(score),
                         linestyle='-',
-                        linewidth=0.75)
+                        linewidth=0.75,
+                    )

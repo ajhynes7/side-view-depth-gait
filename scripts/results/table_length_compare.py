@@ -13,7 +13,8 @@ def main():
 
     # Ground truth positions from labelled trials
     df_truth = pd.read_pickle(
-        os.path.join('results', 'dataframes', 'df_truth.pkl'))
+        os.path.join('results', 'dataframes', 'df_truth.pkl')
+    )
 
     part_names = df_truth.columns.values
     trial_names = df_truth.index.levels[0].values
@@ -21,7 +22,8 @@ def main():
     # DataFrame with lengths between body parts
     df_lengths = pd.read_csv(
         os.path.join('data', 'kinect', 'lengths', 'kinect_lengths.csv'),
-        index_col=0)
+        index_col=0,
+    )
 
     # Convert columns from strings to numbers so indices will align
     df_lengths.columns = range(len(df_lengths.columns))
@@ -37,23 +39,29 @@ def main():
         df_truth_r = df_truth.loc[:, parts_r].dropna()
 
         lengths_l = df_truth_l.apply(
-            lambda row: pp.consecutive_dist(np.stack(row)), axis=1)
+            lambda row: pp.consecutive_dist(np.stack(row)), axis=1
+        )
         lengths_r = df_truth_r.apply(
-            lambda row: pp.consecutive_dist(np.stack(row)), axis=1)
+            lambda row: pp.consecutive_dist(np.stack(row)), axis=1
+        )
 
         lengths_truth = np.median(
-            np.stack(pd.concat((lengths_l, lengths_r))), axis=0)
+            np.stack(pd.concat((lengths_l, lengths_r))), axis=0
+        )
 
-        df_length_compare = pd.DataFrame({
-            'Estimated':
-            df_lengths.loc[trial_name],
-            'Ground Truth':
-            pd.Series(lengths_truth),
-        })
+        df_length_compare = pd.DataFrame(
+            {
+                'Estimated': df_lengths.loc[trial_name],
+                'Ground Truth': pd.Series(lengths_truth),
+            }
+        )
 
         df_length_compare['Relative Error'] = df_length_compare.apply(
-            lambda row: st.relative_error(row['Estimated'], row['Ground Truth']),
-            axis=1)
+            lambda row: st.relative_error(
+                row['Estimated'], row['Ground Truth']
+            ),
+            axis=1,
+        )
 
         dict_lengths[i + 1] = df_length_compare
 

@@ -15,13 +15,13 @@ st_floats_nonneg = st.floats(min_value=0, max_value=1e6)
 def test_limits(x, tolerance):
 
     lower_limit, upper_limit = mf.limits(x, tolerance)
-    
+
     assert upper_limit > lower_limit
 
     array_limits = np.array(x) + np.array([-tolerance, tolerance])
 
     assert_array_equal(array_limits, (lower_limit, upper_limit))
-    
+
 
 @given(st_floats_nonneg, st_floats_nonneg)
 def test_norm_ratio(a, b):

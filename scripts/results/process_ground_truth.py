@@ -19,19 +19,21 @@ def main():
     load_dir = join('data', 'kinect', 'labelled_trials')
     align_dir = join('data', 'kinect', 'alignment')
 
-    part_rgb_dict = OrderedDict({
-        'HEAD': [255, 0, 255],
-        'L_HIP': [0, 62, 192],
-        'R_HIP': [192, 0, 62],
-        'L_THIGH': [192, 126, 126],
-        'R_THIGH': [126, 255, 255],
-        'L_KNEE': [126, 0, 126],
-        'R_KNEE': [0, 126, 126],
-        'L_CALF': [0, 62, 0],
-        'R_CALF': [0, 0, 126],
-        'L_FOOT': [0, 230, 0],
-        'R_FOOT': [0, 0, 255],
-    })
+    part_rgb_dict = OrderedDict(
+        {
+            'HEAD': [255, 0, 255],
+            'L_HIP': [0, 62, 192],
+            'R_HIP': [192, 0, 62],
+            'L_THIGH': [192, 126, 126],
+            'R_THIGH': [126, 255, 255],
+            'L_KNEE': [126, 0, 126],
+            'R_KNEE': [0, 126, 126],
+            'L_CALF': [0, 62, 0],
+            'R_CALF': [0, 0, 126],
+            'L_FOOT': [0, 230, 0],
+            'R_FOOT': [0, 0, 255],
+        }
+    )
 
     labelled_trial_names = os.listdir(load_dir)
 
@@ -81,18 +83,21 @@ def main():
                 nonzero_row_col = np.argwhere(part_binary)
                 depths = depth_image[part_binary]
 
-                image_points = np.column_stack((nonzero_row_col[:, 1],
-                                                nonzero_row_col[:, 0], depths))
+                image_points = np.column_stack(
+                    (nonzero_row_col[:, 1], nonzero_row_col[:, 0], depths)
+                )
 
                 median_image = np.median(image_points, axis=0)
-                median_real = im.image_to_real(median_image, im.X_RES,
-                                               im.Y_RES, im.F_XZ, im.F_YZ)
+                median_real = im.image_to_real(
+                    median_image, im.X_RES, im.Y_RES, im.F_XZ, im.F_YZ
+                )
 
                 df_trial.loc[image_num, part_name] = median_real
 
         # Load dictionary to convert image numbers to frames
-        with open(join(align_dir, "{}.pkl".format(trial_name)),
-                  'rb') as handle:
+        with open(
+            join(align_dir, "{}.pkl".format(trial_name)), 'rb'
+        ) as handle:
             image_to_frame = pickle.load(handle)
 
         df_trial.index = df_trial.index.map(image_to_frame)

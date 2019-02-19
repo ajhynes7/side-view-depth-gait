@@ -39,7 +39,7 @@ def generate_window(sequence, n=2):
 
     for elem in iterator:
 
-        result = result[1:] + (elem, )
+        result = result[1:] + (elem,)
 
         yield result
 

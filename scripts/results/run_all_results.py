@@ -2,9 +2,16 @@
 
 import matplotlib.pyplot as plt
 
-from scripts.results import (align_frames, gait_analysis, plot_accuracy_radii,
-                             process_ground_truth, process_trials,
-                             table_length_compare, table_lengths, table_pose)
+from scripts.results import (
+    align_frames,
+    gait_analysis,
+    plot_accuracy_radii,
+    process_ground_truth,
+    process_trials,
+    table_length_compare,
+    table_lengths,
+    table_pose,
+)
 
 
 def main():
@@ -15,7 +22,7 @@ def main():
     plt.rc('font', **font)
 
     align_frames.main()
-    #process_ground_truth.main()
+    # process_ground_truth.main()
     process_trials.main()
 
     table_lengths.main()

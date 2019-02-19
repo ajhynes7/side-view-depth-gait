@@ -38,8 +38,9 @@ def main():
 
     for trial_name in trials_to_run:
 
-        file_path = join(kinect_dir, 'processed', 'hypothesis',
-                         trial_name + '.pkl')
+        file_path = join(
+            kinect_dir, 'processed', 'hypothesis', trial_name + '.pkl'
+        )
 
         # Position hypotheses on each frame
         df_hypo = pd.read_pickle(file_path).dropna()
@@ -81,12 +82,15 @@ def main():
     time_elapsed = time.time() - t
     frames_per_second = round(frames_run / time_elapsed)
 
-    print("""
+    print(
+        """
     Number of trials: {}\n
     Number of frames: {}\n
     Total time: {}\n
-    Frames per second: {}""".format(trials_run, frames_run,
-                                    round(time_elapsed, 2), frames_per_second))
+    Frames per second: {}""".format(
+            trials_run, frames_run, round(time_elapsed, 2), frames_per_second
+        )
+    )
 
 
 if __name__ == '__main__':

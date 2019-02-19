@@ -2,8 +2,12 @@
 
 import matplotlib.pyplot as plt
 
-from scripts.figures import (body_graph, joint_proposals, signals,
-                             truth_positions)
+from scripts.figures import (
+    body_graph,
+    joint_proposals,
+    signals,
+    truth_positions,
+)
 
 
 def main():

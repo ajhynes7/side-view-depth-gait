@@ -28,11 +28,9 @@ def parse_stride_info(stride_info):
 
         stride_list.append(int(string[-1]))
 
-    return pd.DataFrame({
-        'pass': pass_list,
-        'stride': stride_list,
-        'side': side_list,
-    })
+    return pd.DataFrame(
+        {'pass': pass_list, 'stride': stride_list, 'side': side_list}
+    )
 
 
 def main():
@@ -46,7 +44,8 @@ def main():
 
         # Locate the gait parameter labels in the Excel file
         bool_array = df.applymap(
-            lambda x: 'Step Time' in x if isinstance(x, str) else False).values
+            lambda x: 'Step Time' in x if isinstance(x, str) else False
+        ).values
 
         # Crop DataFrame at row where raw values begin
         row_first_data = int(np.where(df.iloc[:, 0] == 1)[0])
