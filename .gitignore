@@ -6,12 +6,10 @@
 *.png
 *.pyc
 
-.coverage
+.coverage*
 .*/
 
-docs/_build/
-docs/separate/
-docs/stubs/
+docs/
 
 data/
 htmlcov
