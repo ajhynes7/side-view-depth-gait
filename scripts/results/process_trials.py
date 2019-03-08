@@ -50,7 +50,8 @@ def main():
 
     # Remove negative values from Zeno data
     df_total_z = df_total_z.applymap(
-        lambda x: abs(x) if isinstance(x, float) else x)
+        lambda x: abs(x) if isinstance(x, float) else x
+    )
 
     # Drop column of stride numbers (not required for results)
     df_total_k = df_total_k.drop('stride', axis=1)
@@ -58,9 +59,11 @@ def main():
 
     # Save total dataframes for easy analysis
     df_total_k.to_pickle(
-        os.path.join('results', 'dataframes', 'df_total_k.pkl'))
+        os.path.join('results', 'dataframes', 'df_total_k.pkl')
+    )
     df_total_z.to_pickle(
-        os.path.join('results', 'dataframes', 'df_total_z.pkl'))
+        os.path.join('results', 'dataframes', 'df_total_z.pkl')
+    )
 
 
 if __name__ == '__main__':

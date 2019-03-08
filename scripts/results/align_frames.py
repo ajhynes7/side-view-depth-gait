@@ -21,7 +21,8 @@ def main():
         df_align = pd.read_csv(
             os.path.join(align_dir, trial_name + '.txt'),
             header=None,
-            names=['image_file'])
+            names=['image_file'],
+        )
 
         # Extract number from image file name
         pattern = r'(\d+)\.png'

@@ -16,9 +16,11 @@ def main():
     for trial_name in df_match.kinect:
 
         df_assigned = pd.read_pickle(
-            join(kinect_dir, 'assigned', trial_name + '.pkl'))
+            join(kinect_dir, 'assigned', trial_name + '.pkl')
+        )
         direction_series = pd.read_pickle(
-            join(kinect_dir, 'direction', trial_name + '.pkl'))
+            join(kinect_dir, 'direction', trial_name + '.pkl')
+        )
 
         df_trial = gp.combine_walking_passes(df_assigned, direction_series)
 

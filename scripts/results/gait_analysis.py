@@ -108,14 +108,11 @@ def main():
         icc_31.append(st.icc(measures, type_icc=(3, 1)))
 
     df_bland = pd.DataFrame.from_records(
-        bland_alt_tuples, index=gait_params, columns=bland_alt._fields)
+        bland_alt_tuples, index=gait_params, columns=bland_alt._fields
+    )
 
     df_icc = pd.DataFrame(
-        {
-            'ICC(2, 1)': icc_21,
-            'ICC(3, 1)': icc_31
-        },
-        index=gait_params,
+        {'ICC(2, 1)': icc_21, 'ICC(3, 1)': icc_31}, index=gait_params
     )
 
     with open(join(dir_tables, 'bland_altman.txt'), 'w') as file:

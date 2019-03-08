@@ -120,7 +120,8 @@ def bland_altman(differences):
         bias=bias,
         lower_limit=lower_limit,
         upper_limit=upper_limit,
-        range_=upper_limit - lower_limit)
+        range_=upper_limit - lower_limit,
+    )
 
 
 def icc(M, type_icc=(2, 1)):

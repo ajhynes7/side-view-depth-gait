@@ -22,8 +22,9 @@ def main():
     n_coord_cols = 99
 
     # List of trials to run
-    running_path = os.path.join('data', 'kinect', 'running',
-                                'trials_to_run.csv')
+    running_path = os.path.join(
+        'data', 'kinect', 'running', 'trials_to_run.csv'
+    )
     trials_to_run = pd.read_csv(running_path, header=None, squeeze=True).values
 
     for file_name in trials_to_run:
@@ -36,7 +37,8 @@ def main():
             header=None,
             names=[i for i in range(-2, n_coord_cols)],
             sep='\t',
-            engine='python')
+            engine='python',
+        )
 
         # Change some column names
         df_raw.rename(columns={-2: 'frame', -1: 'part'}, inplace=True)
@@ -73,8 +75,9 @@ def main():
                 df_frame = df_hypo_raw.loc[frame]
 
                 # Coordinates of the part type
-                coords = df_frame[df_frame.index.str.contains(
-                    part_type)].values
+                coords = df_frame[
+                    df_frame.index.str.contains(part_type)
+                ].values
                 coords = coords[~np.isnan(coords)]
 
                 if coords.size == 0:
@@ -86,16 +89,21 @@ def main():
                 # The hypothetical positions now need to be converted from
                 # real to image then back to real using new parameters.
                 points_hypo = im.recalibrate_positions(
-                    points_hypo, im.X_RES_ORIG, im.Y_RES_ORIG, im.X_RES,
-                    im.Y_RES, im.F_XZ, im.F_YZ)
+                    points_hypo,
+                    im.X_RES_ORIG,
+                    im.Y_RES_ORIG,
+                    im.X_RES,
+                    im.Y_RES,
+                    im.F_XZ,
+                    im.F_YZ,
+                )
 
                 df_hypo_clean.loc[frame, part_type] = points_hypo
 
         # Rename some body parts to match names used in papers
-        df_hypo_clean = df_hypo_clean.rename(columns={
-            'UPPER_LEG': 'THIGH',
-            'LOWER_LEG': 'CALF'
-        })
+        df_hypo_clean = df_hypo_clean.rename(
+            columns={'UPPER_LEG': 'THIGH', 'LOWER_LEG': 'CALF'}
+        )
 
         save_path_hypo = os.path.join(save_dir_hypo, file_name) + '.pkl'
         df_hypo_clean.to_pickle(save_path_hypo)

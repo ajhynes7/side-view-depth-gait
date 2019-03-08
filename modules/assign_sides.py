@@ -84,7 +84,8 @@ def assign_sides_portion(df_walk, direction):
 
     # Find a motion correspondence so the foot sides do not switch abruptly
     foot_points_a, foot_points_b = pp.track_two_objects(
-        foot_points_l, foot_points_r)
+        foot_points_l, foot_points_r
+    )
 
     # Find the side of foot point a relative to foot point b
     side_total = 0
@@ -135,7 +136,8 @@ def assign_sides_pass(df_pass, direction_pass):
     signal = 1 - sig.nan_normalize(norms)
     rms = sig.root_mean_square(signal)
     peak_frames, _ = sw.detect_peaks(
-        frames, signal, window_length=3, min_height=rms)
+        frames, signal, window_length=3, min_height=rms
+    )
 
     labels = nf.label_by_split(frames, peak_frames)
 

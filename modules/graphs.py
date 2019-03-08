@@ -108,11 +108,11 @@ def dag_shortest_paths(graph, order, source_nodes):
 
     Examples
     --------
-    >>> g = {0: {1: 10, 2: 20}, 1: {3: 5}, 2: {3: 8, 8: 15}, 3: {8: 6}, 8: {}}
-    >>> order = g.keys()
+    >>> graph = {0: {1: 10, 2: 20}, 1: {3: 5}, 2: {3: 8, 8: 15}, 3: {8: 6}, 8: {}}
+    >>> order = graph.keys()
     >>> source_nodes = {0, 1}
 
-    >>> prev, dist = dag_shortest_paths(g, order, source_nodes)
+    >>> prev, dist = dag_shortest_paths(graph, order, source_nodes)
 
     >>> prev
     {0: nan, 1: nan, 2: 0, 3: 1, 8: 3}
@@ -204,12 +204,12 @@ def labelled_nodes_to_graph(node_labels, label_adj_list):
 
     Examples
     --------
-    >>> node_labels = {10: 1, 11: 1, 12: 1, 13: 2}
+    >>> node_labels = {0: 'dog', 1: 'cat', 2: 'sheep'}
 
-    >>> label_adj_list = {1: {2: 10}, 2: {3: 5}, 3: {}}
+    >>> label_adj_list = {'dog': {'cat': 10}, 'cat': {'dog': -1, 'sheep': 9}, 'sheep': {}}
 
     >>> labelled_nodes_to_graph(node_labels, label_adj_list)
-    {10: {13: 10}, 11: {13: 10}, 12: {13: 10}, 13: {}}
+    {0: {1: 10}, 1: {0: -1, 2: 9}, 2: {}}
 
     """
     nodes = node_labels.keys()

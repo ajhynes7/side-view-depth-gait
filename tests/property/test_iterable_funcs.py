@@ -10,7 +10,8 @@ import modules.iterable_funcs as itf
 
 sequences = st.one_of(
     st.lists(elements=st.integers(), min_size=1, max_size=50),
-    st.text(min_size=1, max_size=50))
+    st.text(min_size=1, max_size=50),
+)
 
 
 def all_unique(iterable):
@@ -43,7 +44,7 @@ def test_iterable_to_dict(iterable):
 @given(
     st.iterables(elements=st.integers(), max_size=50),
     st.dictionaries(keys=st.integers(), values=st.integers(), min_size=1),
-    )
+)
 def test_map_with_dict(iterable, mapping):
     """Test mapping an iterator with a dictionary."""
     assume(all_unique(mapping.values()))

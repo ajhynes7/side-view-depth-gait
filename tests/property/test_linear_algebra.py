@@ -16,18 +16,24 @@ ints_nonzero = ints.filter(lambda x: x != 0)
 
 n_points = st.one_of(st.integers(min_value=2, max_value=10))
 
-non_zero_vector = st.lists(ints, min_size=2, max_size=5).filter(lambda x: any(x))
+non_zero_vector = st.lists(ints, min_size=2, max_size=5).filter(
+    lambda x: any(x)
+)
 
 shapes = st.tuples(
-    st.integers(min_value=2, max_value=10), st.integers(min_value=2, max_value=10)
+    st.integers(min_value=2, max_value=10),
+    st.integers(min_value=2, max_value=10),
 )
 
 # Strategy for generating shapes of numpy arrays with dimension 2 or 3
 shapes_2_3 = st.tuples(
-    st.integers(min_value=2, max_value=10), st.integers(min_value=2, max_value=3)
+    st.integers(min_value=2, max_value=10),
+    st.integers(min_value=2, max_value=3),
 )
 
-array_like_nonzero = st.lists(ints, min_size=3, max_size=3).filter(lambda x: any(x))
+array_like_nonzero = st.lists(ints, min_size=3, max_size=3).filter(
+    lambda x: any(x)
+)
 
 point_3 = arrays('int', (3,), ints)
 

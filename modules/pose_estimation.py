@@ -187,8 +187,9 @@ def pop_shortest_paths(population, labels, label_adj_list, weight_func):
 
     """
     # Represent population as a weighted directed acyclic graph
-    pop_graph = gr.points_to_graph(population, labels, label_adj_list,
-                                   weight_func)
+    pop_graph = gr.points_to_graph(
+        population, labels, label_adj_list, weight_func
+    )
 
     # Run shortest path algorithm
     head_nodes = np.where(labels == 0)[0]  # Source nodes
@@ -298,8 +299,9 @@ def get_scores(dist_matrix, paths, label_adj_list, score_func):
                     length_expected = label_adj_list[j][k]
                     length_measured = dist_matrix[u, v]
 
-                    score_matrix[u, v] = score_func(length_measured,
-                                                    length_expected)
+                    score_matrix[u, v] = score_func(
+                        length_measured, length_expected
+                    )
 
     # Ensure that all values are finite so the elements can be summed
     score_matrix[~np.isfinite(score_matrix)] = 0
@@ -507,8 +509,9 @@ def foot_to_pop(population, paths, path_dist, foot_num_1, foot_num_2):
     return pop_1, pop_2
 
 
-def process_frame(population, labels, label_adj_list, radii, cost_func,
-                  score_func):
+def process_frame(
+    population, labels, label_adj_list, radii, cost_func, score_func
+):
     """
     Return chosen body part positions from an input set of position hypotheses.
 
@@ -545,8 +548,9 @@ def process_frame(population, labels, label_adj_list, radii, cost_func,
     cons_label_adj_list = only_consecutive_labels(label_adj_list)
 
     # Run shortest path algorithm on the body graph
-    prev, dist = pop_shortest_paths(population, labels, cons_label_adj_list,
-                                    cost_func)
+    prev, dist = pop_shortest_paths(
+        population, labels, cons_label_adj_list, cost_func
+    )
 
     # Get shortest path to each foot
     paths, path_dist = paths_to_foot(prev, dist, labels)
@@ -554,13 +558,15 @@ def process_frame(population, labels, label_adj_list, radii, cost_func,
     pop_reduced, paths_reduced = reduce_population(population, paths)
 
     dist_matrix = cdist(pop_reduced, pop_reduced)
-    score_matrix = get_scores(dist_matrix, paths_reduced, label_adj_list,
-                              score_func)
+    score_matrix = get_scores(
+        dist_matrix, paths_reduced, label_adj_list, score_func
+    )
 
     path_vectors = get_path_vectors(paths_reduced, pop_reduced.shape[0])
 
-    foot_1, foot_2 = select_best_feet(dist_matrix, score_matrix, path_vectors,
-                                      radii)
+    foot_1, foot_2 = select_best_feet(
+        dist_matrix, score_matrix, path_vectors, radii
+    )
 
     pop_1, pop_2 = foot_to_pop(population, paths, path_dist, foot_1, foot_2)
 

@@ -43,8 +43,9 @@ def main():
     frame = image_to_frame[image_number]
 
     points_real = np.stack(df_truth.loc[trial_name, frame])
-    points_image = np.apply_along_axis(im.real_to_image, 1, points_real,
-                                       im.X_RES, im.Y_RES, im.F_XZ, im.F_YZ)
+    points_image = np.apply_along_axis(
+        im.real_to_image, 1, points_real, im.X_RES, im.Y_RES, im.F_XZ, im.F_YZ
+    )
 
     # Label image
     fig = plt.figure()
