@@ -2,7 +2,6 @@
 
 import hypothesis.strategies as st
 import numpy as np
-import pytest
 from hypothesis import assume, given
 from hypothesis.extra.numpy import arrays
 from numpy.linalg import norm
@@ -291,29 +290,6 @@ def test_collinear(point_a, point_b, point_c):
         non_max_dists = dists[:max_index] + dists[max_index + 1 :]
 
         assert np.isclose(max_dist, sum(non_max_dists))
-
-
-@given(point_3, point_3, point_3)
-def test_project_point_line(point_p, point_a, point_b):
-    """Tests for projecting a point onto a line."""
-    if norm(point_a - point_b) == 0:
-
-        with pytest.raises(Exception):
-            lin.project_point_line(point_p, point_a, point_b)
-
-    else:
-
-        point_proj = lin.project_point_line(point_p, point_a, point_b)
-
-        vector_ab = np.subtract(point_a, point_b)
-        vector_proj = np.subtract(point_p, point_proj)
-
-        assert is_collinear(point_a, point_b, point_proj, atol=0.1)
-        assert is_perpendicular(vector_ab, vector_proj, atol=0.1)
-
-        # The order of the line points should not matter
-        point_proj_2 = lin.project_point_line(point_p, point_b, point_a)
-        assert np.allclose(point_proj, point_proj_2)
 
 
 @given(points_2_3)

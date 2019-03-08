@@ -3,57 +3,6 @@
 import numpy as np
 
 
-def project_point_line(point_p, line_point_a, line_point_b):
-    """
-    Project a point onto a line.
-
-    Parameters
-    ----------
-    point_p : ndarray
-        Point P in space.
-    line_point_a : ndarray
-        Point A on line.
-    line_point_b : ndarray
-        Point B on line.
-
-    Returns
-    -------
-    ndarray
-        Projection of point P onto the line.
-
-    Raises
-    ------
-    ValueError
-        When the distance between line points A and B is zero.
-
-    Examples
-    --------
-    >>> line_point_a, line_point_b = np.array([0, 0]), np.array([1, 0])
-
-    >>> project_point_line(np.array([0, 5]), line_point_a, line_point_b)
-    array([0., 0.])
-
-    >>> line_point_a, line_point_b = np.array([1, 1]), np.array([1, 1])
-    >>> project_point_line(np.array([0, 5]), line_point_a, line_point_b)
-    Traceback (most recent call last):
-    ValueError: Division by zero.
-
-    """
-    vec_ap = point_p - line_point_a  # Vector from A to P
-    vec_ab = line_point_b - line_point_a  # Vector from A to B
-
-    num = np.dot(vec_ap, vec_ab)
-    denom = np.dot(vec_ab, vec_ab)
-
-    if denom == 0:
-        raise ValueError("Division by zero.")
-
-    coeff = num / denom
-
-    # Project point onto line
-    return line_point_a + coeff * vec_ab
-
-
 def best_fit_line(points):
     """
     Return the line of best fit for a set of points.

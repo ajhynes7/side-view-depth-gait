@@ -20,10 +20,9 @@ df_gait : DataFrame
 from collections import namedtuple
 
 import numpy as np
-from numpy.linalg import norm
 import pandas as pd
+from skspatial.objects import Point, Vector, Line
 
-import modules.linear_algebra as lin
 import modules.pandas_funcs as pf
 import modules.phase_detection as pde
 import modules.sliding_window as sw
@@ -71,13 +70,19 @@ def spatial_parameters(pos_a_i, pos_b, pos_a_f):
     array([ 61.3,  60.7, 119.3,   8. ])
 
     """
-    stride_length = norm(pos_a_f - pos_a_i)
+    point_a_i = Point(pos_a_i)
+    point_a_f = Point(pos_a_f)
+    point_b = Point(pos_b)
 
-    pos_b_proj = lin.project_point_line(pos_b, pos_a_i, pos_a_f)
+    vector_a = Vector.from_points(point_a_i, point_a_f)
+    line_a = Line(point_a_i, vector_a)
 
-    absolute_step_length = norm(pos_a_f - pos_b)
-    step_length = norm(pos_a_f - pos_b_proj)
-    stride_width = norm(pos_b - pos_b_proj)
+    point_b_proj = line_a.project_point(point_b)
+
+    stride_length = vector_a.magnitude
+    absolute_step_length = Vector.from_points(point_a_f, point_b).magnitude
+    step_length = Vector.from_points(point_a_f, point_b_proj).magnitude
+    stride_width = line_a.distance_point(point_b)
 
     Spatial = namedtuple(
         'Spatial',
