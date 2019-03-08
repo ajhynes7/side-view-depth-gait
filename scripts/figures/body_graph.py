@@ -2,8 +2,8 @@
 
 import os
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 import analysis.plotting as pl
 import modules.iterable_funcs as itf

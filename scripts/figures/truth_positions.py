@@ -2,8 +2,8 @@
 
 import glob
 import os
-from os.path import join
 import pickle
+from os.path import join
 
 import cv2
 import matplotlib.pyplot as plt

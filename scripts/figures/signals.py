@@ -5,8 +5,8 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
-from numpy.linalg import norm
 import pandas as pd
+from numpy.linalg import norm
 from sklearn.cluster import DBSCAN
 
 import analysis.plotting as pl

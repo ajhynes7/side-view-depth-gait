@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 
 import modules.point_processing as pp
-
 from scripts.results.table_pose import combine_dataframes
 
 

@@ -2,7 +2,7 @@
 
 import hypothesis.strategies as st
 import numpy as np
-from hypothesis import assume, given
+from hypothesis import given
 from numpy.testing import assert_array_equal
 
 import analysis.math_funcs as mf
@@ -31,7 +31,7 @@ def test_norm_ratio(a, b):
     If either value is zero, the ratio is undefined.
 
     The ratio must be in the interval (0, 1].
-    
+
     """
     ratio = mf.norm_ratio(a, b)
 
