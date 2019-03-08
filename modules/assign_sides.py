@@ -12,9 +12,34 @@ import modules.signals as sig
 import modules.sliding_window as sw
 
 
-def convert_to_2d(point):
+def convert_to_2d(position):
+    """
+    Convert a 3D part position to 2D.
 
-    x, _, depth = point
+    The negative of the depth (z) component of the 3D position becomes
+    the x component of the 2D position.
+
+    The x component of the 3D position becomes the y component
+    of the 2D position.
+
+    Parameters
+    ----------
+    point : array_like
+        3D position of body part.
+
+    Returns
+    -------
+    ndarray
+        2D position.
+
+    Examples
+    --------
+
+    >>> convert_to_2d([50, 60, 250])
+    array([-250,   50])
+
+    """
+    x, _, depth = position
 
     # Take the negative of depth so that orientation on xy plane is correct.
     # This is important for assigning sides to the feet.
