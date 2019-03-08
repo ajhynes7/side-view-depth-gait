@@ -1,11 +1,11 @@
 """Extract ground truth positions from labelled images."""
 
-from collections import OrderedDict
 import glob
 import os
-from os.path import basename, join
 import pickle
 import re
+from collections import OrderedDict
+from os.path import basename, join
 
 import cv2
 import numpy as np

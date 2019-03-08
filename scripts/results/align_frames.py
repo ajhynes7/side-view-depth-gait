@@ -1,8 +1,8 @@
 """Align labelled image numbers to the frame numbers."""
 
 import os
-from os.path import join
 import pickle
+from os.path import join
 
 import pandas as pd
 

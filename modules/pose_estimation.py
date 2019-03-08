@@ -10,8 +10,6 @@ import numpy as np
 from scipy.spatial.distance import cdist
 
 import modules.graphs as gr
-import modules.iterable_funcs as itf
-import modules.point_processing as pp
 
 
 def only_consecutive_labels(label_adj_list):

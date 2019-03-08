@@ -22,7 +22,7 @@ def main():
     plt.rc('font', **font)
 
     align_frames.main()
-    # process_ground_truth.main()
+    process_ground_truth.main()
     process_trials.main()
 
     table_lengths.main()
