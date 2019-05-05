@@ -55,7 +55,7 @@ def main():
             line_pass = asi.direction_of_pass(df_pass)
 
             pass_directions.append(line_pass.direction)
-            df_pass_assigned = asi.assign_sides_pass(df_pass, direction_pass)
+            df_pass_assigned = asi.assign_sides_pass(df_pass, line_pass.direction)
 
             # Assign correct sides to feet
             dict_passes[i] = df_pass_assigned
