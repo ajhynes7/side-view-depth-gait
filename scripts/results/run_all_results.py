@@ -1,6 +1,7 @@
 """Run all results scripts."""
 
-import matplotlib.pyplot as plt
+import matplotlib
+from matplotlib import rc
 
 from scripts.results import (
     align_frames,
@@ -16,10 +17,11 @@ from scripts.results import (
 
 def main():
 
+    matplotlib.rcParams.update({"pgf.texsystem": "pdflatex"})
+
     # Customize font
-    plt.rc('text', usetex=True)
-    font = {'family': 'serif', 'weight': 'bold', 'size': 14}
-    plt.rc('font', **font)
+    rc('font', **{'family': 'serif', 'weight': 'bold', 'size': 14})
+    rc('text', usetex=True)
 
     align_frames.main()
     process_ground_truth.main()
