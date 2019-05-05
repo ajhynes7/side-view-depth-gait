@@ -24,7 +24,7 @@ def convert_to_2d(position):
 
     Parameters
     ----------
-    point : array_like
+    position : array_like
         3D position of body part.
 
     Returns
