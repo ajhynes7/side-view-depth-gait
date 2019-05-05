@@ -104,8 +104,8 @@ def main():
         bland_alt_tuples.append(bland_alt)
 
         measures = np.column_stack((measures_k, measures_z))
-        icc_21.append(st.icc(measures, type_icc=(2, 1)))
-        icc_31.append(st.icc(measures, type_icc=(3, 1)))
+        icc_21.append(st.icc(measures, form=(2, 1)))
+        icc_31.append(st.icc(measures, form=(3, 1)))
 
     df_bland = pd.DataFrame.from_records(
         bland_alt_tuples, index=gait_params, columns=bland_alt._fields
