@@ -21,7 +21,7 @@ from collections import namedtuple
 
 import numpy as np
 import pandas as pd
-from skspatial.objects import Point, Vector, Line
+from skspatial.objects import Vector, Line
 
 import modules.pandas_funcs as pf
 import modules.phase_detection as pde
@@ -37,11 +37,11 @@ def spatial_parameters(pos_a_i, pos_b, pos_a_f):
 
     Parameters
     ----------
-    pos_a_i : ndarray
+    pos_a_i : array_like
         Initial position of foot A.
-    pos_b : ndarray
+    pos_b : array_like
         Position of foot B.
-    pos_a_f : ndarray
+    pos_a_f : array_like
         Final position of foot A.
 
     Returns
@@ -52,13 +52,13 @@ def spatial_parameters(pos_a_i, pos_b, pos_a_f):
 
     Examples
     --------
-    >>> pos_l_1 = np.array([764.253, 28.798])
-    >>> pos_r_1 = np.array([696.834, 37.141])
+    >>> pos_l_1 = [764.253, 28.798]
+    >>> pos_r_1 = [696.834, 37.141]
 
-    >>> pos_l_2 = np.array([637.172, 24.508])
-    >>> pos_r_2 = np.array([579.102, 35.457])
+    >>> pos_l_2 = [637.172, 24.508]
+    >>> pos_r_2 = [579.102, 35.457]
 
-    >>> pos_l_3 = np.array([518.030, 30.507])
+    >>> pos_l_3 = [518.030, 30.507]
 
     >>> np.round(spatial_parameters(pos_l_1, pos_r_1, pos_l_2), 1)
     array([ 61. ,  60.1, 127.2,  10.6])
@@ -70,19 +70,16 @@ def spatial_parameters(pos_a_i, pos_b, pos_a_f):
     array([ 61.3,  60.7, 119.3,   8. ])
 
     """
-    point_a_i = Point(pos_a_i)
-    point_a_f = Point(pos_a_f)
-    point_b = Point(pos_b)
+    vector_a = Vector.from_points(pos_a_i, pos_a_f)
+    line_a = Line(point=pos_a_i, direction=vector_a)
 
-    vector_a = Vector.from_points(point_a_i, point_a_f)
-    line_a = Line(point_a_i, vector_a)
+    pos_b_proj = line_a.project_point(pos_b)
 
-    point_b_proj = line_a.project_point(point_b)
+    stride_length = vector_a.norm()
+    absolute_step_length = Vector.from_points(pos_b, pos_a_f).norm()
+    step_length = Vector.from_points(pos_b_proj, pos_a_f).norm()
 
-    stride_length = vector_a.magnitude
-    absolute_step_length = Vector.from_points(point_a_f, point_b).magnitude
-    step_length = Vector.from_points(point_a_f, point_b_proj).magnitude
-    stride_width = line_a.distance_point(point_b)
+    stride_width = line_a.distance_point(pos_b)
 
     Spatial = namedtuple(
         'Spatial',
