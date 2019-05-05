@@ -8,10 +8,10 @@ import numpy as np
 import pandas as pd
 from numpy.linalg import norm
 from sklearn.cluster import DBSCAN
+from skspatial.objects import Line
 
 import analysis.plotting as pl
 import modules.assign_sides as asi
-import modules.linear_algebra as lin
 import modules.numpy_funcs as nf
 import modules.pandas_funcs as pf
 import modules.phase_detection as pde
@@ -95,9 +95,9 @@ def main():
     foot_points = np.stack(foot_series)
 
     line_point = np.zeros(direction_pass.shape)
-    step_signal = lin.line_coordinate_system(
-        line_point, direction_pass, foot_points
-    )
+    line_pass = Line(line_point, direction_pass)
+
+    step_signal = line_pass.transform_points(foot_points)
 
     is_stance = pde.detect_phases(step_signal)
 

@@ -1,19 +1,15 @@
 
-
 *.html
 *.ipynb
 *.pdf
 *.png
 *.pyc
-
-.coverage*
 .*/
-
-docs/
-
+.coverage*
 data/
+docs/
 htmlcov
-
-results/figures/
 results/dataframes/
+results/figures/
 results/plots/
+tags

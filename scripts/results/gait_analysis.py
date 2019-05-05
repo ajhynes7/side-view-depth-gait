@@ -61,14 +61,15 @@ def main():
         # Format y labels as percentages.
         # This line needs to be after the others,
         # or else the y-axis may be incorrect.
-        ax_1.set_yticklabels([f'{(x * 100):.0f}\%' for x in ax_1.get_yticks()])
+        ax_1.set_yticklabels([f'{(x * 100):.0f}'
+                              for x in ax_1.get_yticks()])
 
         # Remove right and top borders
         ax_1.spines['right'].set_visible(False)
         ax_1.spines['top'].set_visible(False)
 
         plt.xlabel('Mean of two measurements [cm]', fontsize=30)
-        plt.ylabel('Relative difference', fontsize=30)
+        plt.ylabel(r'Relative difference [\%]', fontsize=30)
         plt.tight_layout()
 
         fig_1.savefig(join(dir_plots, 'bland_{}.png'.format(param)))
@@ -104,8 +105,8 @@ def main():
         bland_alt_tuples.append(bland_alt)
 
         measures = np.column_stack((measures_k, measures_z))
-        icc_21.append(st.icc(measures, type_icc=(2, 1)))
-        icc_31.append(st.icc(measures, type_icc=(3, 1)))
+        icc_21.append(st.icc(measures, form=(2, 1)))
+        icc_31.append(st.icc(measures, form=(3, 1)))
 
     df_bland = pd.DataFrame.from_records(
         bland_alt_tuples, index=gait_params, columns=bland_alt._fields

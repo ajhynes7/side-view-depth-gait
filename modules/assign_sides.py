@@ -3,8 +3,8 @@
 import numpy as np
 import pandas as pd
 from numpy.linalg import norm
+from skspatial.objects import Vector, Line
 
-import modules.linear_algebra as lin
 import modules.numpy_funcs as nf
 import modules.pandas_funcs as pf
 import modules.point_processing as pp
@@ -24,7 +24,7 @@ def convert_to_2d(position):
 
     Parameters
     ----------
-    point : array_like
+    position : array_like
         3D position of body part.
 
     Returns
@@ -50,7 +50,7 @@ def convert_to_2d(position):
 
 def direction_of_pass(df_pass):
     """
-    Return vector representing overall direction of motion for a walking pass.
+    Return line representing overall direction of motion for a walking pass.
 
     Parameters
     ----------
@@ -60,26 +60,24 @@ def direction_of_pass(df_pass):
 
     Returns
     -------
-    line_point : ndarray
-        Point that lies on line of motion.
-    direction_pass : ndarray
-        Direction of motion for the walking pass.
+    line_pass : Line
+        Line representing direction of motion for the walking pass.
 
     """
     # All head positions on one walking pass
     head_points = np.stack(df_pass.HEAD)
 
     # Line of best fit for head positions
-    line_point, line_direction = lin.best_fit_line(head_points)
+    line_pass = Line.best_fit(head_points)
 
-    vector_start_end = head_points[-1, :] - head_points[0, :]
+    vector_start_end = Vector.from_points(head_points[0, :],
+                                          head_points[-1, :])
 
-    direction_pass = line_direction
-    if np.dot(line_direction, vector_start_end) < 0:
+    if line_pass.direction.dot(vector_start_end) < 0:
         # The direction of the best fit line should be reversed
-        direction_pass = -line_direction
+        line_pass.direction *= -1
 
-    return line_point, direction_pass
+    return line_pass
 
 
 def assign_sides_portion(df_walk, direction):
@@ -114,8 +112,12 @@ def assign_sides_portion(df_walk, direction):
 
     # Find the side of foot point a relative to foot point b
     side_total = 0
+    direction_2d = direction[0:2]
+
     for foot_point_a, foot_point_b in zip(foot_points_a, foot_points_b):
-        side_total += lin.side_value_2d(foot_point_a, foot_point_b, direction)
+
+        vector_ab = Vector.from_points(foot_point_a, foot_point_b)
+        side_total += vector_ab.side_vector(direction_2d)
 
     if side_total > 0:
         # The left foot should be labelled the right foot, and vice versa

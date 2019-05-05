@@ -77,12 +77,15 @@ def main():
         )
 
         truth_accs.append(
-            pp.double_position_accuracy(matched_l, matched_r, truth_l, truth_r)
+            pp.double_position_accuracy(
+                matched_l, matched_r, truth_l, truth_r
+            ) * 100
         )
+
         truth_mod_accs.append(
             pp.double_position_accuracy(
                 matched_l, matched_r, truth_mod_l, truth_mod_r
-            )
+            ) * 100
         )
 
     # %% Create plot of accuracy vs radii
@@ -92,8 +95,8 @@ def main():
     plt.plot(radii, truth_accs, '-o', c='b')
     plt.plot(radii, truth_mod_accs, '-o', c='r')
 
-    plt.xlabel('Radius')
-    plt.ylabel('Accuracy')
+    plt.xlabel('Radius [cm]')
+    plt.ylabel(r'Accuracy [\%]')
 
     plt.legend(['Truth', 'Modified'])
 

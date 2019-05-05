@@ -64,6 +64,24 @@ def consecutive_dist(points):
     return norm(differences, axis=1)
 
 
+def apply_to_real_points(func, points):
+    """
+    Apply a function only to points that contain no nans.
+
+    The output has the same length as the number of input points.
+
+    """
+    is_nan_point = np.isnan(points).any(axis=1)
+    points_real = points[~is_nan_point]
+
+    output_real = func(points_real)
+
+    output = np.full(points.shape[0], np.nan)
+    output[~is_nan_point] = output_real
+
+    return output
+
+
 def correspond_points(points_prev, points_curr):
     """
     Order points so they correspond to points from the previous frame.
