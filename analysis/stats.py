@@ -124,66 +124,79 @@ def bland_altman(differences):
     )
 
 
-def icc(M, type_icc=(2, 1)):
+def icc(matrix, form=(1, 1)):
     """
-    [summary]
-
-    [description]
-    Reference: McGraw and Wong, 1996
+    Return an intraclass correlation coefficient (ICC).
 
     Parameters
     ----------
-    M : [type]
-        [description]
-    type : tuple, optional
-        [description] (the default is (2, 1), which [default_description])
+    matrix : array_like
+        (n, k) array for n subjects and k raters.
+    form : tuple, optional
+        The ICC form using Shrout and Fleiss (1979) convention.
+        The default is (1, 1).
 
     Returns
     -------
-    [type]
-        [description]
+    float
+        ICC of the specified form.
+
+    References
+    ----------
+    Shrout and Fleiss (1979)
+    Koo and Li (2016)
 
     Examples
     --------
-    >>> M = np.array([[7, 9], [10, 13], [8, 4]])
+    >>> matrix = [[7, 9], [10, 13], [8, 4]]
 
-    >>> np.round(icc(M, type_icc=(1, 1)), 4)
+    >>> icc(matrix).round(4)
     0.5246
-    >>> np.round(icc(M, type_icc=(2, 1)), 4)
+    >>> icc(matrix, form=(2, 1)).round(4)
     0.463
-    >>> np.round(icc(M, type_icc=(3, 1)), 4)
+    >>> icc(matrix, form=(3, 1)).round(4)
     0.3676
 
-    >>> M = np.array([[60, 61], [60, 65], [58, 62], [10, 10]])
+    >>> matrix = [[60, 61], [60, 65], [58, 62], [10, 10]]
 
-    >>> np.round(icc(M, type_icc=(1, 1)), 4)
+    >>> icc(matrix).round(4)
     0.992
-    >>> np.round(icc(M, type_icc=(2, 1)), 4)
+    >>> icc(matrix, form=(2, 1)).round(4)
     0.992
-    >>> np.round(icc(M, type_icc=(3, 1)), 4)
+    >>> icc(matrix, form=(3, 1)).round(4)
     0.9957
 
     """
-    n, k = M.shape
+    matrix = np.array(matrix)
 
-    SStotal = M.var(ddof=1) * (n * k - 1)
+    # Number of subjects (n) and number of raters (k)
+    n, k = matrix.shape
 
-    MSR = np.var(np.mean(M, axis=1), ddof=1) * k
-    MSW = np.sum(np.var(M, axis=1, ddof=1)) / n
-    MSC = np.var(np.mean(M, axis=0), ddof=1) * n
+    # Total sum of squares
+    ss_total = matrix.var(ddof=1) * (n * k - 1)
 
-    MSE = (SStotal - MSR * (n - 1) - MSC * (k - 1)) / ((n - 1) * (k - 1))
+    # Mean square for rows
+    ms_r = matrix.mean(axis=1).var(ddof=1) * k
 
-    if type_icc == (1, 1):
-        num = MSR - MSW
-        denom = MSR + (k - 1) * MSW
+    # Mean square for residual sources of variance
+    ms_w = matrix.var(axis=1, ddof=1).sum() / n
 
-    elif type_icc == (2, 1):
-        num = MSR - MSE
-        denom = MSR + (k - 1) * MSE + k / n * (MSC - MSE)
+    # Mean square for columns
+    ms_c = matrix.mean(axis=0).var(ddof=1) * n
 
-    elif type_icc == (3, 1):
-        num = MSR - MSE
-        denom = MSR + (k - 1) * MSE
+    # Mean square for error
+    ms_e = (ss_total - ms_r * (n - 1) - ms_c * (k - 1)) / ((n - 1) * (k - 1))
+
+    if form == (1, 1):
+        num = ms_r - ms_w
+        denom = ms_r + (k - 1) * ms_w
+
+    elif form == (2, 1):
+        num = ms_r - ms_e
+        denom = ms_r + (k - 1) * ms_e + k / n * (ms_c - ms_e)
+
+    elif form == (3, 1):
+        num = ms_r - ms_e
+        denom = ms_r + (k - 1) * ms_e
 
     return num / denom
