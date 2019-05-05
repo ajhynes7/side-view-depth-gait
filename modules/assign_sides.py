@@ -50,7 +50,7 @@ def convert_to_2d(position):
 
 def direction_of_pass(df_pass):
     """
-    Return vector representing overall direction of motion for a walking pass.
+    Return line representing overall direction of motion for a walking pass.
 
     Parameters
     ----------
@@ -60,28 +60,24 @@ def direction_of_pass(df_pass):
 
     Returns
     -------
-    line_point : ndarray
-        Point that lies on line of motion.
-    direction_pass : ndarray
-        Direction of motion for the walking pass.
+    line_pass : Line
+        Line representing direction of motion for the walking pass.
 
     """
     # All head positions on one walking pass
     head_points = np.stack(df_pass.HEAD)
 
     # Line of best fit for head positions
-    line = Line.best_fit(head_points)
+    line_pass = Line.best_fit(head_points)
 
     vector_start_end = Vector.from_points(head_points[0, :],
                                           head_points[-1, :])
 
-    direction_pass = line.direction
-
-    if direction_pass.dot(vector_start_end) < 0:
+    if line_pass.direction.dot(vector_start_end) < 0:
         # The direction of the best fit line should be reversed
-        direction_pass = -line.direction
+        line_pass.direction *= -1
 
-    return line.point, direction_pass
+    return line_pass
 
 
 def assign_sides_portion(df_walk, direction):
