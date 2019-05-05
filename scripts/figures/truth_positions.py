@@ -51,7 +51,9 @@ def main():
     fig = plt.figure()
 
     plt.imshow(label_image)
-    plt.scatter(points_image[:, 0], points_image[:, 1], c='w', edgecolor='k')
+    plt.scatter(
+        points_image[:, 0], points_image[:, 1], c='w', edgecolor='k', s=75
+    )
     plt.axis('off')
 
     fig.savefig(join('figures', 'label_image'))
@@ -59,10 +61,11 @@ def main():
     # Depth image
     fig = plt.figure()
 
-    plt.scatter(points_image[:, 0], points_image[:, 1], c='w')
     plt.imshow(depth_image, cmap='gray')
 
-    plt.scatter(points_image[:, 0], points_image[:, 1], c='w', edgecolor='k')
+    plt.scatter(
+        points_image[:, 0], points_image[:, 1], c='w', edgecolor='k', s=75
+    )
     plt.axis('off')
 
     fig.savefig(join('figures', 'depth_image'))

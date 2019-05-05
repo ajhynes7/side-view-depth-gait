@@ -73,7 +73,7 @@ def main():
 
     fig = plt.figure()
     plt.imshow(depth_image, cmap='gray')
-    pl.scatter_labels(points_image[:, :2], labels, edgecolors='k', s=100)
+    pl.scatter_labels(points_image[:, :2], labels, edgecolors='k', s=75)
     plt.legend(part_types, framealpha=1, loc='upper left', fontsize=12)
     plt.axis('off')
     fig.savefig(join('figures', 'joint_proposals_image.pdf'))
@@ -81,7 +81,7 @@ def main():
     # %% Plot joint proposals
 
     fig = plt.figure()
-    pl.scatter_labels(population, labels, edgecolor='k', s=50)
+    pl.scatter_labels(population, labels, edgecolor='k', s=75)
     plt.axis('equal')
     plt.axis('off')
     plt.legend(part_types, loc=legend_location, edgecolor='k')
@@ -109,7 +109,7 @@ def main():
     labels_reduced = labels[np.unique(paths)]
 
     fig = plt.figure()
-    pl.scatter_labels(pop_reduced, labels_reduced, edgecolor='k', s=50)
+    pl.scatter_labels(pop_reduced, labels_reduced, edgecolor='k', s=75)
     plt.axis('equal')
     plt.axis('off')
     fig.savefig(join('figures', 'joint_proposals_reduced.pdf'), dpi=1200)
@@ -133,7 +133,7 @@ def main():
         fig, ax = plt.subplots()
 
         pl.scatter_labels(
-            pop_reduced, labels_reduced, s=50, edgecolor='k', zorder=5
+            pop_reduced, labels_reduced, s=75, edgecolor='k', zorder=5
         )
 
         if i == 0:
