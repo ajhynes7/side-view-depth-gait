@@ -1,8 +1,8 @@
 """Process data from Excel files with Zeno Walkway measurements."""
 
 import glob
-import os
 import re
+from os.path import basename, join, splitext
 
 import numpy as np
 import pandas as pd
@@ -35,8 +35,35 @@ def parse_stride_info(stride_info):
 
 def main():
 
-    # Useful for catching errors with relative file paths
-    assert len(file_paths) > 0
+    load_dir = join('data', 'zeno', 'raw')
+    save_dir = join('data', 'zeno', 'gait_params')
+
+    labels = [
+        'Absolute Step Length (cm.)',
+        'Step Length (cm.)',
+        'Stride Length (cm.)',
+        'Stride Width (cm.)',
+        'Stride Velocity (cm./sec.)',
+        'Stride Time (sec.)',
+        'Stance %',
+    ]
+
+    new_labels = [
+        'absolute_step_length',
+        'step_length',
+        'stride_length',
+        'stride_width',
+        'stride_velocity',
+        'stride_time',
+        'stance_percentage',
+    ]
+
+    label_dict = {k: v for k, v in zip(labels, new_labels)}
+
+    # All files with .xlsx extension
+    file_paths = sorted(glob.glob(join(load_dir, '*.xlsx')))
+
+    dict_trials = {}
 
     for file_path in file_paths:
 
@@ -65,40 +92,16 @@ def main():
 
         df_trial = pd.concat((df_numbers, df_labels), axis=1, sort=False)
 
-        base_name = os.path.basename(file_path)  # File with extension
-        file_name = os.path.splitext(base_name)[0]  # File with no extension
+        base_name = basename(file_path)  # File with extension
+        file_name = splitext(base_name)[0]  # File with no extension
 
-        save_path = os.path.join(save_dir, file_name + '.pkl')
-        df_trial.to_pickle(save_path)
+        dict_trials[file_name] = df_trial
 
+    # DataFrame containing all Zeno trials
+    df_gait_params = pd.concat(dict_trials).dropna()
 
-load_dir = os.path.join('data', 'zeno', 'raw')
-save_dir = os.path.join('data', 'zeno', 'gait_params')
+    df_gait_params.to_pickle(join('data', 'zeno', 'df_gait_params.pkl'))
 
-labels = [
-    'Absolute Step Length (cm.)',
-    'Step Length (cm.)',
-    'Stride Length (cm.)',
-    'Stride Width (cm.)',
-    'Stride Velocity (cm./sec.)',
-    'Stride Time (sec.)',
-    'Stance %',
-]
-
-new_labels = [
-    'absolute_step_length',
-    'step_length',
-    'stride_length',
-    'stride_width',
-    'stride_velocity',
-    'stride_time',
-    'stance_percentage',
-]
-
-label_dict = {k: v for k, v in zip(labels, new_labels)}
-
-# All files with .xlsx extension
-file_paths = sorted(glob.glob(os.path.join(load_dir, '*.xlsx')))
 
 if __name__ == '__main__':
     main()
