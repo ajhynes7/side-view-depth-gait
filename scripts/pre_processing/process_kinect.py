@@ -1,6 +1,6 @@
 """Transform raw data from the Kinect into a pandas DataFrame."""
 
-import os
+from os.path import join
 
 import numpy as np
 import pandas as pd
@@ -10,10 +10,7 @@ import analysis.images as im
 
 def main():
 
-    load_dir = os.path.join('data', 'kinect', 'raw')
-
-    # Directories for all hypothetical points and highest confidence points
-    save_dir_hypo = os.path.join('data', 'kinect', 'processed', 'hypothesis')
+    load_dir = join('data', 'kinect', 'raw')
 
     part_types = ['HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG', 'FOOT']
 
@@ -22,74 +19,78 @@ def main():
     n_coord_cols = 99
 
     # List of trials to run
-    running_path = os.path.join(
-        'data', 'kinect', 'running', 'trials_to_run.csv'
-    )
+    running_path = join('data', 'kinect', 'running', 'trials_to_run.csv')
     trials_to_run = pd.read_csv(running_path, header=None, squeeze=True).values
 
-    for file_name in trials_to_run:
+    dict_trials = {}
 
-        file_path = os.path.join(load_dir, file_name + '.txt')
+    for trial_name in trials_to_run:
 
+        print(trial_name)
+
+        file_path = join(load_dir, trial_name + '.txt')
         df_raw = pd.read_csv(
             file_path,
             skiprows=range(22),
             header=None,
             names=[i for i in range(-2, n_coord_cols)],
             sep='\t',
+            skipfooter=1,  # The last night says "Quit button pressed"
             engine='python',
         )
 
-        # Change some column names
+        # Label some columns
         df_raw.rename(columns={-2: 'frame', -1: 'part'}, inplace=True)
 
-        # Replace any non-number strings with nan in the frame column
-        df_raw.frame = df_raw.frame.replace(r'[^0-9]', np.nan, regex=True)
-
-        # Convert the strings in the frame column so max function will work
-        df_raw.frame = pd.to_numeric(df_raw.frame)
-
-        max_frame = int(np.nanmax(df_raw.frame))
-
         # Crop the DataFrame at the max frame number
-        # (The text file loops back to the beginning)
-        last_index = df_raw[df_raw.frame == max_frame].index[-1]
-        df_cropped = df_raw.loc[:last_index, :]
+        # (the text file loops back to the beginning)
+        max_frame = df_raw.frame.max()
+        last_index = np.nonzero(df_raw.frame.values == max_frame)[0][-1]
+        df_cropped = df_raw.iloc[:last_index]
+
         df_cropped = df_cropped.set_index(['frame', 'part'])
 
-        # Skip first three columns
+        # Drop the first three numeric columns
         # (these are the coordinates of the confidence position)
-        df_hypo_raw = df_cropped.iloc[:, 3:]
+        df_hypo_raw = df_cropped.drop([0, 1, 2], axis=1)
 
-        # Drop rows with all nans
+        # Drop rows that are all nans
         df_hypo_raw = df_hypo_raw.dropna(how='all')
 
-        # Frames with any position data
+        # Convert elements floats because they
+        # are 3D coordinates
+        df_hypo_raw = df_hypo_raw.astype(np.float)
+
+        # Extract unique index values
         frames = df_hypo_raw.index.get_level_values(0).unique()
 
-        df_hypo_clean = pd.DataFrame(index=frames, columns=part_types)
+        df_hypo_types = pd.DataFrame(index=frames, columns=part_types)
 
-        for frame in frames:
-            for part_type in part_types:
+        for part_type in part_types:
 
-                df_frame = df_hypo_raw.loc[frame]
+            # Booleans marking rows of one part type (e.g. FOOT)
+            row_is_type = df_hypo_raw.index.get_level_values(1).str.contains(part_type)
 
-                # Coordinates of the part type
-                coords = df_frame[
-                    df_frame.index.str.contains(part_type)
-                ].values
-                coords = coords[~np.isnan(coords)]
+            # Only contains rows for one part type
+            df_hypo_raw_type = df_hypo_raw[row_is_type]
 
-                if coords.size == 0:
+            for frame, df_frame in df_hypo_raw_type.groupby(level=0):
+
+                # Combine the coordinates of body parts with the same type
+                # e.g. L_FOOT and R_FOOT
+                coords_part_type = df_frame.values.flatten()
+                coords_part_type = coords_part_type[~np.isnan(coords_part_type)]
+
+                if coords_part_type.size == 0:
                     continue
 
-                # Reshape into (n, 3) array
-                points_hypo = np.reshape(coords, (-1, 3))
+                # Reshape into array of 3D points
+                points_part_type = coords_part_type.reshape(-1, 3)
 
                 # The hypothetical positions now need to be converted from
                 # real to image then back to real using new parameters.
-                points_hypo = im.recalibrate_positions(
-                    points_hypo,
+                points_part_type = im.recalibrate_positions(
+                    points_part_type,
                     im.X_RES_ORIG,
                     im.Y_RES_ORIG,
                     im.X_RES,
@@ -98,15 +99,19 @@ def main():
                     im.F_YZ,
                 )
 
-                df_hypo_clean.loc[frame, part_type] = points_hypo
+                df_hypo_types.loc[frame, part_type] = points_part_type
 
         # Rename some body parts to match names used in papers
-        df_hypo_clean = df_hypo_clean.rename(
+        df_hypo_types = df_hypo_types.rename(
             columns={'UPPER_LEG': 'THIGH', 'LOWER_LEG': 'CALF'}
         )
 
-        save_path_hypo = os.path.join(save_dir_hypo, file_name) + '.pkl'
-        df_hypo_clean.to_pickle(save_path_hypo)
+        dict_trials[trial_name] = df_hypo_types
+
+    # DataFrame of all frames with position hypotheses for each body part type
+    df_hypo_total = pd.concat(dict_trials).dropna()
+
+    df_hypo_total.to_pickle(join('data', 'kinect', 'df_hypo.pkl'))
 
 
 if __name__ == '__main__':
