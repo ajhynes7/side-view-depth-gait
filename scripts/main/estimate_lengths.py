@@ -8,14 +8,14 @@ import pandas as pd
 from scipy.spatial.distance import cdist
 
 import modules.iterable_funcs as itf
-import modules.pose_estimation as pe
+from scripts.pre_processing.constants import PART_TYPES
 
 
 def main():
 
     df_hypo = pd.read_pickle(join('data', 'kinect', 'df_hypo.pkl'))
 
-    n_part_types = df_hypo.shape[1]
+    n_part_types = len(PART_TYPES)
     n_lengths = n_part_types - 1
 
     trials_to_run = df_hypo.index.get_level_values(0).unique()
@@ -32,9 +32,9 @@ def main():
         n_frames = df_trial.shape[0]
         lengths_estimated = np.zeros((n_frames, n_lengths))
 
-        for i, ((_, frame), row) in enumerate(df_trial.iterrows()):
+        for i, tuple_frame in enumerate(df_trial.itertuples()):
 
-            population, labels = pe.get_population(row, part_labels)
+            population, labels = tuple_frame.population, tuple_frame.labels
             dist_matrix = cdist(population, population)
 
             for idx_a, idx_b in itf.pairwise(part_labels):
