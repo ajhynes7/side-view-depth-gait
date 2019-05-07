@@ -7,13 +7,12 @@ import pandas as pd
 
 import analysis.images as im
 import modules.pose_estimation as pe
+from scripts.pre_processing.constants import PART_TYPES
 
 
 def main():
 
     load_dir = join('data', 'kinect', 'raw')
-
-    part_types = ['HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG', 'FOOT']
 
     # Number of columns for the position coordinates
     # Number should be sufficiently large and divisible by 3
@@ -65,9 +64,9 @@ def main():
         # Extract unique index values
         frames = df_hypo_raw.index.get_level_values(0).unique()
 
-        df_hypo_types = pd.DataFrame(index=frames, columns=part_types)
+        df_hypo_types = pd.DataFrame(index=frames, columns=PART_TYPES)
 
-        for part_type in part_types:
+        for part_type in PART_TYPES:
 
             # Booleans marking rows of one part type (e.g. FOOT)
             row_is_type = df_hypo_raw.index.get_level_values(1).str.contains(part_type)
@@ -102,11 +101,6 @@ def main():
 
                 df_hypo_types.loc[frame, part_type] = points_part_type
 
-        # Rename some body parts to match names used in papers
-        df_hypo_types = df_hypo_types.rename(
-            columns={'UPPER_LEG': 'THIGH', 'LOWER_LEG': 'CALF'}
-        )
-
         dict_trials[trial_name] = df_hypo_types
 
     # DataFrame of all frames with position hypotheses for each body part type
@@ -115,7 +109,7 @@ def main():
     # %% Convert the columns of part types into two columns:
     # 'population' and 'labels'.
 
-    part_labels = range(len(part_types))
+    part_labels = range(len(PART_TYPES))
     df_pop_labels = df_concat.apply(
         lambda row: pe.get_population(row, part_labels), axis=1
     )
