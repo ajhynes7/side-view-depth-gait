@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 import analysis.images as im
+import modules.pose_estimation as pe
 
 
 def main():
@@ -109,9 +110,24 @@ def main():
         dict_trials[trial_name] = df_hypo_types
 
     # DataFrame of all frames with position hypotheses for each body part type
-    df_hypo_total = pd.concat(dict_trials).dropna()
+    df_concat = pd.concat(dict_trials).dropna()
 
-    df_hypo_total.to_pickle(join('data', 'kinect', 'df_hypo.pkl'))
+    # %% Convert the columns of part types into two columns:
+    # 'population' and 'labels'.
+
+    part_labels = range(len(part_types))
+    df_pop_labels = df_concat.apply(
+        lambda row: pe.get_population(row, part_labels), axis=1
+    )
+
+    df_hypo_final = pd.DataFrame(
+        index=df_pop_labels.index, columns=['population', 'labels']
+    )
+
+    df_hypo_final['population'] = df_pop_labels.apply(lambda row: row[0])
+    df_hypo_final['labels'] = df_pop_labels.apply(lambda row: row[1])
+
+    df_hypo_final.to_pickle(join('data', 'kinect', 'df_hypo.pkl'))
 
 
 if __name__ == '__main__':
