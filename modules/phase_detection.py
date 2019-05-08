@@ -61,7 +61,7 @@ def detect_phases(step_signal):
     return is_stance
 
 
-def get_phase_dataframe(foot_series, direction_pass):
+def get_phase_dataframe(foot_series, line_pass):
     """
     Return a DataFrame displaying the phase and phase number of each frame.
 
@@ -73,8 +73,8 @@ def get_phase_dataframe(foot_series, direction_pass):
     foot_series : ndarray
         Index is 'frame'.
         Values are foot positions.
-    direction_pass : ndarray
-        Direction of motion for the walking pass.
+    line_pass : Line
+        Best-fit line for the walking pass.
 
     Returns
     -------
@@ -160,7 +160,7 @@ def group_stance_frames(df_phase):
     return df_grouped.reset_index()
 
 
-def get_contacts(foot_series, direction_pass):
+def get_contacts(foot_series, line_pass):
     """
     Return a DataFrame containing contact frames and positions for one foot.
 
@@ -172,8 +172,8 @@ def get_contacts(foot_series, direction_pass):
     foot_series : ndarray
         Index is 'frame'.
         Values are foot positions.
-    direction_pass : ndarray
-        Direction of motion for the walking pass.
+    line_pass : Line
+        Best-fit line for the walking pass.
 
     Returns
     -------
@@ -181,6 +181,6 @@ def get_contacts(foot_series, direction_pass):
         Columns are 'frame', 'position'
 
     """
-    df_phase = get_phase_dataframe(foot_series, direction_pass)
+    df_phase = get_phase_dataframe(foot_series, line_pass)
 
     return group_stance_frames(df_phase)
