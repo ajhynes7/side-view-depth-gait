@@ -61,10 +61,10 @@ def main():
 
     time_elapsed = time.time() - t
 
-    frames_run = df_hypo.shape[0]
+    n_frames_total = df_hypo.shape[0]
     trials_run = len(trials_to_run)
 
-    frames_per_second = round(frames_run / time_elapsed)
+    frames_per_second = round(n_frames_total / time_elapsed)
 
     print(
         """
@@ -73,7 +73,7 @@ def main():
         Total time: {}\n
         Frames per second: {}
         """.format(
-            trials_run, frames_run, round(time_elapsed, 2), frames_per_second
+            trials_run, n_frames_total, round(time_elapsed, 2), frames_per_second
         )
     )
 
