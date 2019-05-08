@@ -35,9 +35,6 @@ def parse_stride_info(stride_info):
 
 def main():
 
-    load_dir = join('data', 'zeno', 'raw')
-    save_dir = join('data', 'zeno', 'gait_params')
-
     labels = [
         'Absolute Step Length (cm.)',
         'Step Length (cm.)',
@@ -61,6 +58,7 @@ def main():
     label_dict = {k: v for k, v in zip(labels, new_labels)}
 
     # All files with .xlsx extension
+    load_dir = join('data', 'zeno', 'raw')
     file_paths = sorted(glob.glob(join(load_dir, '*.xlsx')))
 
     dict_trials = {}
@@ -98,9 +96,9 @@ def main():
         dict_trials[file_name] = df_trial
 
     # DataFrame containing all Zeno trials
-    df_gait_params = pd.concat(dict_trials).dropna()
+    df_gait = pd.concat(dict_trials).dropna()
 
-    df_gait_params.to_pickle(join('data', 'zeno', 'df_gait_params.pkl'))
+    df_gait.to_pickle(join('data', 'zeno', 'df_gait.pkl'))
 
 
 if __name__ == '__main__':
