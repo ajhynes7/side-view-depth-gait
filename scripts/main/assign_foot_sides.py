@@ -71,10 +71,8 @@ def main():
     df_assigned.to_pickle(join('data', 'kinect', 'df_assigned.pkl'))
 
     # Save the best fit lines for each walking pass of each trial
-    pickle.dump(
-        dict_lines_fit,
-        open(join('data', 'kinect', 'dict_lines_fit.pkl'), 'wb'),
-    )
+    with open(join('data', 'kinect', 'dict_lines_fit.pkl'), 'wb') as handle:
+        pickle.dump(dict_lines_fit, handle)
 
 
 if __name__ == '__main__':
