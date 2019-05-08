@@ -196,7 +196,7 @@ def foot_contacts_to_gait(df_contact):
     return df_gait
 
 
-def walking_pass_parameters(df_pass, direction_pass):
+def walking_pass_parameters(df_pass, line_pass):
     """
     Calculate gait parameters from a single walking pass.
 
@@ -204,8 +204,8 @@ def walking_pass_parameters(df_pass, direction_pass):
     ----------
     df_pass
         See module docstring.
-    direction_pass : ndarray
-        Direction of motion for the walking pass.
+    line_pass : Line
+        Best-fit line for the walking pass.
 
     Returns
     -------
@@ -214,8 +214,8 @@ def walking_pass_parameters(df_pass, direction_pass):
         Columns are parameters names.
 
     """
-    df_contact_l = pde.get_contacts(df_pass.L_FOOT, direction_pass)
-    df_contact_r = pde.get_contacts(df_pass.R_FOOT, direction_pass)
+    df_contact_l = pde.get_contacts(df_pass.L_FOOT, line_pass)
+    df_contact_r = pde.get_contacts(df_pass.R_FOOT, line_pass)
 
     df_contact_l['side'] = 'L'
     df_contact_r['side'] = 'R'
@@ -228,7 +228,7 @@ def walking_pass_parameters(df_pass, direction_pass):
     return df_pass_parameters
 
 
-def combine_walking_passes(df_assigned, direction_series):
+def combine_walking_passes(df_assigned, lines_fit):
     """
     Combine gait parameters from all walking passes in a trial.
 
@@ -239,8 +239,8 @@ def combine_walking_passes(df_assigned, direction_series):
         after assigning L/R sides to the feet.
         MultiIndex of form (pass, frame)
 
-    direction_series : Series
-        Row i is the direction vector of walking pass i.
+    lines_fit : list
+        Element i is the best-fit line of walking pass i.
 
     Returns
     -------
@@ -253,12 +253,12 @@ def combine_walking_passes(df_assigned, direction_series):
     # List of DataFrames with gait parameters
     param_dfs = []
 
-    n_passes = direction_series.size
+    n_passes = len(lines_fit)
 
-    for pass_number in range(n_passes):
+    for num_pass in range(n_passes):
 
-        df_assigned_pass = df_assigned.loc[pass_number]
-        direction_pass = direction_series.loc[pass_number]
+        df_assigned_pass = df_assigned.loc[num_pass]
+        line_pass = lines_fit[num_pass]
 
         df_pass = df_assigned_pass
 
@@ -267,14 +267,14 @@ def combine_walking_passes(df_assigned, direction_series):
         df_pass = df_pass.applymap(
             lambda x: x
             if isinstance(x, np.ndarray)
-            else np.full(direction_pass.size, np.nan)
+            else np.full(line_pass.direction.size, np.nan)
         )
 
-        df_pass_parameters = walking_pass_parameters(df_pass, direction_pass)
+        df_pass_parameters = walking_pass_parameters(df_pass, line_pass)
 
         if df_pass_parameters is not None:
             # Add column to record the walking pass
-            df_pass_parameters['pass'] = pass_number
+            df_pass_parameters['pass'] = num_pass
 
         param_dfs.append(df_pass_parameters)
 
