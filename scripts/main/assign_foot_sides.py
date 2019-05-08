@@ -1,5 +1,6 @@
 """Assign left and right sides to selected foot positions."""
 
+import pickle
 from os.path import join
 
 import pandas as pd
@@ -11,20 +12,16 @@ import modules.numpy_funcs as nf
 
 def main():
 
-    load_dir = join('data', 'kinect', 'best_pos')
+    df_selected = pd.read_pickle(join('data', 'kinect', 'df_selected.pkl'))
 
-    assigned_dir = join('data', 'kinect', 'assigned')
-    direction_dir = join('data', 'kinect', 'direction')
+    dict_trials, dict_lines_fit = {}, {}
 
-    # List of trials to run
-    running_path = join('data', 'kinect', 'running', 'trials_to_run.csv')
-    trials_to_run = pd.read_csv(running_path, header=None, squeeze=True).values
+    for trial_name, df_trial in df_selected.groupby(level=0):
 
-    for trial_name in trials_to_run:
-
-        df_selected = pd.read_pickle(join(load_dir, trial_name + '.pkl'))
-
-        frames = df_selected.index
+        # Drop the first level of the multi-index (the trial name)
+        # Now the index is just the frames
+        df_trial = df_trial.droplevel(0)
+        frames = df_trial.index
 
         # Cluster frames to locate the walking passes
         clustering = DBSCAN(eps=5).fit(nf.to_column(frames))
@@ -33,11 +30,11 @@ def main():
         # Drop frames identified as noise
         is_noise = labels == -1
         frames_to_drop = frames[is_noise]
-        df_selected = df_selected.drop(frames_to_drop)
+        df_trial = df_trial.drop(frames_to_drop)
         labels = labels[~is_noise]
 
         # Project points onto X-Z plane
-        df_selected_2d = df_selected.applymap(
+        df_trial_2d = df_trial.applymap(
             lambda point: asi.convert_to_2d(point)
         )
 
@@ -47,27 +44,37 @@ def main():
         # %% Assign sides to each walking pass and combine passes
         # DataFrames for each walking pass in a trial
 
-        pass_dfs_2d = list(nf.group_by_label(df_selected_2d, labels))
+        pass_dfs_2d = list(nf.group_by_label(df_trial_2d, labels))
 
-        dict_passes, pass_directions = {}, []
+        dict_passes, list_lines_passes = {}, []
 
-        for i, df_pass in enumerate(pass_dfs_2d):
+        for num_pass, df_pass in enumerate(pass_dfs_2d):
+
+            # Line of best fit for the walking pass
             line_pass = asi.direction_of_pass(df_pass)
 
-            pass_directions.append(line_pass.direction)
+            # Assign correct sides to feet
             df_pass_assigned = asi.assign_sides_pass(df_pass, line_pass.direction)
 
-            # Assign correct sides to feet
-            dict_passes[i] = df_pass_assigned
+            dict_passes[num_pass] = df_pass_assigned
+            list_lines_passes.append(line_pass)
 
-        df_assigned = pd.concat(dict_passes)
-        df_assigned.index = df_assigned.index.set_names('pass', level=0)
+        df_assigned_trial = pd.concat(dict_passes)
+        df_assigned_trial.index = df_assigned_trial.index.set_names('pass', level=0)
 
-        direction_series = pd.Series(pass_directions)
-        direction_series.index.name = 'pass'
+        dict_trials[trial_name] = df_assigned_trial
+        dict_lines_fit[trial_name] = list_lines_passes
 
-        df_assigned.to_pickle(join(assigned_dir, trial_name + '.pkl'))
-        direction_series.to_pickle(join(direction_dir, trial_name + '.pkl'))
+    df_assigned = pd.concat(dict_trials)
+
+    # Save the assigned positions for each trial
+    df_assigned.to_pickle(join('data', 'kinect', 'df_assigned.pkl'))
+
+    # Save the best fit lines for each walking pass of each trial
+    pickle.dump(
+        dict_lines_fit,
+        open(join('data', 'kinect', 'dict_lines_fit.pkl'), 'wb'),
+    )
 
 
 if __name__ == '__main__':
