@@ -112,12 +112,11 @@ def assign_sides_portion(df_walk, direction):
 
     # Find the side of foot point a relative to foot point b
     side_total = 0
-    direction_2d = direction[0:2]
 
     for foot_point_a, foot_point_b in zip(foot_points_a, foot_points_b):
 
         vector_ab = Vector.from_points(foot_point_a, foot_point_b)
-        side_total += vector_ab.side_vector(direction_2d)
+        side_total += vector_ab.side_vector(direction)
 
     if side_total > 0:
         # The left foot should be labelled the right foot, and vice versa
