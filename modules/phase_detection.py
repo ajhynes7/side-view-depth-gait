@@ -86,8 +86,7 @@ def get_phase_dataframe(foot_series, direction_pass):
     frames = foot_series.index.values
     foot_points = np.stack(foot_series)
 
-    line = Line(point=np.zeros(direction_pass.shape), direction=direction_pass)
-    step_signal = pp.apply_to_real_points(line.transform_points, foot_points)
+    step_signal = pp.apply_to_real_points(line_pass.transform_points, foot_points)
 
     is_stance = detect_phases(step_signal)
 
