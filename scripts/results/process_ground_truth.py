@@ -109,7 +109,7 @@ def main():
     df_truth = pd.concat(dict_truth)
     df_truth.index.names = ['trial_name', 'frame']
 
-    df_truth.to_pickle(join('results', 'dataframes', 'df_truth.pkl'))
+    df_truth.to_pickle(join('data', 'kinect', 'df_truth.pkl'))
 
 
 if __name__ == '__main__':
