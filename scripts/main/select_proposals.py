@@ -35,7 +35,7 @@ def main():
     n_frames_total = df_hypo.shape[0]
 
     # DataFrame with expected lengths between body parts
-    length_path = join('data', 'kinect', 'lengths', 'kinect_lengths.csv')
+    length_path = join('data', 'kinect', 'kinect_lengths.csv')
     df_length = pd.read_csv(length_path, index_col=0)
 
     # Pre-allocate array to hold best head and foot positions
