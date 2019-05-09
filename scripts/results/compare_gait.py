@@ -13,29 +13,34 @@ def main():
 
     dir_plots = join('results', 'plots')
     dir_tables = join('results', 'tables')
-    dir_dataframes = join('results', 'dataframes')
 
-    # Load all results
-    df_total_k = pd.read_pickle(join(dir_dataframes, 'df_total_k.pkl'))
-    df_total_z = pd.read_pickle(join(dir_dataframes, 'df_total_z.pkl'))
+    # Gait parameters from all trials with matching IDs
+    df_trial_id_k = pd.read_pickle(join('data', 'kinect', 'df_trial_id.pkl'))
+    df_trial_id_z = pd.read_pickle(join('data', 'zeno', 'df_trial_id.pkl'))
 
-    gait_params = df_total_k.select_dtypes(float).columns
+    gait_params = df_trial_id_k.select_dtypes(float).columns
 
-    df_trials_k = df_total_k.groupby('trial_id').median()
-    df_trials_z = df_total_z.groupby('trial_id').median()
+    # Median gait parameters of each walking trial
+    df_trials_k = df_trial_id_k.groupby(level=0).median()
+    df_trials_z = df_trial_id_z.groupby(level=0).median()
 
-    icc_21, icc_31 = [], []
-    bland_alt_tuples = []
+    list_bland_tuples = []
+    dict_icc = {f'icc_{x}1': {} for x in ['2', '3']}
 
     for param in gait_params:
 
         measures_k = df_trials_k[param]
         measures_z = df_trials_z[param]
+        measures = np.column_stack((measures_k, measures_z))
 
         means = (measures_k + measures_z) / 2
         differences = st.relative_difference(measures_k, measures_z)
-
         bland_alt = st.bland_altman(differences)
+
+        list_bland_tuples.append(bland_alt)
+
+        dict_icc['icc_21'][param] = st.icc(measures, form=(2, 1))
+        dict_icc['icc_31'][param] = st.icc(measures, form=(3, 1))
 
         # %% Bland-Altman plot
 
@@ -74,7 +79,7 @@ def main():
 
         fig_1.savefig(join(dir_plots, 'bland_{}.png'.format(param)))
 
-        # %% Direct comparison plot
+        # %% Direct comparison plots
 
         fig_2, ax_2 = plt.subplots()
 
@@ -100,24 +105,16 @@ def main():
 
         fig_2.savefig(join(dir_plots, 'compare_{}.png'.format(param)))
 
-        # %% Collect data for Bland and ICC tables
+    # %% Create tables of results
 
-        bland_alt_tuples.append(bland_alt)
-
-        measures = np.column_stack((measures_k, measures_z))
-        icc_21.append(st.icc(measures, form=(2, 1)))
-        icc_31.append(st.icc(measures, form=(3, 1)))
-
-    df_bland = pd.DataFrame.from_records(
-        bland_alt_tuples, index=gait_params, columns=bland_alt._fields
+    df_bland_alt = pd.DataFrame.from_records(
+        list_bland_tuples, index=gait_params, columns=bland_alt._fields
     )
 
-    df_icc = pd.DataFrame(
-        {'ICC(2, 1)': icc_21, 'ICC(3, 1)': icc_31}, index=gait_params
-    )
+    df_icc = pd.DataFrame.from_dict(dict_icc)
 
     with open(join(dir_tables, 'bland_altman.txt'), 'w') as file:
-        file.write(np.round(df_bland, 3).to_latex())
+        file.write(np.round(df_bland_alt, 3).to_latex())
 
     with open(join(dir_tables, 'icc.txt'), 'w') as file:
         file.write(np.round(df_icc, 3).to_latex())
