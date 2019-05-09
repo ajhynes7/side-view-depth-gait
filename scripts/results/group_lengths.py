@@ -11,12 +11,11 @@ import pandas as pd
 
 def main():
 
-    load_path = join('data', 'kinect', 'lengths', 'kinect_lengths.csv')
+    df_lengths = pd.read_csv(
+        join('data', 'kinect', 'kinect_lengths.csv'), index_col=0
+    )
 
-    df_lengths = pd.read_csv(load_path, index_col=0)
-
-    match_dir = join('data', 'matching')
-    df_match = pd.read_csv(join(match_dir, 'match_kinect_zeno.csv'))
+    df_match = pd.read_csv(join('data', 'matching', 'match_kinect_zeno.csv'))
 
     # Body lengths of trials that have matching Zeno data
     df_lengths_matched = df_lengths.loc[df_match.kinect].reset_index()
