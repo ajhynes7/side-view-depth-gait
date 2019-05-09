@@ -1,6 +1,9 @@
-"""Create LaTeX table of body length results."""
+"""
+Obtain mean and std deviation of estimated lengths
+grouped by participant.
 
-import os
+"""
+from os.path import join
 
 import numpy as np
 import pandas as pd
@@ -8,12 +11,12 @@ import pandas as pd
 
 def main():
 
-    load_path = os.path.join('data', 'kinect', 'lengths', 'kinect_lengths.csv')
+    load_path = join('data', 'kinect', 'lengths', 'kinect_lengths.csv')
 
     df_lengths = pd.read_csv(load_path, index_col=0)
 
-    match_dir = os.path.join('data', 'matching')
-    df_match = pd.read_csv(os.path.join(match_dir, 'match_kinect_zeno.csv'))
+    match_dir = join('data', 'matching')
+    df_match = pd.read_csv(join(match_dir, 'match_kinect_zeno.csv'))
 
     # Body lengths of trials that have matching Zeno data
     df_lengths_matched = df_lengths.loc[df_match.kinect].reset_index()
@@ -25,9 +28,7 @@ def main():
 
     df_grouped = df_expanded.groupby('participant').agg(['mean', 'std'])
 
-    save_dir = os.path.join('results', 'tables')
-    with open(os.path.join(save_dir, 'lengths.txt'), 'w') as file:
-
+    with open(join('results', 'tables', 'lengths.txt'), 'w') as file:
         file.write(np.round(df_grouped, 2).to_latex())
 
 
