@@ -9,52 +9,34 @@ import modules.assign_sides as asi
 import modules.point_processing as pp
 
 
-def combine_dataframes(load_dir, trial_names):
-    """Combine dataframes from different walking trials."""
-    dataframe_dict = {}
-
-    for trial_name in trial_names:
-        dataframe_dict[trial_name] = pd.read_pickle(
-            join(load_dir, trial_name) + '.pkl'
-        )
-
-    return pd.concat(dataframe_dict)
-
-
 def main():
 
     kinect_dir = join('data', 'kinect')
 
-    df_truth = pd.read_pickle(join('results', 'dataframes', 'df_truth.pkl'))
-    trial_names = df_truth.index.levels[0]
-
-    df_hypo = combine_dataframes(
-        join(kinect_dir, 'processed', 'hypothesis'), trial_names
-    )
-    df_selected = combine_dataframes(join(kinect_dir, 'best_pos'), trial_names)
-    df_assigned = combine_dataframes(join(kinect_dir, 'assigned'), trial_names)
-
-    foot_parts = ['L_FOOT', 'R_FOOT']
+    df_hypo = pd.read_pickle(join(kinect_dir, 'df_hypo.pkl'))
+    df_selected = pd.read_pickle(join(kinect_dir, 'df_selected.pkl'))
+    df_assigned = pd.read_pickle(join(kinect_dir, 'df_assigned.pkl'))
+    df_truth = pd.read_pickle(join(kinect_dir, 'df_truth.pkl'))
 
     # Truth positions on frames with head and both feet
-    df_truth = df_truth.loc[:, ['HEAD'] + foot_parts].dropna()
+    df_truth = df_truth.loc[:, ['HEAD', 'L_FOOT', 'R_FOOT']].dropna()
 
-    # Drop index level for walking pass
-    # This gives it the same index as the other dataframes
-    df_assigned.index = df_assigned.index.droplevel(1)
+    # Trials and frames common to ground truth and selected positions
+    index_intersection = df_truth.index.intersection(df_selected.index)
 
-    # %% Take frames with truth and selected positions
+    index_sorted = index_intersection.sort_values(('trial_name', 'frame'))[0]
 
-    index_intersect = df_truth.index.intersection(df_selected.index)
+    # The assigned DataFrame had an extra index for the walking pass
+    # This is dropped so the MultiIndex is the same as the other DataFrames
+    df_assigned.index = df_assigned.index.droplevel('pass')
 
-    df_truth = df_truth.loc[index_intersect]
-    df_hypo = df_hypo.loc[index_intersect]
-    df_selected = df_selected.loc[index_intersect]
-    df_assigned = df_assigned.loc[index_intersect]
+    # # Take the trials and frames shared by ground truth and the others
+    df_hypo = df_hypo.loc[index_sorted]
+    df_selected = df_selected.loc[index_sorted]
+    df_assigned = df_assigned.loc[index_sorted]
+    df_truth = df_truth.loc[index_sorted]
 
-    # %% Obtain numpy arrays from dataframes
-
-    proposals = df_hypo.FOOT.values
+    # %% Obtain NumPy arrays from DataFrames
 
     truth_head = np.stack(df_truth.HEAD)
     truth_l = np.stack(df_truth.L_FOOT)
@@ -68,13 +50,17 @@ def main():
     assigned_r = np.stack(df_assigned.R_FOOT)
 
     # Match selected positions with truth
-    matched_l, matched_r = pp.match_pairs(
-        selected_l, selected_r, truth_l, truth_r
+    matched_l, matched_r = pp.match_pairs(selected_l, selected_r, truth_l, truth_r)
+
+    # %% Create modified truth
+
+    # All foot proposals on each frame
+    proposals_foot = df_hypo.apply(
+        lambda row: row.population[row.labels == row.labels.max()], axis=1
     )
 
-    # Create modified truth
-    truth_mod_l = pp.closest_proposals(proposals, np.stack(df_truth.L_FOOT))
-    truth_mod_r = pp.closest_proposals(proposals, np.stack(df_truth.R_FOOT))
+    truth_mod_l = pp.closest_proposals(proposals_foot, truth_l)
+    truth_mod_r = pp.closest_proposals(proposals_foot, truth_r)
 
     # %% Convert points to 2D (since side assignment is in 2D)
 
@@ -84,35 +70,33 @@ def main():
     truth_mod_2d_l = np.apply_along_axis(asi.convert_to_2d, 1, truth_mod_l)
     truth_mod_2d_r = np.apply_along_axis(asi.convert_to_2d, 1, truth_mod_r)
 
-    # %% Calculate accuracies
+    # %% Accuracies
 
     acc_head = pp.position_accuracy(truth_head, selected_head)
 
     acc_matched_l = pp.position_accuracy(matched_l, truth_l)
     acc_matched_r = pp.position_accuracy(matched_r, truth_r)
+
     acc_matched_mod_l = pp.position_accuracy(matched_l, truth_mod_l)
     acc_matched_mod_r = pp.position_accuracy(matched_r, truth_mod_r)
 
     acc_assigned_l = pp.position_accuracy(assigned_l, truth_2d_l)
     acc_assigned_r = pp.position_accuracy(assigned_r, truth_2d_r)
+
     acc_assigned_mod_l = pp.position_accuracy(assigned_l, truth_mod_2d_l)
     acc_assigned_mod_r = pp.position_accuracy(assigned_r, truth_mod_2d_r)
 
-    acc_matched = pp.double_position_accuracy(
-        matched_l, matched_r, truth_l, truth_r
-    )
-    acc_matched_mod = pp.double_position_accuracy(
-        matched_l, matched_r, truth_mod_l, truth_mod_r
-    )
+    # %% Accuracies of left and right combined
+    # This is more challenging because *both* feet must be
+    # within a distance d from the truth
 
-    acc_assigned = pp.double_position_accuracy(
-        assigned_l, assigned_r, truth_2d_l, truth_2d_r
-    )
-    acc_assigned_mod = pp.double_position_accuracy(
-        assigned_l, assigned_r, truth_mod_2d_l, truth_mod_2d_r
-    )
+    acc_matched = pp.double_position_accuracy(matched_l, matched_r, truth_l, truth_r)
+    acc_matched_mod = pp.double_position_accuracy(matched_l, matched_r, truth_mod_l, truth_mod_r)
 
-    # %% Organize into tables
+    acc_assigned = pp.double_position_accuracy(assigned_l, assigned_r, truth_2d_l, truth_2d_r)
+    acc_assigned_mod = pp.double_position_accuracy(assigned_l, assigned_r, truth_mod_2d_l, truth_mod_2d_r)
+
+    # %% Organize into DataFrames
 
     df_acc_head = pd.DataFrame(
         index=['Truth'], columns=['Head'], data=acc_head
@@ -136,12 +120,17 @@ def main():
         ],
     )
 
+    # %% Save DataFrames as LaTeX tables
+
+    dict_frames = {
+        'accuracy_head': df_acc_head,
+        'accuracy_matched': df_acc_matched,
+        'accuracy_assigned': df_acc_assigned,
+    }
+
     table_dir = join('results', 'tables')
 
-    file_names = ['accuracy_head', 'accuracy_matched', 'accuracy_assigned']
-    data_frames = [df_acc_head, df_acc_matched, df_acc_assigned]
-
-    for file_name, data_frame in zip(file_names, data_frames):
+    for file_name, data_frame in dict_frames.items():
 
         with open(join(table_dir, file_name + '.txt'), 'w') as file:
             file.write(data_frame.round(2).to_latex())
