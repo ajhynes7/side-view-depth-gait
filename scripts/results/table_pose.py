@@ -26,7 +26,7 @@ def main():
     kinect_dir = join('data', 'kinect')
 
     df_truth = pd.read_pickle(join('results', 'dataframes', 'df_truth.pkl'))
-    trial_names = df_truth.index.get_level_values(0).unique().values
+    trial_names = df_truth.index.levels[0]
 
     df_hypo = combine_dataframes(
         join(kinect_dir, 'processed', 'hypothesis'), trial_names

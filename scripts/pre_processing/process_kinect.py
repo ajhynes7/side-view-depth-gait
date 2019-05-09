@@ -62,7 +62,7 @@ def main():
         df_hypo_raw = df_hypo_raw.astype(np.float)
 
         # Extract unique index values
-        frames = df_hypo_raw.index.get_level_values(0).unique()
+        frames = df_hypo_raw.index.levels[0]
 
         df_hypo_types = pd.DataFrame(index=frames, columns=PART_TYPES)
 

@@ -16,7 +16,7 @@ def main():
     kinect_dir = join('data', 'kinect')
 
     df_truth = pd.read_pickle('results/dataframes/df_truth.pkl')
-    trial_names = df_truth.index.get_level_values(0).unique().values
+    trial_names = df_truth.index.levels[0]
 
     df_hypo = combine_dataframes(
         join(kinect_dir, 'processed', 'hypothesis'), trial_names
@@ -56,7 +56,7 @@ def main():
     df_radii = pd.concat(dataframe_dict)
     df_radii.index.names = ['radius', 'trial_name', 'frame']
 
-    radii = df_radii.index.get_level_values(0).unique().values
+    radii = df_radii.index.levels[0]
 
     # %% Calculate accuracy for different radii
 
