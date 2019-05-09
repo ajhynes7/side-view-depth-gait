@@ -1,4 +1,4 @@
-"""Compute metrics for pose estimation."""
+"""Compare selected and assigned positions to ground truth."""
 
 from os.path import join
 
