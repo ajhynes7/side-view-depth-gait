@@ -64,7 +64,7 @@ def main():
     plt.xlabel('Frame')
     plt.ylabel('Foot Distance [cm]')
 
-    fig.savefig(join('figures, foot_dist.pdf'), format='pdf', dpi=1200)
+    fig.savefig(join('figures', 'foot_dist.pdf'), format='pdf', dpi=1200)
 
     # %% Step Signal
 
@@ -94,8 +94,7 @@ def main():
     plt.ylabel('Signal')
     plt.legend(['Stance', 'Swing'])
 
-    save_path = join('figures', 'step_signal.pdf')
-    fig.savefig(save_path, format='pdf', dpi=1200)
+    fig.savefig(join('figures', 'step_signal.pdf'), format='pdf', dpi=1200)
 
 
 if __name__ == '__main__':
