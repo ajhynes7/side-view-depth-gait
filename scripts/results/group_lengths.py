@@ -11,9 +11,7 @@ import pandas as pd
 
 def main():
 
-    df_lengths = pd.read_csv(
-        join('data', 'kinect', 'kinect_lengths.csv'), index_col=0
-    )
+    df_lengths = pd.read_csv(join('data', 'kinect', 'kinect_lengths.csv'), index_col=0)
 
     df_match = pd.read_csv(join('data', 'matching', 'match_kinect_zeno.csv'))
 

@@ -51,9 +51,7 @@ def main():
     frame = image_to_frame[image_number]
     population, labels = df_hypo.loc[trial_name].loc[frame]
 
-    points_image = np.apply_along_axis(
-        im.real_to_image, 1, population, im.X_RES, im.Y_RES, im.F_XZ, im.F_YZ
-    )
+    points_image = np.apply_along_axis(im.real_to_image, 1, population, im.X_RES, im.Y_RES, im.F_XZ, im.F_YZ)
 
     # %% Plot joint proposals on depth image
 
@@ -91,9 +89,7 @@ def main():
     cons_label_adj_list = pe.only_consecutive_labels(label_adj_list)
 
     # Run shortest path algorithm on the body graph
-    prev, dist = pe.pop_shortest_paths(
-        population, labels, cons_label_adj_list, cost_func
-    )
+    prev, dist = pe.pop_shortest_paths(population, labels, cons_label_adj_list, cost_func)
 
     # Get shortest path to each foot
     paths, _ = pe.paths_to_foot(prev, dist, labels)
@@ -116,18 +112,14 @@ def main():
     path_vectors = pe.get_path_vectors(paths_reduced, n_pop_reduced)
 
     dist_matrix = cdist(pop_reduced, pop_reduced)
-    score_matrix = pe.get_scores(
-        dist_matrix, paths_reduced, label_adj_list, score_func
-    )
+    score_matrix = pe.get_scores(dist_matrix, paths_reduced, label_adj_list, score_func)
 
     n_figs = len(pairs)
 
     for i in range(n_figs):
         fig, ax = plt.subplots()
 
-        pl.scatter_labels(
-            pop_reduced, labels_reduced, s=75, edgecolor='k', zorder=5
-        )
+        pl.scatter_labels(pop_reduced, labels_reduced, s=75, edgecolor='k', zorder=5)
 
         if i == 0:
             # Add legend to first figures

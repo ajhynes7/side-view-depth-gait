@@ -48,10 +48,7 @@ def main():
         lengths_truth = np.median(np.stack(lengths_trial), axis=0)
 
         df_compare_trial = pd.DataFrame(
-            {
-                'Estimated': df_lengths.loc[trial_name],
-                'Ground Truth': pd.Series(lengths_truth),
-            }
+            {'Estimated': df_lengths.loc[trial_name], 'Ground Truth': pd.Series(lengths_truth)}
         )
 
         dict_lengths[i + 1] = df_compare_trial
@@ -64,10 +61,7 @@ def main():
 
     # Add a column for relative error between estimated and truth lengths
     df_length_comparison['Relative Error'] = df_length_comparison.apply(
-        lambda row: st.relative_error(
-            row['Estimated'], row['Ground Truth']
-        ),
-        axis=1,
+        lambda row: st.relative_error(row['Estimated'], row['Ground Truth']), axis=1
     )
 
     save_path = join('results', 'tables', 'length_comparison.txt')

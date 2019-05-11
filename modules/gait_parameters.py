@@ -81,19 +81,9 @@ def spatial_parameters(pos_a_i, pos_b, pos_a_f):
 
     stride_width = line_a.distance_point(pos_b)
 
-    Spatial = namedtuple(
-        'Spatial',
-        [
-            'absolute_step_length',
-            'step_length',
-            'stride_length',
-            'stride_width',
-        ],
-    )
+    Spatial = namedtuple('Spatial', ['absolute_step_length', 'step_length', 'stride_length', 'stride_width'])
 
-    return Spatial(
-        absolute_step_length, step_length, stride_length, stride_width
-    )
+    return Spatial(absolute_step_length, step_length, stride_length, stride_width)
 
 
 def stride_parameters(foot_a_i, foot_b, foot_a_f, *, fps=30):
@@ -265,9 +255,7 @@ def combine_walking_passes(df_assigned, lines_fit):
         # Ensure there are no missing frames in the walking pass
         df_pass = pf.make_index_consecutive(df_pass)
         df_pass = df_pass.applymap(
-            lambda x: x
-            if isinstance(x, np.ndarray)
-            else np.full(line_pass.direction.size, np.nan)
+            lambda x: x if isinstance(x, np.ndarray) else np.full(line_pass.direction.size, np.nan)
         )
 
         df_pass_parameters = walking_pass_parameters(df_pass, line_pass)

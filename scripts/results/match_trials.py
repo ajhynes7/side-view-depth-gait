@@ -11,13 +11,9 @@ def main():
     df_gait_z = pd.read_pickle(join('data', 'zeno', 'df_gait.pkl'))
 
     # Remove negative values from Zeno data
-    df_gait_z = df_gait_z.applymap(
-        lambda x: abs(x) if isinstance(x, float) else x
-    )
+    df_gait_z = df_gait_z.applymap(lambda x: abs(x) if isinstance(x, float) else x)
 
-    df_match = pd.read_csv(
-        join('data', 'matching', 'match_kinect_zeno.csv'), index_col=0
-    )
+    df_match = pd.read_csv(join('data', 'matching', 'match_kinect_zeno.csv'), index_col=0)
 
     dict_k, dict_z = {}, {}
 

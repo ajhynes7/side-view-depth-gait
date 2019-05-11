@@ -66,8 +66,7 @@ def main():
         # Format y labels as percentages.
         # This line needs to be after the others,
         # or else the y-axis may be incorrect.
-        ax_1.set_yticklabels([f'{(x * 100):.0f}'
-                              for x in ax_1.get_yticks()])
+        ax_1.set_yticklabels([f'{(x * 100):.0f}' for x in ax_1.get_yticks()])
 
         # Remove right and top borders
         ax_1.spines['right'].set_visible(False)
@@ -85,10 +84,7 @@ def main():
 
         ax_2.scatter(measures_z, measures_k, c='k', s=20)
 
-        lims = [
-            np.min([ax_2.get_xlim(), ax_2.get_ylim()]),
-            np.max([ax_2.get_xlim(), ax_2.get_ylim()]),
-        ]
+        lims = [np.min([ax_2.get_xlim(), ax_2.get_ylim()]), np.max([ax_2.get_xlim(), ax_2.get_ylim()])]
 
         # Plot equality line
         ax_2.plot(lims, lims, 'k-')
@@ -107,9 +103,7 @@ def main():
 
     # %% Create tables of results
 
-    df_bland_alt = pd.DataFrame.from_records(
-        list_bland_tuples, index=gait_params, columns=bland_alt._fields
-    )
+    df_bland_alt = pd.DataFrame.from_records(list_bland_tuples, index=gait_params, columns=bland_alt._fields)
 
     df_icc = pd.DataFrame.from_dict(dict_icc)
 

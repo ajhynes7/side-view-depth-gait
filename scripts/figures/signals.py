@@ -52,9 +52,7 @@ def main():
     signal = 1 - sig.nan_normalize(norms)
     rms = sig.root_mean_square(signal)
 
-    peak_frames, _ = sw.detect_peaks(
-        frames, signal, window_length=3, min_height=rms
-    )
+    peak_frames, _ = sw.detect_peaks(frames, signal, window_length=3, min_height=rms)
 
     fig = plt.figure()
 
@@ -62,9 +60,7 @@ def main():
 
     pl.scatter_series(foot_dist, c='k', s=15)
     plt.plot(foot_dist, c='k', linewidth=0.7)
-    plt.vlines(
-        x=peak_frames, ymin=foot_dist.max(), ymax=foot_dist.min(), color='r'
-    )
+    plt.vlines(x=peak_frames, ymin=foot_dist.max(), ymax=foot_dist.min(), color='r')
     plt.xlabel('Frame')
     plt.ylabel('Foot Distance [cm]')
 
@@ -79,9 +75,7 @@ def main():
 
     # Ensure there are no missing frames in the walking pass
     df_pass = pf.make_index_consecutive(df_pass)
-    df_pass = df_pass.applymap(
-        lambda x: x if isinstance(x, np.ndarray) else np.full(3, np.nan)
-    )
+    df_pass = df_pass.applymap(lambda x: x if isinstance(x, np.ndarray) else np.full(3, np.nan))
 
     foot_series = df_pass.R_FOOT
     frames_pass = df_pass.index.values
