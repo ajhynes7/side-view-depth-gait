@@ -3,7 +3,6 @@
 import numpy as np
 import pandas as pd
 from sklearn.cluster import KMeans
-from skspatial.objects import Line
 
 import modules.iterable_funcs as itf
 import modules.numpy_funcs as nf
