@@ -8,7 +8,7 @@ import pandas as pd
 from scipy.spatial.distance import cdist
 
 import modules.iterable_funcs as itf
-from scripts.pre_processing.constants import PART_TYPES
+from modules.constants import PART_TYPES
 
 
 def main():

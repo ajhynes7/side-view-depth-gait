@@ -7,7 +7,7 @@ import pandas as pd
 
 import analysis.images as im
 import modules.pose_estimation as pe
-from scripts.pre_processing.constants import PART_TYPES
+from modules.constants import PART_TYPES
 
 
 def main():
