@@ -1,7 +1,6 @@
-"""Plot label and depth images with body segment centroids."""
+"""Plot multiple figures involving joint proposals."""
 
 import glob
-import os
 import pickle
 import re
 from os.path import join
@@ -15,6 +14,7 @@ from scipy.spatial.distance import cdist
 import analysis.images as im
 import analysis.plotting as pl
 import modules.pose_estimation as pe
+from modules.constants import PART_CONNECTIONS
 from scripts.main.select_proposals import cost_func, score_func
 
 
@@ -22,54 +22,42 @@ def main():
 
     kinect_dir = join('data', 'kinect')
 
-    load_dir = join(kinect_dir, 'labelled_trials')
-    hypo_dir = join(kinect_dir, 'processed', 'hypothesis')
-    align_dir = join(kinect_dir, 'alignment')
+    df_truth = pd.read_pickle(join(kinect_dir, 'df_truth.pkl'))
+    labelled_trial_names = df_truth.index.levels[0]
 
-    part_types = ['Head', 'Hip', 'Thigh', 'Knee', 'Calf', 'Foot']
-    part_connections = np.array(
-        [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [3, 5], [1, 3]]
-    )
-
-    legend_location = [0.2, 0.6]
-
+    # Specify image file
+    trial_name = labelled_trial_names[0]
     file_index = 271
 
-    labelled_trial_names = os.listdir(load_dir)
-    trial_name = labelled_trial_names[0]
+    # %% Load depth image
 
-    # DataFrame with lengths between body parts
-    df_lengths = pd.read_csv(
-        join(kinect_dir, 'lengths', 'kinect_lengths.csv'), index_col=0
-    )
-    lengths = df_lengths.loc[trial_name]
-
-    depth_dir = join(load_dir, trial_name, 'depth16bit')
+    depth_dir = join(kinect_dir, 'labelled_trials', trial_name, 'depth16bit')
     depth_paths = sorted(glob.glob(join(depth_dir, '*.png')))
 
     depth_path = depth_paths[file_index]
     depth_image = cv2.imread(depth_path, cv2.IMREAD_ANYDEPTH)
-    df_hypo = pd.read_pickle(join(hypo_dir, trial_name) + '.pkl')
+
+    # %% Obtain joint proposals for the depth image
+
+    df_hypo = pd.read_pickle(join(kinect_dir, 'df_hypo.pkl'))
 
     match_object = re.search(r'(\d+).png', depth_path)
     image_number = int(match_object.group(1))
 
     # Load dictionary to convert image numbers to frames
-    with open(join(align_dir, "{}.pkl".format(trial_name)), 'rb') as handle:
+    with open(join(kinect_dir, 'alignment', "{}.pkl".format(trial_name)), 'rb') as handle:
         image_to_frame = pickle.load(handle)
 
     frame = image_to_frame[image_number]
-
-    hypotheses = df_hypo.loc[frame]
-
-    part_labels = range(len(part_types))
-    population, labels = pe.get_population(hypotheses, part_labels)
+    population, labels = df_hypo.loc[trial_name].loc[frame]
 
     points_image = np.apply_along_axis(
         im.real_to_image, 1, population, im.X_RES, im.Y_RES, im.F_XZ, im.F_YZ
     )
 
     # %% Plot joint proposals on depth image
+
+    part_types = ['Head', 'Hip', 'Thigh', 'Knee', 'Calf', 'Foot']
 
     fig = plt.figure()
     plt.imshow(depth_image, cmap='gray')
@@ -80,6 +68,8 @@ def main():
 
     # %% Plot joint proposals
 
+    legend_location = [0.2, 0.6]
+
     fig = plt.figure()
     pl.scatter_labels(population, labels, edgecolor='k', s=75)
     plt.axis('equal')
@@ -89,9 +79,12 @@ def main():
 
     # %% Plot reduced joint proposals
 
+    df_lengths = pd.read_csv(join(kinect_dir, 'kinect_lengths.csv'), index_col=0)
+    lengths = df_lengths.loc[trial_name]
+
     # Expected lengths for all part connections,
     # including non-adjacent (e.g., knee to foot)
-    label_adj_list = pe.lengths_to_adj_list(part_connections, lengths)
+    label_adj_list = pe.lengths_to_adj_list(PART_CONNECTIONS, lengths)
 
     # Define a graph with edges between consecutive parts
     # (e.g. knee to calf, not knee to foot)
