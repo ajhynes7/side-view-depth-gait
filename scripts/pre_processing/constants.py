@@ -1,2 +1,0 @@
-
-PART_TYPES = ['HEAD', 'HIP', 'UPPER_LEG', 'KNEE', 'LOWER_LEG', 'FOOT']
