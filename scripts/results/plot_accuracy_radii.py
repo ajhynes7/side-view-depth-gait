@@ -1,97 +1,65 @@
 """Plot accuracy vs radii used to select feet."""
 
-import glob
-from os.path import basename, join, splitext
+from os.path import join
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
 import modules.point_processing as pp
-from scripts.results.table_pose import combine_dataframes
 
 
 def main():
 
-    kinect_dir = join('data', 'kinect')
-
-    df_truth = pd.read_pickle('results/dataframes/df_truth.pkl')
-    trial_names = df_truth.index.get_level_values(0).unique().values
-
-    df_hypo = combine_dataframes(
-        join(kinect_dir, 'processed', 'hypothesis'), trial_names
-    )
-    df_selected = combine_dataframes(join(kinect_dir, 'best_pos'), trial_names)
-
-    foot_parts = ['L_FOOT', 'R_FOOT']
+    df_radii = pd.read_pickle(join('data', 'kinect', 'df_radii.pkl'))
+    df_truth = pd.read_pickle(join('data', 'kinect', 'df_truth.pkl'))
+    df_hypo = pd.read_pickle(join('data', 'kinect', 'df_hypo.pkl'))
 
     # Truth positions on frames with head and both feet
-    df_truth = df_truth.loc[:, ['HEAD'] + foot_parts].dropna()
+    df_truth = df_truth.loc[:, ['HEAD', 'L_FOOT', 'R_FOOT']].dropna()
 
-    # Take frames with truth and selected positions
-    index_intersect = df_truth.index.intersection(df_selected.index)
+    # Trials and frames common to ground truth and selected positions
+    index_intersection = df_truth.index.intersection(df_radii.loc[0].index)
 
-    df_truth = df_truth.loc[index_intersect]
-    df_hypo = df_hypo.loc[index_intersect]
+    index_sorted = index_intersection.sort_values(('trial_name', 'frame'))[0]
+
+    df_truth = df_truth.loc[index_sorted]
+    df_hypo = df_hypo.loc[index_sorted]
 
     truth_l = np.stack(df_truth.L_FOOT)
     truth_r = np.stack(df_truth.R_FOOT)
 
-    # Create modified truth
-    proposals = df_hypo.FOOT.values
-    truth_mod_l = pp.closest_proposals(proposals, np.stack(df_truth.L_FOOT))
-    truth_mod_r = pp.closest_proposals(proposals, np.stack(df_truth.R_FOOT))
+    # %% Create modified truth
 
-    # %% Combine dataframes for different radii
+    # All foot proposals on each frame
+    proposals_foot = df_hypo.apply(lambda row: row.population[row.labels == row.labels.max()], axis=1)
 
-    file_paths = sorted(glob.glob(join(kinect_dir, 'best_pos_radii', '*.pkl')))
-
-    dataframe_dict = {}
-    for file_path in file_paths:
-        file_name = splitext(basename(file_path))[0]
-        trial_name, radius = file_name.split('_radius_')
-
-        dataframe_dict[(float(radius), trial_name)] = pd.read_pickle(file_path)
-
-    df_radii = pd.concat(dataframe_dict)
-    df_radii.index.names = ['radius', 'trial_name', 'frame']
-
-    radii = df_radii.index.get_level_values(0).unique().values
-
-    # %% Calculate accuracy for different radii
-
-    radii = np.arange(0, 11, 1)
+    truth_mod_l = pp.closest_proposals(proposals_foot, truth_l)
+    truth_mod_r = pp.closest_proposals(proposals_foot, truth_r)
 
     truth_accs, truth_mod_accs = [], []
 
-    for radius in radii:
+    for radius, df_radius in df_radii.groupby(level=0):
 
-        df_selected = df_radii.loc[radius].loc[index_intersect]
+        # Drop the first level to have same MultiIndex as df_truth
+        df_radius.index = df_radius.index.droplevel(0)
+        df_radius = df_radius.loc[index_sorted]
 
-        selected_l = np.stack(df_selected.L_FOOT)
-        selected_r = np.stack(df_selected.R_FOOT)
+        selected_l = np.stack(df_radius.L_FOOT)
+        selected_r = np.stack(df_radius.R_FOOT)
 
         # Match selected positions with truth
-        matched_l, matched_r = pp.match_pairs(
-            selected_l, selected_r, truth_l, truth_r
-        )
+        matched_l, matched_r = pp.match_pairs(selected_l, selected_r, truth_l, truth_r)
 
-        truth_accs.append(
-            pp.double_position_accuracy(
-                matched_l, matched_r, truth_l, truth_r
-            ) * 100
-        )
+        truth_accs.append(pp.double_position_accuracy(matched_l, matched_r, truth_l, truth_r) * 100)
 
-        truth_mod_accs.append(
-            pp.double_position_accuracy(
-                matched_l, matched_r, truth_mod_l, truth_mod_r
-            ) * 100
-        )
+        truth_mod_accs.append(pp.double_position_accuracy(matched_l, matched_r, truth_mod_l, truth_mod_r) * 100)
 
     # %% Create plot of accuracy vs radii
 
     fig = plt.figure()
 
+    radii = df_radii.index.levels[0]
     plt.plot(radii, truth_accs, '-o', c='b')
     plt.plot(radii, truth_mod_accs, '-o', c='r')
 

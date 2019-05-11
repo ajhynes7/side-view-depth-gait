@@ -3,7 +3,6 @@
 import numpy as np
 import pandas as pd
 from sklearn.cluster import KMeans
-from skspatial.objects import Line
 
 import modules.iterable_funcs as itf
 import modules.numpy_funcs as nf
@@ -29,30 +28,22 @@ def detect_phases(step_signal):
 
     """
     pad_width = 5
-    variances = sw.apply_to_padded(
-        step_signal, np.nanvar, pad_width, 'reflect', reflect_type='odd'
-    )
+    variances = sw.apply_to_padded(step_signal, np.nanvar, pad_width, 'reflect', reflect_type='odd')
 
     points_to_cluster = nf.to_column(nf.remove_nan(np.array(variances)))
     k_means = KMeans(n_clusters=2, random_state=0).fit(points_to_cluster)
 
-    signal_labels = pp.assign_to_closest(
-        nf.to_column(variances), k_means.cluster_centers_
-    )
+    signal_labels = pp.assign_to_closest(nf.to_column(variances), k_means.cluster_centers_)
 
     stance_label = np.argmin(k_means.cluster_centers_)
-    is_stance = np.logical_and(
-        signal_labels == stance_label, ~np.isnan(variances)
-    )
+    is_stance = np.logical_and(signal_labels == stance_label, ~np.isnan(variances))
 
     # Filter groups of stance frames that are too small
 
     labels = np.fromiter(itf.label_repeated_elements(is_stance), 'int')
 
     is_real = ~np.isnan(step_signal)
-    good_labels = nf.large_boolean_groups(
-        is_stance & is_real, labels, min_length=10
-    )
+    good_labels = nf.large_boolean_groups(is_stance & is_real, labels, min_length=10)
 
     good_elements = np.in1d(labels, list(good_labels))
 
@@ -61,7 +52,7 @@ def detect_phases(step_signal):
     return is_stance
 
 
-def get_phase_dataframe(foot_series, direction_pass):
+def get_phase_dataframe(foot_series, line_pass):
     """
     Return a DataFrame displaying the phase and phase number of each frame.
 
@@ -73,8 +64,8 @@ def get_phase_dataframe(foot_series, direction_pass):
     foot_series : ndarray
         Index is 'frame'.
         Values are foot positions.
-    direction_pass : ndarray
-        Direction of motion for the walking pass.
+    line_pass : Line
+        Best-fit line for the walking pass.
 
     Returns
     -------
@@ -86,8 +77,7 @@ def get_phase_dataframe(foot_series, direction_pass):
     frames = foot_series.index.values
     foot_points = np.stack(foot_series)
 
-    line = Line(point=np.zeros(direction_pass.shape), direction=direction_pass)
-    step_signal = pp.apply_to_real_points(line.transform_points, foot_points)
+    step_signal = pp.apply_to_real_points(line_pass.transform_points, foot_points)
 
     is_stance = detect_phases(step_signal)
 
@@ -161,7 +151,7 @@ def group_stance_frames(df_phase):
     return df_grouped.reset_index()
 
 
-def get_contacts(foot_series, direction_pass):
+def get_contacts(foot_series, line_pass):
     """
     Return a DataFrame containing contact frames and positions for one foot.
 
@@ -173,8 +163,8 @@ def get_contacts(foot_series, direction_pass):
     foot_series : ndarray
         Index is 'frame'.
         Values are foot positions.
-    direction_pass : ndarray
-        Direction of motion for the walking pass.
+    line_pass : Line
+        Best-fit line for the walking pass.
 
     Returns
     -------
@@ -182,6 +172,6 @@ def get_contacts(foot_series, direction_pass):
         Columns are 'frame', 'position'
 
     """
-    df_phase = get_phase_dataframe(foot_series, direction_pass)
+    df_phase = get_phase_dataframe(foot_series, line_pass)
 
     return group_stance_frames(df_phase)

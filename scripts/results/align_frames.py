@@ -18,11 +18,7 @@ def main():
 
     for trial_name in labelled_trial_names:
 
-        df_align = pd.read_csv(
-            os.path.join(align_dir, trial_name + '.txt'),
-            header=None,
-            names=['image_file'],
-        )
+        df_align = pd.read_csv(os.path.join(align_dir, trial_name + '.txt'), header=None, names=['image_file'])
 
         # Extract number from image file name
         pattern = r'(\d+)\.png'
@@ -31,10 +27,7 @@ def main():
         df_align.image_number = pd.to_numeric(df_align.image_number)
 
         # Dictionary mapping image file numbers to frames
-        image_to_frame = {
-            image_num: frame
-            for frame, image_num in enumerate(df_align.image_number.values)
-        }
+        image_to_frame = {image_num: frame for frame, image_num in enumerate(df_align.image_number.values)}
 
         save_path = join(align_dir, "{}.pkl".format(trial_name))
         with open(save_path, 'wb') as handle:

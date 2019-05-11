@@ -116,12 +116,7 @@ def bland_altman(differences):
 
     BlandAltman = namedtuple('BlandAltman', params)
 
-    return BlandAltman(
-        bias=bias,
-        lower_limit=lower_limit,
-        upper_limit=upper_limit,
-        range_=upper_limit - lower_limit,
-    )
+    return BlandAltman(bias=bias, lower_limit=lower_limit, upper_limit=upper_limit, range_=upper_limit - lower_limit)
 
 
 def icc(matrix, form=(1, 1)):

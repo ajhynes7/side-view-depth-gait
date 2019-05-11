@@ -70,8 +70,7 @@ def direction_of_pass(df_pass):
     # Line of best fit for head positions
     line_pass = Line.best_fit(head_points)
 
-    vector_start_end = Vector.from_points(head_points[0, :],
-                                          head_points[-1, :])
+    vector_start_end = Vector.from_points(head_points[0, :], head_points[-1, :])
 
     if line_pass.direction.dot(vector_start_end) < 0:
         # The direction of the best fit line should be reversed
@@ -106,18 +105,15 @@ def assign_sides_portion(df_walk, direction):
     foot_points_r = np.stack(df_walk.R_FOOT)
 
     # Find a motion correspondence so the foot sides do not switch abruptly
-    foot_points_a, foot_points_b = pp.track_two_objects(
-        foot_points_l, foot_points_r
-    )
+    foot_points_a, foot_points_b = pp.track_two_objects(foot_points_l, foot_points_r)
 
     # Find the side of foot point a relative to foot point b
     side_total = 0
-    direction_2d = direction[0:2]
 
     for foot_point_a, foot_point_b in zip(foot_points_a, foot_points_b):
 
         vector_ab = Vector.from_points(foot_point_a, foot_point_b)
-        side_total += vector_ab.side_vector(direction_2d)
+        side_total += vector_ab.side_vector(direction)
 
     if side_total > 0:
         # The left foot should be labelled the right foot, and vice versa
@@ -162,16 +158,12 @@ def assign_sides_pass(df_pass, direction_pass):
     # These peaks are the frames when the feet are close together.
     signal = 1 - sig.nan_normalize(norms)
     rms = sig.root_mean_square(signal)
-    peak_frames, _ = sw.detect_peaks(
-        frames, signal, window_length=3, min_height=rms
-    )
+    peak_frames, _ = sw.detect_peaks(frames, signal, window_length=3, min_height=rms)
 
     labels = nf.label_by_split(frames, peak_frames)
 
     grouped_dfs = [*nf.group_by_label(df_pass, labels)]
 
-    assigned_dfs = [
-        assign_sides_portion(x, direction_pass) for x in grouped_dfs
-    ]
+    assigned_dfs = [assign_sides_portion(x, direction_pass) for x in grouped_dfs]
 
     return pd.concat(assigned_dfs)

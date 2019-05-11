@@ -1,21 +1,18 @@
 """Run all scripts to generate figures."""
 
-import matplotlib.pyplot as plt
+import matplotlib
+from matplotlib import rc
 
-from scripts.figures import (
-    body_graph,
-    joint_proposals,
-    signals,
-    truth_positions,
-)
+from scripts.figures import body_graph, joint_proposals, signals, truth_positions
 
 
 def main():
 
+    matplotlib.rcParams.update({"pgf.texsystem": "pdflatex"})
+
     # Customize font
-    plt.rc('text', usetex=True)
-    font = {'family': 'serif', 'weight': 'bold', 'size': 14}
-    plt.rc('font', **font)
+    rc('font', **{'family': 'serif', 'weight': 'bold', 'size': 14})
+    rc('text', usetex=True)
 
     # Run scripts to make figures
     body_graph.main()
