@@ -19,7 +19,7 @@ def main():
     n_coord_cols = 99
 
     # List of trials to run
-    running_path = join('data', 'kinect', 'running', 'trials_to_run.csv')
+    running_path = join('data', 'kinect', 'trials_to_run.csv')
     trials_to_run = pd.read_csv(running_path, header=None, squeeze=True).values
 
     dict_trials = {}
