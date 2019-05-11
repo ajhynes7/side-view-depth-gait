@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 import modules.pose_estimation as pe
+from modules.constants import PART_CONNECTIONS
 from scripts.main.select_proposals import cost_func, score_func
 
 
@@ -17,10 +18,6 @@ def main():
     df_truth = pd.read_pickle(join(kinect_dir, 'df_truth.pkl'))
 
     df_length = pd.read_csv(join(kinect_dir, 'kinect_lengths.csv'), index_col=0)
-
-    part_connections = np.array(
-        [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [3, 5], [1, 3]]
-    )
 
     labelled_trial_names = df_truth.index.levels[0]
     df_hypo_labelled = df_hypo.loc[labelled_trial_names]
@@ -44,7 +41,7 @@ def main():
 
             # Expected lengths for all part connections,
             # including non-adjacent (e.g., knee to foot)
-            label_adj_list = pe.lengths_to_adj_list(part_connections, lengths)
+            label_adj_list = pe.lengths_to_adj_list(PART_CONNECTIONS, lengths)
 
             for tuple_frame in df_hypo_trial.itertuples():
 

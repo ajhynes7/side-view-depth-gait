@@ -8,6 +8,7 @@ import pandas as pd
 
 import analysis.math_funcs as mf
 import modules.pose_estimation as pe
+from modules.constants import PART_CONNECTIONS
 
 
 def cost_func(a, b):
@@ -24,10 +25,6 @@ def score_func(a, b):
 def main():
 
     radii = [i for i in range(6)]
-
-    part_connections = np.array(
-        [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [3, 5], [1, 3]]
-    )
 
     # DataFrame with position hypotheses (join proposals) for all trials
     df_hypo = pd.read_pickle(join('data', 'kinect', 'df_hypo.pkl'))
@@ -53,7 +50,7 @@ def main():
 
         # Expected lengths for all part connections,
         # including non-adjacent (e.g., knee to foot)
-        label_adj_list = pe.lengths_to_adj_list(part_connections, lengths)
+        label_adj_list = pe.lengths_to_adj_list(PART_CONNECTIONS, lengths)
 
         for tuple_frame in df_trial.itertuples():
 
