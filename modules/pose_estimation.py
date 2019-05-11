@@ -269,7 +269,7 @@ def get_scores(dist_matrix, paths, label_adj_list, score_func):
         Each row lists the nodes on a shortest path through the body part
         types, i.e., from head to foot.
     label_adj_list : dict
-            Adjacency list for the labels.
+        Adjacency list for the labels.
         label_adj_list[A][B] is the expected distance between
         a point with label A and a point with label B.
     score_func : function
@@ -358,7 +358,7 @@ def get_path_vectors(paths, n_pop):
         Total number of positions in the population.
 
     Returns
-    -----
+    -------
     path_vectors : ndarray
         (n_paths, n_pop) array.
         Each row is a boolean vector.

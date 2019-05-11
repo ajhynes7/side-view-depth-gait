@@ -48,7 +48,7 @@ def consecutive_dist(points):
         List of points.
 
     Returns
-    ------
+    -------
     ndarray
         Distance between consecutive points.
 
