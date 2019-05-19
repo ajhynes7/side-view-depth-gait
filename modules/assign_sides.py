@@ -1,169 +1,87 @@
-"""Functions for assigning correct sides to the feet."""
+"""Module for assigning correct sides to the feet."""
 
 import numpy as np
-import pandas as pd
-from numpy.linalg import norm
-from skspatial.objects import Vector, Line
+from dpcontracts import require, ensure
+from skspatial.objects import Vector
+from skspatial.transformation import transform_coordinates
 
 import modules.numpy_funcs as nf
-import modules.pandas_funcs as pf
 import modules.point_processing as pp
 import modules.signals as sig
 import modules.sliding_window as sw
 
 
-def convert_to_2d(position):
-    """
-    Convert a 3D part position to 2D.
+@require("The input points must be 3D.", lambda args: all(x.shape[1] == 3 for x in args))
+@ensure("The output points must be 2D.", lambda _, results: all(x.shape[1] == 2 for x in results))
+def convert_to_2d(points_head, points_a, points_b):
 
-    The negative of the depth (z) component of the 3D position becomes
-    the x component of the 2D position.
+    points_foot = np.vstack((points_a, points_b))
 
-    The x component of the 3D position becomes the y component
-    of the 2D position.
+    point_foot_med = np.median(points_foot, axis=0)
+    point_head_med = np.median(points_head, axis=0)
 
-    Parameters
-    ----------
-    position : array_like
-        3D position of body part.
+    # Up direction defined as vector from median foot point to
+    # median head point
+    vector_up = Vector.from_points(point_foot_med, point_head_med).unit()
 
-    Returns
-    -------
-    ndarray
-        2D position.
+    # Forward direction defined as median vector from one frame to next
+    points_foot_mean = (points_a + points_b) + 2
+    differences = np.diff(points_foot_mean, axis=0)
+    vector_forward = Vector(np.median(differences, axis=0)).unit()
 
-    Examples
-    --------
+    vector_perp = vector_up.cross(vector_forward)
+    vectors_basis = (vector_perp, vector_forward)
 
-    >>> convert_to_2d([50, 60, 250])
-    array([-250,   50])
+    # Represent the 3D foot points in a new 2D coordinate system
+    points_2d_a = transform_coordinates(points_a, point_foot_med, vectors_basis)
+    points_2d_b = transform_coordinates(points_b, point_foot_med, vectors_basis)
 
-    """
-    x, _, depth = position
-
-    # Take the negative of depth so that orientation on xy plane is correct.
-    # This is important for assigning sides to the feet.
-    x_2d, y_2d = -depth, x
-
-    return np.array([x_2d, y_2d])
+    return points_2d_a, points_2d_b
 
 
-def direction_of_pass(df_pass):
-    """
-    Return line representing overall direction of motion for a walking pass.
+@require("The points must be 2D", lambda args: all(x.shape[1] == 2 for x in (args.points_2d_a, args.points_2d_b)))
+@ensure(
+    "The outputs must have the same size as the inputs.",
+    lambda args, results: args.points_2d_a.shape == results[0].shape == results[1].shape,
+)
+def assign_sides_pass(frames, points_2d_a, points_2d_b):
 
-    Parameters
-    ----------
-    df_pass : DataFrame
-        Head and foot positions at each frame in a walking pass.
-        Three columns: HEAD, L_FOOT, R_FOOT.
+    distances_feet = np.linalg.norm(points_2d_a - points_2d_b, axis=1)
 
-    Returns
-    -------
-    line_pass : Line
-        Line representing direction of motion for the walking pass.
-
-    """
-    # All head positions on one walking pass
-    head_points = np.stack(df_pass.HEAD)
-
-    # Line of best fit for head positions
-    line_pass = Line.best_fit(head_points)
-
-    vector_start_end = Vector.from_points(head_points[0, :], head_points[-1, :])
-
-    if line_pass.direction.dot(vector_start_end) < 0:
-        # The direction of the best fit line should be reversed
-        line_pass.direction *= -1
-
-    return line_pass
-
-
-def assign_sides_portion(df_walk, direction):
-    """
-    Assign correct sides to feet during a section of a walking pass.
-
-    The feet are assigned by establishing a motion correspondence for the
-    section of the walking pass, then calculating a value to assign one
-    tracked foot to left or right.
-
-    Parameters
-    ----------
-    df_walk : DataFrame
-        Data for a section of a walking pass.
-        Three columns: HEAD, L_FOOT, R_FOOT.
-    direction : ndarray
-        Vector for direction of motion.
-
-    Returns
-    -------
-    df_assigned : DataFrame
-        Walking data after foot sides have been assigned.
-
-    """
-    foot_points_l = np.stack(df_walk.L_FOOT)
-    foot_points_r = np.stack(df_walk.R_FOOT)
-
-    # Find a motion correspondence so the foot sides do not switch abruptly
-    foot_points_a, foot_points_b = pp.track_two_objects(foot_points_l, foot_points_r)
-
-    # Find the side of foot point a relative to foot point b
-    side_total = 0
-
-    for foot_point_a, foot_point_b in zip(foot_points_a, foot_points_b):
-
-        vector_ab = Vector.from_points(foot_point_a, foot_point_b)
-        side_total += vector_ab.side_vector(direction)
-
-    if side_total > 0:
-        # The left foot should be labelled the right foot, and vice versa
-        foot_points_a, foot_points_b = foot_points_b, foot_points_a
-
-    df_assigned = df_walk.copy()
-    df_assigned.L_FOOT = pf.series_of_rows(foot_points_a, index=df_walk.index)
-    df_assigned.R_FOOT = pf.series_of_rows(foot_points_b, index=df_walk.index)
-
-    return df_assigned
-
-
-def assign_sides_pass(df_pass, direction_pass):
-    """
-    Assign correct sides to feet over a full walking pass.
-
-    The pass is split into multiple sections of frames. The splits occur when
-    the feet are together. The feet are assigned to left/right on each section
-    of frames.
-
-    Parameters
-    ----------
-    df_pass : DataFrame
-        Head and foot positions at each frame in a walking pass.
-        Three columns: HEAD, L_FOOT, R_FOOT.
-    direction_pass : ndarray
-        Direction of motion for the walking pass.
-
-    Returns
-    -------
-    DataFrame
-        New DataFrame for walking pass with feet assigned to correct sides.
-
-    """
-    frames = df_pass.index.values
-
-    foot_points_l = np.stack(df_pass.L_FOOT)
-    foot_points_r = np.stack(df_pass.R_FOOT)
-    norms = norm(foot_points_l - foot_points_r, axis=1)
-
-    # Detect peaks in the inverted foot distance signal.
-    # These peaks are the frames when the feet are close together.
-    signal = 1 - sig.nan_normalize(norms)
+    # Find local minima in the foot distances.
+    signal = 1 - sig.nan_normalize(distances_feet)
     rms = sig.root_mean_square(signal)
     peak_frames, _ = sw.detect_peaks(frames, signal, window_length=3, min_height=rms)
 
-    labels = nf.label_by_split(frames, peak_frames)
+    # Split the pass into portions between local minima.
+    labels = np.array(nf.label_by_split(frames, peak_frames))
+    labels_unique = np.unique(labels)
 
-    grouped_dfs = [*nf.group_by_label(df_pass, labels)]
+    points_2d_l = np.zeros_like(points_2d_a)
+    points_2d_r = np.zeros_like(points_2d_b)
 
-    assigned_dfs = [assign_sides_portion(x, direction_pass) for x in grouped_dfs]
+    for label in labels_unique:
 
-    return pd.concat(assigned_dfs)
+        is_portion = labels == label
+
+        points_portion_a = points_2d_a[is_portion]
+        points_portion_b = points_2d_b[is_portion]
+
+        # Find a motion correspondence so the foot sides do not switch abruptly.
+        points_tracked_a, points_tracked_b = pp.track_two_objects(points_portion_a, points_portion_b)
+
+        value_side_a = points_tracked_a[:, 0].sum()
+        value_side_b = points_tracked_b[:, 0].sum()
+
+        # Assume that points A are left foot points, and vice versa.
+        points_tracked_l = points_tracked_a
+        points_tracked_r = points_tracked_b
+
+        if value_side_a > value_side_b:
+            # Swap left and right foot points.
+            points_tracked_l, points_tracked_r = points_tracked_r, points_tracked_l
+
+        points_2d_l[is_portion] = points_tracked_l
+        points_2d_r[is_portion] = points_tracked_r
+
+    return points_2d_l, points_2d_r
