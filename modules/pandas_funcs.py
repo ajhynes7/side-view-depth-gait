@@ -2,9 +2,22 @@
 
 from functools import reduce
 
+import numpy as np
 import pandas as pd
 
 import modules.numpy_funcs as nf
+
+
+def points_to_dataframe(list_points, columns, index):
+
+    n_rows, n_arrays = len(index), len(list_points)
+    array_container = np.full((n_rows, n_arrays), None)
+
+    for i, points in enumerate(list_points):
+        for row in range(n_rows):
+            array_container[row, i] = points[row]
+
+    return pd.DataFrame(array_container, columns=columns, index=index)
 
 
 def series_of_rows(array, *, index=None):
