@@ -9,7 +9,37 @@ import modules.numpy_funcs as nf
 
 
 def points_to_dataframe(list_points, columns, index):
+    """
+    Convert arrays of points to a DataFrame.
 
+    Parameters
+    ----------
+    list_points : sequence
+        Each element is a 2D array of points.
+        Each array must have the same length.
+    columns : sequence
+        Column names.
+    index : sequence
+        Index of the DataFrame.
+
+    Returns
+    -------
+    DataFrame
+        Each row contains one point from each array of points.
+
+    Examples
+    --------
+    >>> points_a = [[0, 0], [1, 1], [2, 2]]
+    >>> points_b = [[1, 2], [3, 4], [5, 6]]
+    >>> points_c = [[0, 1], [1, 2], [2, 3]]
+
+    >>> points_to_dataframe([points_a, points_b, points_c], columns=['HEAD', 'L_FOOT', 'R_FOOT'], index=[10, 11, 12])
+          HEAD  L_FOOT  R_FOOT
+    10  [0, 0]  [1, 2]  [0, 1]
+    11  [1, 1]  [3, 4]  [1, 2]
+    12  [2, 2]  [5, 6]  [2, 3]
+
+    """
     n_rows, n_arrays = len(index), len(list_points)
     array_container = np.full((n_rows, n_arrays), None)
 
