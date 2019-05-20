@@ -1,8 +1,10 @@
 """Functions related to spatial points."""
 
+from copy import copy
 from itertools import accumulate
 
 import numpy as np
+from dpcontracts import require
 from numpy.linalg import norm
 from scipy.spatial.distance import cdist
 
@@ -82,9 +84,10 @@ def apply_to_real_points(func, points):
     return output
 
 
-def correspond_points(points_prev, points_curr):
+@require("There must be two points in each input.", lambda args: all(len(points) == 2 for points in args))
+def check_correspondence(points_prev, points_curr):
     """
-    Order points so they correspond to points from the previous frame.
+    Check if current points correspond to points from the previous frame.
 
     Only two points are allowed on each frame.
 
@@ -93,56 +96,42 @@ def correspond_points(points_prev, points_curr):
 
     Parameters
     ----------
-    points_prev, points_curr : ndarray
+    points_prev, points_curr : array_like
         Previous and current points.
         (2, d) array of 2 points with dimension d.
 
     Returns
     -------
-    points_ordered : ndarray
-        Current points in the order that corresponds to previous points.
-
-    Raises
-    ------
-    ValueError
-        When either input does not have two rows.
+    bool
+        True if the points are corresponded; false otherwise.
 
     Examples
     --------
-    >>> points_prev = np.array([[0, 0], [10, 11]])
-    >>> points_curr = np.array([[10, 10], [2, 3]])
+    >>> points_prev = [[0, 0], [7, 8]]
+    >>> points_curr = [[7, 9], [1, 1]]
+    >>> check_correspondence(points_prev, points_curr)
+    False
 
-    >>> correspond_points(points_prev, points_curr)
-    array([[ 2,  3],
-           [10, 10]])
+    >>> points_prev = [[0, 0, 0], [5, 5, 5]]
+    >>> points_curr = [[1, 1, 1], [6, 6, 6]]
+    >>> check_correspondence(points_prev, points_curr)
+    True
 
-    >>> points_prev = np.array([[-1, 1, 3], [4, 5, 2]])
-    >>> points_curr = np.array([[-2, 1, 4], [5, 5, 1]])
-
-    >>> correspond_points(points_prev, points_curr)
-    array([[-2,  1,  4],
-           [ 5,  5,  1]])
+    >>> points_prev = [[-1, 1, 3], [4, 5, 2]]
+    >>> points_curr = [[-2, 1, 4], [5, 5, 1]]
+    >>> check_correspondence(points_prev, points_curr)
+    True
 
     """
-    inputs = [points_prev, points_curr]
-    if not all(len(points) == 2 for points in inputs):
-        raise ValueError("Inputs do not have two rows of points.")
-
     dist_matrix = cdist(points_prev, points_curr)
 
     sum_diagonal = dist_matrix.trace()
     sum_reverse = np.fliplr(dist_matrix).trace()
 
-    points_ordered = points_curr
-
-    if sum_reverse < sum_diagonal:
-
-        points_ordered = np.flip(points_curr, axis=0)
-
-    return points_ordered
+    return sum_diagonal < sum_reverse
 
 
-def track_two_objects(points_1, points_2):
+def track_two_points(points_a, points_b):
     """
     Assign points in time to two distinct objects.
 
@@ -150,47 +139,100 @@ def track_two_objects(points_1, points_2):
 
     Parameters
     ----------
-    points_1, points_2 : array_like
+    points_a, points_b : array_like
         (n, d) array of n points with dimension d.
-        The points represent the position of an object at consective frames.
+        The points represent the position of an object at consecutive frames.
 
     Returns
     -------
-    points_assigned_1, points_assigned_2 : ndarray
-        (n, d) array of points.
-        The points now correspond to objects 1 and 2.
+    array_correspondence : ndarray
+        (n,) array.
+        Element i is 1 if the points at frame i are correctly assigned; 0 otherwise.
 
     Examples
     --------
-    >>> points_1 = [[-1, 1], [0, 1], [12, 11], [3, 5], [5, 6]]
-    >>> points_2 = [[11, 10], [12, 12], [1, 3], [14, 13], [15, 15]]
+    >>> points_a = [[0, 0], [11, 11], [2, 2], [3, 3], [14, 14]]
+    >>> points_b = [[10, 10], [1, 1], [12, 12], [13, 13], [4, 4]]
 
-    >>> points_new_1, points_new_2 = track_two_objects(points_1, points_2)
-
-    >>> points_new_1
-    array([[-1,  1],
-           [ 0,  1],
-           [ 1,  3],
-           [ 3,  5],
-           [ 5,  6]])
-
-    >>> points_new_2
-    array([[11, 10],
-           [12, 12],
-           [12, 11],
-           [14, 13],
-           [15, 15]])
+    >>> track_two_points(points_a, points_b)
+    array([1., 0., 1., 1., 0.])
 
     """
-    # Results of corresponding consecutive pairs of points
-    point_series = accumulate(zip(points_1, points_2), correspond_points)
+    n_points = len(points_a)
+    array_correspondence = np.ones(n_points)
 
-    # Unpack the points and convert to ndarray
-    point_list_1, point_list_2 = zip(*point_series)
-    points_assigned_1 = np.stack(point_list_1)
-    points_assigned_2 = np.stack(point_list_2)
+    point_prev_a = points_a[0]
+    point_prev_b = points_b[0]
 
-    return points_assigned_1, points_assigned_2
+    for i in range(1, n_points):
+
+        point_curr_a = points_a[i]
+        point_curr_b = points_b[i]
+
+        points_prev = [point_prev_a, point_prev_b]
+        points_curr = [point_curr_a, point_curr_b]
+
+        correspondence = check_correspondence(points_prev, points_curr)
+
+        point_prev_a = point_curr_a
+        point_prev_b = point_curr_b
+
+        if not correspondence:
+            # The current points do not correspond to the previous.
+            # Swap the previous points.
+            point_prev_a, point_prev_b = point_prev_b, point_prev_a
+
+        array_correspondence[i] = correspondence
+
+    return array_correspondence
+
+
+def correspond_points(points_a, points_b, array_correspondence):
+    """
+    Return points correctly assigned to groups A and B.
+
+    The points correspond with the points from the previous frame.
+
+    Parameters
+    ----------
+    points_a, points_b : array_like
+        (n, d) array of n points with dimension d.
+        The points represent the position of an object at consecutive frames.
+    array_correspondence : ndarray
+        (n) array of booleans.
+        Element i is 1 if the points at frame i are correctly assigned; false otherwise.
+
+    Returns
+    -------
+    points_a_true, points_b_true : array_like
+        (n, d) array of n points with dimension d.
+        Points correctly assigned to groups A and B.
+
+    Examples
+    --------
+    >>> points_a = [[0, 0], [11, 11], [2, 2], [3, 3], [14, 14]]
+    >>> points_b = [[10, 10], [1, 1], [12, 12], [13, 13], [4, 4]]
+
+    >>> array_correspondence = track_two_points(points_a, points_b)
+    >>> points_a, points_b = correspond_points(points_a, points_b, array_correspondence)
+
+    >>> points_a
+    [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4]]
+
+    >>> points_b
+    [[10, 10], [11, 11], [12, 12], [13, 13], [14, 14]]
+
+    """
+    points_a_true = copy(points_a)
+    points_b_true = copy(points_b)
+
+    for i, correspondence in enumerate(array_correspondence):
+
+        if not correspondence:
+            points_a_true[i] = points_b[i]
+            points_b_true[i] = points_a[i]
+
+    return points_a_true, points_b_true
 
 
 def closest_point(points, target):
