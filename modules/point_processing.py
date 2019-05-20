@@ -155,11 +155,11 @@ def track_two_points(points_a, points_b):
     >>> points_b = [[10, 10], [1, 1], [12, 12], [13, 13], [4, 4]]
 
     >>> track_two_points(points_a, points_b)
-    array([1., 0., 1., 1., 0.])
+    array([True, False, True, True, False])
 
     """
     n_points = len(points_a)
-    array_correspondence = np.ones(n_points)
+    array_correspondence = np.full(n_points, True)
 
     point_prev_a = points_a[0]
     point_prev_b = points_b[0]
