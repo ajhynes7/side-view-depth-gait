@@ -25,7 +25,7 @@ def convert_to_2d(points_head, points_a, points_b):
     vector_up = Vector.from_points(point_foot_med, point_head_med).unit()
 
     # Forward direction defined as median vector from one frame to next
-    points_foot_mean = (points_a + points_b) + 2
+    points_foot_mean = (points_a + points_b) / 2
     differences = np.diff(points_foot_mean, axis=0)
     vector_forward = Vector(np.median(differences, axis=0)).unit()
 
@@ -39,14 +39,9 @@ def convert_to_2d(points_head, points_a, points_b):
     return points_2d_a, points_2d_b
 
 
-@require("The points must be 2D", lambda args: all(x.shape[1] == 2 for x in (args.points_2d_a, args.points_2d_b)))
-@ensure(
-    "The outputs must have the same size as the inputs.",
-    lambda args, results: args.points_2d_a.shape == results[0].shape == results[1].shape,
-)
-def assign_sides_pass(frames, points_2d_a, points_2d_b):
+def split_walking_pass(frames, points_a, points_b):
 
-    distances_feet = np.linalg.norm(points_2d_a - points_2d_b, axis=1)
+    distances_feet = np.linalg.norm(points_a - points_b, axis=1)
 
     # Find local minima in the foot distances.
     signal = 1 - sig.nan_normalize(distances_feet)
@@ -55,33 +50,37 @@ def assign_sides_pass(frames, points_2d_a, points_2d_b):
 
     # Split the pass into portions between local minima.
     labels = np.array(nf.label_by_split(frames, peak_frames))
-    labels_unique = np.unique(labels)
 
-    points_2d_l = np.zeros_like(points_2d_a)
-    points_2d_r = np.zeros_like(points_2d_b)
+    return labels
 
-    for label in labels_unique:
 
-        is_portion = labels == label
+@require("The points must be 2D", lambda args: all(x.shape[1] == 2 for x in (args.points_2d_a, args.points_2d_b)))
+def assign_sides_pass(points_2d_a, points_2d_b, labels_portions):
+
+    n_points_pass = len(points_2d_a)
+    array_assignment = np.full(n_points_pass, True)
+
+    for label in np.unique(labels_portions):
+
+        is_portion = labels_portions == label
 
         points_portion_a = points_2d_a[is_portion]
         points_portion_b = points_2d_b[is_portion]
 
-        # Find a motion correspondence so the foot sides do not switch abruptly.
-        points_tracked_a, points_tracked_b = pp.track_two_objects(points_portion_a, points_portion_b)
+        array_correspondence = pp.track_two_points(points_portion_a, points_portion_b)
+
+        points_tracked_a, points_tracked_b = pp.correspond_points(
+            points_portion_a, points_portion_b, array_correspondence
+        )
 
         value_side_a = points_tracked_a[:, 0].sum()
         value_side_b = points_tracked_b[:, 0].sum()
 
         # Assume that points A are left foot points, and vice versa.
-        points_tracked_l = points_tracked_a
-        points_tracked_r = points_tracked_b
-
         if value_side_a > value_side_b:
             # Swap left and right foot points.
-            points_tracked_l, points_tracked_r = points_tracked_r, points_tracked_l
+            array_correspondence = np.logical_not(array_correspondence)
 
-        points_2d_l[is_portion] = points_tracked_l
-        points_2d_r[is_portion] = points_tracked_r
+        array_assignment[is_portion] = array_correspondence
 
-    return points_2d_l, points_2d_r
+    return array_assignment
