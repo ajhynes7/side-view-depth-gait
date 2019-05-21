@@ -39,8 +39,8 @@ def main():
         # Assign left and right sides to the 2D foot positions.
         array_assignment = sa.assign_sides_pass(points_2d_a, points_2d_b, labels_portions)
 
-        points_3d_l, points_3d_r = pp.correspond_points(points_3d_a, points_3d_b, array_assignment)
         points_2d_l, points_2d_r = pp.correspond_points(points_2d_a, points_2d_b, array_assignment)
+        points_3d_l, points_3d_r = pp.correspond_points(points_3d_a, points_3d_b, array_assignment)
 
         df_2d = pf.points_to_dataframe([points_2d_l, points_2d_r], ['L_FOOT', 'R_FOOT'], frames)
         df_3d = pf.points_to_dataframe([points_3d_l, points_3d_r], ['L_FOOT', 'R_FOOT'], frames)
@@ -49,7 +49,7 @@ def main():
         dict_assigned_3d[tuple_trial_pass] = df_3d
 
     df_assigned_2d = pd.concat(dict_assigned_2d)
-    df_assigned_3d = pd.concat(dict_assigned_2d)
+    df_assigned_3d = pd.concat(dict_assigned_3d)
 
     index_names = ['trial_name', 'num_pass', 'frame']
     df_assigned_2d.index.names = index_names
