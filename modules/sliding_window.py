@@ -148,4 +148,4 @@ def apply_to_padded(array, func, *args, **kwargs):
 
     padded = np.pad(array, *args, **kwargs)
 
-    return [func(x) for x in generate_window(padded, n)]
+    return [func(nf.remove_nan(window)) for window in generate_window(padded, n)]
