@@ -4,6 +4,7 @@ import glob
 import re
 from os.path import basename, join, splitext
 
+import numpy as np
 import pandas as pd
 
 
@@ -85,7 +86,12 @@ def main():
         trial_name = splitext(basename(file_path))[0]
         dict_trials[trial_name] = df_trial
 
-    df_gait = pd.concat(dict_trials)
+    df_gait = (
+        pd.concat(dict_trials)
+        # Remove negative values
+        .applymap(lambda x: np.nan if x < 0 else x).dropna()
+    )
+
     df_gait.index = df_gait.index.rename(level=0, names='trial_name')
 
     df_gait.to_pickle(join('data', 'zeno', 'df_gait.pkl'))
