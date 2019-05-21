@@ -53,15 +53,18 @@ def main():
 
     # %% Create modified truth
 
-    # All foot proposals on each frame
+    # All head and foot proposals on each frame
+    proposals_head = df_hypo.apply(lambda row: row.population[row.labels == 0], axis=1)
     proposals_foot = df_hypo.apply(lambda row: row.population[row.labels == row.labels.max()], axis=1)
 
+    truth_mod_head = pp.closest_proposals(proposals_head, truth_head)
     truth_mod_l = pp.closest_proposals(proposals_foot, truth_l)
     truth_mod_r = pp.closest_proposals(proposals_foot, truth_r)
 
     # %% Accuracies
 
-    acc_head = pp.position_accuracy(truth_head, selected_head)
+    acc_head = pp.position_accuracy(selected_head, truth_head)
+    acc_mod_head = pp.position_accuracy(selected_head, truth_mod_head)
 
     acc_matched_l = pp.position_accuracy(matched_l, truth_l)
     acc_matched_r = pp.position_accuracy(matched_r, truth_r)
@@ -87,7 +90,11 @@ def main():
 
     # %% Organize into DataFrames
 
-    df_acc_head = pd.DataFrame(index=['Truth'], columns=['Head'], data=acc_head)
+    df_acc_head = pd.DataFrame(
+        index=['Truth', 'Modified'],
+        columns=['Head'],
+        data=[acc_head, acc_mod_head],
+    )
 
     df_acc_matched = pd.DataFrame(
         index=['Truth', 'Modified'],
