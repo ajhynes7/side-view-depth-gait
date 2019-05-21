@@ -210,15 +210,20 @@ def stances_to_gait(df_stance):
 
             yield dict_stride
 
-    df_gait = pd.DataFrame(yield_parameters())
+    df_gait = pd.DataFrame(yield_parameters()).set_index(['num_stance', 'side'])
 
     return df_gait
 
 
 @require("The frames must correspond to the points.", lambda args: args.frames.shape == (args.points_l.shape[0],))
-@require("The points must 2D.", lambda args: all(x.shape[1] == 2 for x in [args.points_l, args.points_r]))
+@require("The points must 3D.", lambda args: all(x.shape[1] == 3 for x in [args.points_l, args.points_r]))
+@require("The signals must 1D arrays.", lambda args: all(x.ndim == 1 for x in [args.signal_l, args.signal_r]))
 @ensure("The output must contain gait params.", lambda _, result: 'stride_length' in result.columns)
-def walking_pass_parameters(frames, points_l, points_r):
+@ensure(
+    "The output must have the required MultiIndex.",
+    lambda _, result: result.index.names == ['num_stance', 'side'],
+)
+def walking_pass_parameters(frames, points_l, points_r, signal_l, signal_r):
     """
     Calculate gait parameters from a single walking pass.
 
@@ -232,10 +237,6 @@ def walking_pass_parameters(frames, points_l, points_r):
         The columns include parameters names.
 
     """
-    # The 1D foot signal is the Y coordinate of the 2D points.
-    signal_l = points_l[:, 1]
-    signal_r = points_r[:, 1]
-
     labels_l = pde.detect_stance_phases(signal_l)
     labels_r = pde.detect_stance_phases(signal_r)
 
