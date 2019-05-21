@@ -4,56 +4,68 @@ import glob
 import re
 from os.path import basename, join, splitext
 
-import numpy as np
 import pandas as pd
 
 
-def parse_stride_info(stride_info):
-    """Parse stride information (e.g. pass number, stride number)."""
-    pass_list, side_list, stride_list = [], [], []
+def extract_measurements(df_raw):
+    """Extract gait parameter measurements from the raw Zeno data."""
+    row_param_names = df_raw.apply(lambda row: row.str.contains('Stride Length').any(), axis=1).idxmax()
+    row_data_begins = (df_raw.iloc[:, 0] == 1).idxmax()
 
-    for string in stride_info:
+    df_trial = df_raw.iloc[row_data_begins:]
 
-        first_char = string[0]
+    df_trial.columns = df_raw.iloc[row_param_names]
+    df_trial.columns.name = None
 
-        if first_char.isdigit():
-            # This row starts a new walking pass
-            # Update current pass number
-            pass_number = int(first_char)
+    # The first column is an irrelevant row count.
+    return df_trial.iloc[:, 1:].reset_index(drop=True)
 
-        pass_list.append(pass_number)
 
-        # Match 'Right' or 'Left' and take first character ('R' or 'L')
-        side_list.append(re.search(r'(\w+)\s', string).group(1)[0])
+def parse_walking_info(df_trial):
+    """Parse stride information (e.g. pass number, foot side)."""
 
-        stride_list.append(int(string[-1]))
+    def yield_parsed(series_info):
 
-    return pd.DataFrame({'pass': pass_list, 'stride': stride_list, 'side': side_list})
+        for string in series_info:
+
+            first_char = string[0]
+
+            if first_char.isdigit():
+                # This row starts a new walking pass.
+                # Update current pass number.
+                # Subtract one to match zero-indexing of Kinect passes.
+                num_pass = int(first_char) - 1
+
+            num_stance = int(string[-1]) - 1
+
+            # Match 'Right' or 'Left' and take first character ('R' or 'L')
+            side = re.search(r'(\w+)\s', string).group(1)[0]
+
+            yield num_pass, num_stance, side
+
+    series_info = df_trial.iloc[:, 0]
+    df_parsed = pd.DataFrame(yield_parsed(series_info), columns=['num_pass', 'num_stance', 'side'])
+
+    return pd.concat((df_parsed, df_trial), axis=1).set_index(df_parsed.columns.to_list())
+
+
+def select_parameters(df_trial):
+    """Select gait parameters of interest and simplify the column names."""
+
+    dict_labels = {
+        'Absolute Step Length (cm.)': 'absolute_step_length',
+        'Step Length (cm.)': 'step_length',
+        'Stride Length (cm.)': 'stride_length',
+        'Stride Width (cm.)': 'stride_width',
+        'Stride Velocity (cm./sec.)': 'stride_velocity',
+        'Stride Time (sec.)': 'stride_time',
+        'Stance %': 'stance_percentage',
+    }
+
+    return df_trial[dict_labels].rename(dict_labels, axis=1).dropna().astype(float)
 
 
 def main():
-
-    labels = [
-        'Absolute Step Length (cm.)',
-        'Step Length (cm.)',
-        'Stride Length (cm.)',
-        'Stride Width (cm.)',
-        'Stride Velocity (cm./sec.)',
-        'Stride Time (sec.)',
-        'Stance %',
-    ]
-
-    new_labels = [
-        'absolute_step_length',
-        'step_length',
-        'stride_length',
-        'stride_width',
-        'stride_velocity',
-        'stride_time',
-        'stance_percentage',
-    ]
-
-    label_dict = {k: v for k, v in zip(labels, new_labels)}
 
     # All files with .xlsx extension
     load_dir = join('data', 'zeno', 'raw')
@@ -63,36 +75,18 @@ def main():
 
     for file_path in file_paths:
 
-        df = pd.read_excel(file_path)
+        df_trial = (
+            pd.read_excel(file_path)
+            .pipe(extract_measurements)
+            .pipe(parse_walking_info)
+            .pipe(select_parameters)
+        )
 
-        # Locate the gait parameter labels in the Excel file
-        bool_array = df.applymap(lambda x: 'Step Time' in x if isinstance(x, str) else False).values
+        trial_name = splitext(basename(file_path))[0]
+        dict_trials[trial_name] = df_trial
 
-        # Crop DataFrame at row where raw values begin
-        row_first_data = int(np.where(df.iloc[:, 0] == 1)[0])
-        df_gait = df.iloc[row_first_data:, :]
-
-        # Set the gait parameters as column labels
-        row_gait_parameters = np.argwhere(bool_array)[0][0]
-        df_gait.columns = df.iloc[row_gait_parameters, :]
-
-        df_gait.columns.name = None
-
-        df_labels = df_gait[labels].rename(label_dict, axis=1)
-        df_labels = df_labels.reset_index(drop=True).astype(np.float)
-
-        stride_info = df_gait.iloc[:, 1]
-        df_numbers = parse_stride_info(stride_info)
-
-        df_trial = pd.concat((df_numbers, df_labels), axis=1, sort=False)
-
-        base_name = basename(file_path)  # File with extension
-        file_name = splitext(base_name)[0]  # File with no extension
-
-        dict_trials[file_name] = df_trial
-
-    # DataFrame containing all Zeno trials
-    df_gait = pd.concat(dict_trials).dropna()
+    df_gait = pd.concat(dict_trials)
+    df_gait.index = df_gait.index.rename(level=0, names='trial_name')
 
     df_gait.to_pickle(join('data', 'zeno', 'df_gait.pkl'))
 
