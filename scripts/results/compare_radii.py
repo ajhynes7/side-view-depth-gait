@@ -19,7 +19,7 @@ def main():
 
     df_length = pd.read_csv(join(kinect_dir, 'kinect_lengths.csv'), index_col=0)
 
-    labelled_trial_names = df_truth.index.levels[0]
+    labelled_trial_names = df_truth.index.get_level_values(0).unique()
     df_hypo_labelled = df_hypo.loc[labelled_trial_names]
 
     list_dfs_radii = []

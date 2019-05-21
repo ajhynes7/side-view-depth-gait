@@ -18,7 +18,7 @@ def main():
     n_part_types = len(PART_TYPES)
     n_lengths = n_part_types - 1
 
-    trials_to_run = df_hypo.index.levels[0]
+    trials_to_run = df_hypo.index.get_level_values(0).unique()
     part_labels = range(n_part_types)
 
     df_lengths = pd.DataFrame(index=trials_to_run, columns=range(n_lengths))

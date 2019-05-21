@@ -32,7 +32,7 @@ def main():
     lengths_truth_l = df_truth_l.apply(lambda row: pp.consecutive_dist(np.stack(row)), axis=1)
     lengths_truth_r = df_truth_r.apply(lambda row: pp.consecutive_dist(np.stack(row)), axis=1)
 
-    labelled_trial_names = df_truth.index.levels[0]
+    labelled_trial_names = df_truth.index.get_level_values(0).unique()
 
     dict_lengths = {}
 

@@ -17,7 +17,7 @@ def main():
     kinect_dir = join('data', 'kinect')
 
     df_truth = pd.read_pickle(join(kinect_dir, 'df_truth.pkl'))
-    labelled_trial_names = df_truth.index.levels[0]
+    labelled_trial_names = df_truth.index.get_level_values(0).unique()
 
     trial_name = labelled_trial_names[0]
 

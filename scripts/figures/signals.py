@@ -21,7 +21,7 @@ def main():
 
     df_selected = pd.read_pickle(join('data', 'kinect', 'df_selected.pkl'))
 
-    trial_name = df_selected.index.levels[0][0]
+    trial_name = df_selected.index.get_level_values(0).unqiue()[0]
     df_selected_trial = df_selected.loc[trial_name]
 
     frames = df_selected_trial.index
