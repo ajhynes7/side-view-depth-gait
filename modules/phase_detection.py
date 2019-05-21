@@ -71,7 +71,7 @@ def stance_medians(frames, points, labels_stance):
     groups_frames = nf.group_by_label(frames, labels_stance)
     groups_points = nf.group_by_label(points, labels_stance)
 
-    Stance = namedtuple('Stance', ['number_stance', 'position', 'frame_i', 'frame_f'])
+    Stance = namedtuple('Stance', ['num_stance', 'position', 'frame_i', 'frame_f'])
 
     for i, (group_frames, group_points) in enumerate(zip(groups_frames, groups_points)):
 

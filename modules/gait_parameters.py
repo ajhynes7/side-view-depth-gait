@@ -139,7 +139,7 @@ def stride_parameters(foot_a_i, foot_b, foot_a_f, *, fps=30):
 @require("All input arrays must have the same length.", lambda args: len(set(len(x) for x in args)) == 1)
 @ensure(
     "The output must have the required columns.",
-    lambda _, result: set(result.columns) == {'number_stance', 'position', 'frame_i', 'frame_f', 'side'},
+    lambda _, result: set(result.columns) == {'num_stance', 'position', 'frame_i', 'frame_f', 'side'},
 )
 def labels_to_stances(frames, points_l, points_r, labels_l, labels_r):
     """
@@ -159,7 +159,7 @@ def labels_to_stances(frames, points_l, points_r, labels_l, labels_r):
     -------
     df_stance : DataFrame
         Each row is a stance phase.
-        The columns are 'number_stance', 'position', 'frame_i', 'frame_f', 'side'.
+        The columns are 'num_stance', 'position', 'frame_i', 'frame_f', 'side'.
 
     """
     df_stance_l = pd.DataFrame(pde.stance_medians(frames, points_l, labels_l))
@@ -178,7 +178,7 @@ def labels_to_stances(frames, points_l, points_r, labels_l, labels_r):
 
 @require(
     "DataFrame must include the required columns.",
-    lambda args: set(args.df_stance.columns) == {'number_stance', 'position', 'frame_i', 'frame_f', 'side'},
+    lambda args: set(args.df_stance.columns) == {'num_stance', 'position', 'frame_i', 'frame_f', 'side'},
 )
 def stances_to_gait(df_stance):
     """
@@ -188,7 +188,7 @@ def stances_to_gait(df_stance):
     ----------
     df_stance : DataFrame
         Each row represents a stance phase.
-        Columns are 'number_stance', 'position', 'frame_i', 'frame_f', 'side'.
+        Columns are 'num_stance', 'position', 'frame_i', 'frame_f', 'side'.
 
     Returns
     -------
@@ -206,7 +206,7 @@ def stances_to_gait(df_stance):
             dict_stride = stride_parameters(stance_a_i, stance_b, stance_a_f)
 
             dict_stride['side'] = stance_a_i.side
-            dict_stride['number_stance'] = stance_a_i.number_stance
+            dict_stride['num_stance'] = stance_a_i.num_stance
 
             yield dict_stride
 
