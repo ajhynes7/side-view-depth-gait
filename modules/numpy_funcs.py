@@ -188,7 +188,9 @@ def group_by_label(array, labels):
      [5 0]]
 
     """
-    for label in np.unique(labels):
+    labels_unique = np.unique(remove_nan(labels))
+
+    for label in labels_unique:
         yield array[labels == label]
 
 
