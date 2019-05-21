@@ -2,7 +2,7 @@
 \toprule
 {} &  Left &  Right &  Both \\
 \midrule
-Truth    &  0.88 &   0.87 &  0.75 \\
-Modified &  0.98 &   0.97 &  0.96 \\
+Truth    &  0.80 &   0.78 &  0.62 \\
+Modified &  0.98 &   0.98 &  0.96 \\
 \bottomrule
 \end{tabular}

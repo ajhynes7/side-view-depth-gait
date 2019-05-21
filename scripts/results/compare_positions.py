@@ -5,7 +5,6 @@ from os.path import join
 import numpy as np
 import pandas as pd
 
-import modules.assign_sides as asi
 import modules.point_processing as pp
 
 
@@ -15,7 +14,7 @@ def main():
 
     df_hypo = pd.read_pickle(join(kinect_dir, 'df_hypo.pkl'))
     df_selected = pd.read_pickle(join(kinect_dir, 'df_selected.pkl'))
-    df_assigned = pd.read_pickle(join(kinect_dir, 'df_assigned.pkl'))
+    df_assigned = pd.read_pickle(join(kinect_dir, 'df_assigned_3d.pkl'))
     df_truth = pd.read_pickle(join(kinect_dir, 'df_truth.pkl'))
 
     # Truth positions on frames with head and both feet
@@ -28,7 +27,7 @@ def main():
 
     # The assigned DataFrame had an extra index for the walking pass
     # This is dropped so the MultiIndex is the same as the other DataFrames
-    df_assigned.index = df_assigned.index.droplevel('pass')
+    df_assigned.index = df_assigned.index.droplevel('num_pass')
 
     # # Take the trials and frames shared by ground truth and the others
     df_hypo = df_hypo.loc[index_sorted]
@@ -60,14 +59,6 @@ def main():
     truth_mod_l = pp.closest_proposals(proposals_foot, truth_l)
     truth_mod_r = pp.closest_proposals(proposals_foot, truth_r)
 
-    # %% Convert points to 2D (since side assignment is in 2D)
-
-    truth_2d_l = np.apply_along_axis(asi.convert_to_2d, 1, truth_l)
-    truth_2d_r = np.apply_along_axis(asi.convert_to_2d, 1, truth_r)
-
-    truth_mod_2d_l = np.apply_along_axis(asi.convert_to_2d, 1, truth_mod_l)
-    truth_mod_2d_r = np.apply_along_axis(asi.convert_to_2d, 1, truth_mod_r)
-
     # %% Accuracies
 
     acc_head = pp.position_accuracy(truth_head, selected_head)
@@ -78,21 +69,21 @@ def main():
     acc_matched_mod_l = pp.position_accuracy(matched_l, truth_mod_l)
     acc_matched_mod_r = pp.position_accuracy(matched_r, truth_mod_r)
 
-    acc_assigned_l = pp.position_accuracy(assigned_l, truth_2d_l)
-    acc_assigned_r = pp.position_accuracy(assigned_r, truth_2d_r)
+    acc_assigned_l = pp.position_accuracy(assigned_l, truth_l)
+    acc_assigned_r = pp.position_accuracy(assigned_r, truth_r)
 
-    acc_assigned_mod_l = pp.position_accuracy(assigned_l, truth_mod_2d_l)
-    acc_assigned_mod_r = pp.position_accuracy(assigned_r, truth_mod_2d_r)
+    acc_assigned_mod_l = pp.position_accuracy(assigned_l, truth_mod_l)
+    acc_assigned_mod_r = pp.position_accuracy(assigned_r, truth_mod_r)
 
-    # %% Accuracies of left and right combined
+    # %% Accuracies of left and right feet combined
     # This is more challenging because *both* feet must be
     # within a distance d from the truth
 
     acc_matched = pp.double_position_accuracy(matched_l, matched_r, truth_l, truth_r)
     acc_matched_mod = pp.double_position_accuracy(matched_l, matched_r, truth_mod_l, truth_mod_r)
 
-    acc_assigned = pp.double_position_accuracy(assigned_l, assigned_r, truth_2d_l, truth_2d_r)
-    acc_assigned_mod = pp.double_position_accuracy(assigned_l, assigned_r, truth_mod_2d_l, truth_mod_2d_r)
+    acc_assigned = pp.double_position_accuracy(assigned_l, assigned_r, truth_l, truth_r)
+    acc_assigned_mod = pp.double_position_accuracy(assigned_l, assigned_r, truth_mod_l, truth_mod_r)
 
     # %% Organize into DataFrames
 
