@@ -31,11 +31,6 @@ def main():
     df_trial_id_k = pd.concat(dict_k)
     df_trial_id_z = pd.concat(dict_z)
 
-    # Drop columns for walking pass and stride number
-    # (not needed for further calculations)
-    df_trial_id_k = df_trial_id_k.drop(columns=['pass', 'stride'])
-    df_trial_id_z = df_trial_id_z.drop(columns=['pass', 'stride'])
-
     df_trial_id_k.to_pickle(join('data', 'kinect', 'df_trial_id.pkl'))
     df_trial_id_z.to_pickle(join('data', 'zeno', 'df_trial_id.pkl'))
 
