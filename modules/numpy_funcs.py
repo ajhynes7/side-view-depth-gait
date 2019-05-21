@@ -41,7 +41,7 @@ def remove_nan(array):
 
     Parameters
     ----------
-    array : ndarray
+    array : array_like
         Input array.
 
     Returns
@@ -51,12 +51,12 @@ def remove_nan(array):
 
     Examples
     --------
-    >>> array = np.array([1, 2, 3, np.nan, 4])
-
-    >>> remove_nan(array)
+    >>> remove_nan([1, 2, 3, np.nan, 4])
     array([1., 2., 3., 4.])
 
     """
+    array = np.array(array)
+
     return array[~np.isnan(array)]
 
 
