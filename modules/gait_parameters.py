@@ -26,12 +26,14 @@ def spatial_parameters(pos_a_i, pos_b, pos_a_f):
 
     Returns
     -------
-    Spatial : namedtuple
-        namedtuple consisting of absolute step length, step length,
-        stride length,  and stride width.
+    dict
+        Dictionary consisting of absolute step length, step length,
+        stride length, and stride width.
 
     Examples
     --------
+    >>> import numpy as np
+
     >>> pos_l_1 = [764.253, 28.798]
     >>> pos_r_1 = [696.834, 37.141]
 
@@ -40,13 +42,16 @@ def spatial_parameters(pos_a_i, pos_b, pos_a_f):
 
     >>> pos_l_3 = [518.030, 30.507]
 
-    >>> np.round(spatial_parameters(pos_l_1, pos_r_1, pos_l_2), 1)
+    >>> values = list(spatial_parameters(pos_l_1, pos_r_1, pos_l_2).values())
+    >>> np.round(values, 1)
     array([ 61. ,  60.1, 127.2,  10.6])
 
-    >>> np.round(spatial_parameters(pos_r_1, pos_l_2, pos_r_2), 1)
+    >>> values = list(spatial_parameters(pos_r_1, pos_l_2, pos_r_2).values())
+    >>> np.round(values, 1)
     array([ 59.1,  57.9, 117.7,  11.8])
 
-    >>> np.round(spatial_parameters(pos_l_2, pos_r_2, pos_l_3), 1)
+    >>> values = list(spatial_parameters(pos_l_2, pos_r_2, pos_l_3).values())
+    >>> np.round(values, 1)
     array([ 61.3,  60.7, 119.3,   8. ])
 
     """
@@ -76,8 +81,7 @@ def stride_parameters(foot_a_i, foot_b, foot_a_f, *, fps=30):
     ----------
     foot_a_i : namedtuple
         Represents the initial foot on side A.
-        Includes fields of 'stride', 'side', 'position', 'first_contact',
-        'last_contact'.
+        Includes fields of 'position', 'frame_i', 'frame_f'.
     foot_b : namedtuple
         Represents the foot on side B.
     foot_a_f : namedtuple
@@ -92,19 +96,18 @@ def stride_parameters(foot_a_i, foot_b, foot_a_f, *, fps=30):
 
     Examples
     --------
-    >>> names = ['stride', 'side', 'position', 'first_contact', 'last_contact']
+    >>> from collections import namedtuple
+    >>> import numpy as np
+
+    >>> names = ['position', 'frame_i', 'frame_f']
     >>> Foot = namedtuple('Foot', names)
 
-    >>> foot_l_1 = Foot(1, 'L', np.array([764, 28]), 180, 220)
-    >>> foot_r_1 = Foot(1, 'R', np.array([696, 37]), 200, 230)
-    >>> foot_l_2 = Foot(2, 'R', np.array([637, 24]), 230, 245)
+    >>> foot_l_1 = Foot([764, 28], 180, 220)
+    >>> foot_r_1 = Foot([696, 37], 200, 230)
+    >>> foot_l_2 = Foot([637, 24], 230, 245)
 
     >>> params = stride_parameters(foot_l_1, foot_r_1, foot_l_2)
 
-    >>> params['side']
-    'L'
-    >>> params['stride']
-    1
     >>> np.round(params['step_length'], 1)
     59.4
     >>> np.round(params['stride_width'], 1)
