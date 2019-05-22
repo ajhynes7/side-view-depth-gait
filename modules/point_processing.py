@@ -130,7 +130,7 @@ def check_correspondence(points_prev, points_curr):
     return sum_diagonal < sum_reverse
 
 
-def track_two_points(points_a, points_b):
+def track_two_objects(points_a, points_b):
     """
     Assign points in time to two distinct objects.
 
@@ -153,7 +153,7 @@ def track_two_points(points_a, points_b):
     >>> points_a = [[0, 0], [11, 11], [2, 2], [3, 3], [14, 14]]
     >>> points_b = [[10, 10], [1, 1], [12, 12], [13, 13], [4, 4]]
 
-    >>> track_two_points(points_a, points_b)
+    >>> track_two_objects(points_a, points_b)
     array([ True, False,  True,  True, False])
 
     """
@@ -212,7 +212,7 @@ def correspond_points(points_a, points_b, array_correspondence):
     >>> points_a = [[0, 0], [11, 11], [2, 2], [3, 3], [14, 14]]
     >>> points_b = [[10, 10], [1, 1], [12, 12], [13, 13], [4, 4]]
 
-    >>> array_correspondence = track_two_points(points_a, points_b)
+    >>> array_correspondence = track_two_objects(points_a, points_b)
     >>> points_a, points_b = correspond_points(points_a, points_b, array_correspondence)
 
     >>> points_a

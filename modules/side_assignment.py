@@ -67,7 +67,7 @@ def assign_sides_pass(points_2d_a, points_2d_b, labels_portions):
         points_portion_a = points_2d_a[is_portion]
         points_portion_b = points_2d_b[is_portion]
 
-        array_correspondence = pp.track_two_points(points_portion_a, points_portion_b)
+        array_correspondence = pp.track_two_objects(points_portion_a, points_portion_b)
 
         points_tracked_a, points_tracked_b = pp.correspond_points(
             points_portion_a, points_portion_b, array_correspondence
