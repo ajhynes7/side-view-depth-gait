@@ -50,12 +50,11 @@ def spatial_parameters(pos_a_i, pos_b, pos_a_f):
     array([ 61.3,  60.7, 119.3,   8. ])
 
     """
-    vector_a = Vector.from_points(pos_a_i, pos_a_f)
-    line_a = Line(point=pos_a_i, direction=vector_a)
+    line_a = Line.from_points(pos_a_i, pos_a_f)
 
     pos_b_proj = line_a.project_point(pos_b)
 
-    stride_length = vector_a.norm()
+    stride_length = line_a.direction.norm()
     absolute_step_length = Vector.from_points(pos_b, pos_a_f).norm()
     step_length = Vector.from_points(pos_b_proj, pos_a_f).norm()
 
