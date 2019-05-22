@@ -1,7 +1,6 @@
 """Functions related to spatial points."""
 
 from copy import copy
-from itertools import accumulate
 
 import numpy as np
 from dpcontracts import require
@@ -155,7 +154,7 @@ def track_two_points(points_a, points_b):
     >>> points_b = [[10, 10], [1, 1], [12, 12], [13, 13], [4, 4]]
 
     >>> track_two_points(points_a, points_b)
-    array([True, False, True, True, False])
+    array([ True, False,  True,  True, False])
 
     """
     n_points = len(points_a)
