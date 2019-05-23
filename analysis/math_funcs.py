@@ -2,6 +2,7 @@
 
 import numpy as np
 from dpcontracts import require
+from statsmodels.robust import mad
 
 
 def limits(x, tolerance):
@@ -32,6 +33,47 @@ def limits(x, tolerance):
     lower_lim, upper_lim = x - tolerance, x + tolerance
 
     return lower_lim, upper_lim
+
+
+def mad_filter(array, c=1):
+    """
+    Filter a 1D array with the median absolute deviation (MAD).
+
+    Values outside median +- c * MAD are removed.
+
+    Parameters
+    ----------
+    array : array_like
+        Input 1D array.
+    c : number
+        Coefficient of MAD (default 1).
+
+    Returns
+    -------
+    ndarray
+        Filtered array.
+
+    Examples
+    --------
+    >>> array = [1, 2, 3, 4, 100, 5]
+
+    >>> mad_filter(array)
+    array([2, 3, 4, 5])
+
+    >>> mad_filter(array, c=3)
+    array([1, 2, 3, 4, 5])
+
+    """
+    array = np.array(array)
+
+    median = np.median(array)
+    mad_ = mad(array)
+
+    limits_mad = limits(median, c * mad_)
+
+    is_good = np.logical_and(array > limits_mad[0], array < limits_mad[1])
+
+    return array[is_good]
 
 
 @require("The inputs must have length two.", lambda args: all(len(x) == 2 for x in [args.limits_a, args.limits_b]))
