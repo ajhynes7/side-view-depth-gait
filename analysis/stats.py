@@ -45,7 +45,7 @@ def relative_error(measured, actual):
     """
     Return the relative errors between measured and actual values.
 
-    Calculated as (measure - actual) / actual.
+    Calculated as (measured - actual) / actual.
 
     Parameters
     ----------
