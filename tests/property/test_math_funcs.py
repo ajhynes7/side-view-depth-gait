@@ -5,7 +5,7 @@ import numpy as np
 from hypothesis import given
 from numpy.testing import assert_array_equal
 
-import analysis.math_funcs as mf
+import modules.math_funcs as mf
 
 
 st_floats_nonneg = st.floats(min_value=0, max_value=1e6)

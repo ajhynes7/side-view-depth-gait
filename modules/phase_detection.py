@@ -8,7 +8,7 @@ import numpy as np
 from sklearn.cluster import DBSCAN
 from statsmodels.robust import mad
 
-import analysis.math_funcs as mf
+import modules.math_funcs as mf
 import modules.numpy_funcs as nf
 
 

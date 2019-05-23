@@ -4,7 +4,7 @@ from collections import namedtuple
 
 import numpy as np
 
-import analysis.math_funcs as mf
+import modules.math_funcs as mf
 
 
 def relative_difference(x, y):
