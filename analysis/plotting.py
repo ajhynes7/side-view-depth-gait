@@ -5,6 +5,29 @@ import numpy as np
 from matplotlib import cm
 
 
+def scatter_signal(signal, labels=None, **kwargs):
+    """
+    Produce a scatter plot of a signal.
+
+    Parameters
+    ----------
+    signal : array_like
+        (n,) array.
+    labels : array_like, optional
+        (n,) array of labels.
+    kwargs : dict, optional
+        Additional keywords passed to `scatter`.
+
+    """
+    if labels is None:
+        labels = np.ones_like(signal)
+
+    X = np.arange(len(signal))
+    points = np.column_stack((X, signal))
+
+    scatter_labels(points, labels, **kwargs)
+
+
 def scatter_labels(points, labels, **kwargs):
     """
     Scatter points that are coloured by label.

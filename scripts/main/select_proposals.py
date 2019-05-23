@@ -67,7 +67,7 @@ def main():
             index_row += 1
 
     # DataFrame of selected head and foot positions.
-    # The left and right feet are just assumptions at this point.
+    # The left and right foot labels are just assumptions at this point.
     # They are later given correct L/R labels.
     df_selected = pd.DataFrame(array_selected, index=df_hypo.index, columns=['HEAD', 'L_FOOT', 'R_FOOT'])
 

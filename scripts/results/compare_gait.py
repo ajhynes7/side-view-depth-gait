@@ -15,14 +15,14 @@ def main():
     dir_tables = join('results', 'tables')
 
     # Gait parameters from all trials with matching IDs
-    df_trial_id_k = pd.read_pickle(join('data', 'kinect', 'df_trial_id.pkl'))
-    df_trial_id_z = pd.read_pickle(join('data', 'zeno', 'df_trial_id.pkl'))
+    df_matched_k = pd.read_pickle(join('data', 'kinect', 'df_matched.pkl'))
+    df_matched_z = pd.read_pickle(join('data', 'zeno', 'df_matched.pkl'))
 
-    gait_params = df_trial_id_k.select_dtypes(float).columns
+    # Median gait parameters of each walking trial.
+    df_trials_k = df_matched_k.groupby(['trial_id']).median()
+    df_trials_z = df_matched_z.groupby(['trial_id']).median()
 
-    # Median gait parameters of each walking trial
-    df_trials_k = df_trial_id_k.groupby(level=0).median()
-    df_trials_z = df_trial_id_z.groupby(level=0).median()
+    gait_params = df_matched_k.columns.values
 
     list_bland_tuples = []
     dict_icc = {f'icc_{x}1': {} for x in ['2', '3']}

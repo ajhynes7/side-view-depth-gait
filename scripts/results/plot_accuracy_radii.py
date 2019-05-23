@@ -59,7 +59,7 @@ def main():
 
     fig = plt.figure()
 
-    radii = df_radii.index.levels[0]
+    radii = df_radii.index.get_level_values(0).unique()
     plt.plot(radii, truth_accs, '-o', c='b')
     plt.plot(radii, truth_mod_accs, '-o', c='r')
 

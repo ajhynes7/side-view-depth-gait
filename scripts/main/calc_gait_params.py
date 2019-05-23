@@ -1,8 +1,8 @@
 """Calculate gait parameters from Kinect data."""
 
-import pickle
 from os.path import join
 
+import numpy as np
 import pandas as pd
 
 import modules.gait_parameters as gp
@@ -10,30 +10,34 @@ import modules.gait_parameters as gp
 
 def main():
 
-    # Table of matching Kinect and Zeno trials
-    df_match = pd.read_csv(join('data', 'matching', 'match_kinect_zeno.csv'))
+    df_assigned_2d = pd.read_pickle(join('data', 'kinect', 'df_assigned_2d.pkl'))
+    df_assigned_3d = pd.read_pickle(join('data', 'kinect', 'df_assigned_3d.pkl'))
 
-    # DataFrame of head and assigned L/R foot positions
-    df_assigned = pd.read_pickle(join('data', 'kinect', 'df_assigned.pkl'))
+    tuples_trial_pass = df_assigned_2d.index.droplevel('frame').values
+    dict_gait = dict.fromkeys(tuples_trial_pass)
 
-    # Lines of best fit for each walking pass of each trial
-    with open(join('data', 'kinect', 'dict_lines_fit.pkl'), 'rb') as handle:
-        dict_lines_fit = pickle.load(handle)
+    for tuple_trial_pass, df_pass_2d in df_assigned_2d.groupby(level=[0, 1]):
 
-    dict_gait = {}
+        frames = df_pass_2d.reset_index().frame.values
 
-    for trial_name in df_match.kinect:
+        df_pass_3d = df_assigned_3d.loc[tuple_trial_pass]
 
-        print(trial_name)  # Print current trial just to show progress
+        points_2d_l = np.stack(df_pass_2d.L_FOOT)
+        points_2d_r = np.stack(df_pass_2d.R_FOOT)
 
-        df_assigned_trial = df_assigned.loc[trial_name]
+        points_3d_l = np.stack(df_pass_3d.L_FOOT)
+        points_3d_r = np.stack(df_pass_3d.R_FOOT)
 
-        # Best fit lines for the trial (one for each walking pass)
-        lines_trial = dict_lines_fit[trial_name]
+        # The 1D foot signal is the Y coordinate of the 2D points.
+        signal_l = points_2d_l[:, 1]
+        signal_r = points_2d_r[:, 1]
 
-        dict_gait[trial_name] = gp.combine_walking_passes(df_assigned_trial, lines_trial)
+        df_gait_pass = gp.walking_pass_parameters(frames, points_3d_l, points_3d_r, signal_l, signal_r)
+
+        dict_gait[tuple_trial_pass] = df_gait_pass
 
     df_gait = pd.concat(dict_gait)
+    df_gait.index = df_gait.index.rename(['trial_name', 'num_pass'], level=[0, 1])
 
     # Save the gait parameters for each trial
     df_gait.to_pickle(join('data', 'kinect', 'df_gait.pkl'))

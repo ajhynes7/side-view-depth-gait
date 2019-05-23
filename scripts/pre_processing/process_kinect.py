@@ -29,6 +29,7 @@ def main():
         print(trial_name)
 
         file_path = join(load_dir, trial_name + '.txt')
+
         df_raw = pd.read_csv(
             file_path,
             skiprows=range(22),
@@ -40,7 +41,7 @@ def main():
         )
 
         # Label some columns
-        df_raw.rename(columns={-2: 'frame', -1: 'part'}, inplace=True)
+        df_raw = df_raw.rename(columns={-2: 'frame', -1: 'part'})
 
         # Crop the DataFrame at the max frame number
         # (the text file loops back to the beginning)
@@ -62,7 +63,7 @@ def main():
         df_hypo_raw = df_hypo_raw.astype(np.float)
 
         # Extract unique index values
-        frames = df_hypo_raw.index.levels[0]
+        frames = df_hypo_raw.index.get_level_values(0).unique()
 
         df_hypo_types = pd.DataFrame(index=frames, columns=PART_TYPES)
 

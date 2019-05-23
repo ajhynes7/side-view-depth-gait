@@ -1,36 +1,16 @@
-"""
-Module for calculating gait parameters from 3D body part positions.
+"""Module for calculating gait parameters from 3D body part positions."""
 
-Common Parameters
------------------
-df_pass : DataFrame
-    DataFrame for one walking pass.
-    Index values are frames.
-    Columns must include 'L_FOOT', 'R_FOOT'.
-    Elements are position vectors.
-df_contact : DataFrame
-    Each row represents a frame when a foot contacts the floor.
-    Columns include 'stride', 'side', 'frame'.
-df_gait : DataFrame
-    Each row represents a stride.
-    Columns include gait parameters, e.g. 'stride_length', and the side and
-    stride number.
-
-"""
-from collections import namedtuple
-
-import numpy as np
 import pandas as pd
+from dpcontracts import require, ensure
 from skspatial.objects import Vector, Line
 
-import modules.pandas_funcs as pf
 import modules.phase_detection as pde
 import modules.sliding_window as sw
 
 
 def spatial_parameters(pos_a_i, pos_b, pos_a_f):
     """
-    Calculate spatial gait parameters.
+    Calculate spatial gait parameters for a stride.
 
     Positions are input in temporal order
     (foot A initial, foot B, foot A final).
@@ -46,12 +26,14 @@ def spatial_parameters(pos_a_i, pos_b, pos_a_f):
 
     Returns
     -------
-    Spatial : namedtuple
-        namedtuple consisting of absolute step length, step length,
-        stride length,  and stride width.
+    dict
+        Dictionary consisting of absolute step length, step length,
+        stride length, and stride width.
 
     Examples
     --------
+    >>> import numpy as np
+
     >>> pos_l_1 = [764.253, 28.798]
     >>> pos_r_1 = [696.834, 37.141]
 
@@ -60,30 +42,35 @@ def spatial_parameters(pos_a_i, pos_b, pos_a_f):
 
     >>> pos_l_3 = [518.030, 30.507]
 
-    >>> np.round(spatial_parameters(pos_l_1, pos_r_1, pos_l_2), 1)
+    >>> values = list(spatial_parameters(pos_l_1, pos_r_1, pos_l_2).values())
+    >>> np.round(values, 1)
     array([ 61. ,  60.1, 127.2,  10.6])
 
-    >>> np.round(spatial_parameters(pos_r_1, pos_l_2, pos_r_2), 1)
+    >>> values = list(spatial_parameters(pos_r_1, pos_l_2, pos_r_2).values())
+    >>> np.round(values, 1)
     array([ 59.1,  57.9, 117.7,  11.8])
 
-    >>> np.round(spatial_parameters(pos_l_2, pos_r_2, pos_l_3), 1)
+    >>> values = list(spatial_parameters(pos_l_2, pos_r_2, pos_l_3).values())
+    >>> np.round(values, 1)
     array([ 61.3,  60.7, 119.3,   8. ])
 
     """
-    vector_a = Vector.from_points(pos_a_i, pos_a_f)
-    line_a = Line(point=pos_a_i, direction=vector_a)
+    line_a = Line.from_points(pos_a_i, pos_a_f)
 
     pos_b_proj = line_a.project_point(pos_b)
 
-    stride_length = vector_a.norm()
+    stride_length = line_a.direction.norm()
     absolute_step_length = Vector.from_points(pos_b, pos_a_f).norm()
     step_length = Vector.from_points(pos_b_proj, pos_a_f).norm()
 
     stride_width = line_a.distance_point(pos_b)
 
-    Spatial = namedtuple('Spatial', ['absolute_step_length', 'step_length', 'stride_length', 'stride_width'])
-
-    return Spatial(absolute_step_length, step_length, stride_length, stride_width)
+    return {
+        'absolute_step_length': absolute_step_length,
+        'step_length': step_length,
+        'stride_length': stride_length,
+        'stride_width': stride_width,
+    }
 
 
 def stride_parameters(foot_a_i, foot_b, foot_a_f, *, fps=30):
@@ -94,8 +81,7 @@ def stride_parameters(foot_a_i, foot_b, foot_a_f, *, fps=30):
     ----------
     foot_a_i : namedtuple
         Represents the initial foot on side A.
-        Includes fields of 'stride', 'side', 'position', 'first_contact',
-        'last_contact'.
+        Includes fields of 'position', 'frame_i', 'frame_f'.
     foot_b : namedtuple
         Represents the foot on side B.
     foot_a_f : namedtuple
@@ -110,19 +96,18 @@ def stride_parameters(foot_a_i, foot_b, foot_a_f, *, fps=30):
 
     Examples
     --------
-    >>> names = ['stride', 'side', 'position', 'first_contact', 'last_contact']
+    >>> from collections import namedtuple
+    >>> import numpy as np
+
+    >>> names = ['position', 'frame_i', 'frame_f']
     >>> Foot = namedtuple('Foot', names)
 
-    >>> foot_l_1 = Foot(1, 'L', np.array([764, 28]), 180, 220)
-    >>> foot_r_1 = Foot(1, 'R', np.array([696, 37]), 200, 230)
-    >>> foot_l_2 = Foot(2, 'R', np.array([637, 24]), 230, 245)
+    >>> foot_l_1 = Foot([764, 28], 180, 220)
+    >>> foot_r_1 = Foot([696, 37], 200, 230)
+    >>> foot_l_2 = Foot([637, 24], 230, 245)
 
     >>> params = stride_parameters(foot_l_1, foot_r_1, foot_l_2)
 
-    >>> params['side']
-    'L'
-    >>> params['stride']
-    1
     >>> np.round(params['step_length'], 1)
     59.4
     >>> np.round(params['stride_width'], 1)
@@ -136,137 +121,131 @@ def stride_parameters(foot_a_i, foot_b, foot_a_f, *, fps=30):
     pos_a_i, pos_a_f = foot_a_i.position, foot_a_f.position
     pos_b = foot_b.position
 
-    spatial = spatial_parameters(pos_a_i, pos_b, pos_a_f)
+    dict_spatial = spatial_parameters(pos_a_i, pos_b, pos_a_f)
 
-    stride_time = (foot_a_f.first_contact - foot_a_i.first_contact) / fps
-    stance_time = (foot_a_i.last_contact - foot_a_i.first_contact) / fps
+    stride_time = (foot_a_f.frame_i - foot_a_i.frame_i) / fps
+    stance_time = (foot_a_i.frame_f - foot_a_i.frame_i) / fps
 
     stance_percentage = (stance_time / stride_time) * 100
-    stride_velocity = spatial.stride_length / stride_time
+    stride_velocity = dict_spatial['stride_length'] / stride_time
 
-    stride_info = {'stride': foot_a_i.stride, 'side': foot_a_i.side}
-
-    temporal_params = {
+    dict_temporal = {
         'stride_time': stride_time,
         'stance_percentage': stance_percentage,
         'stride_velocity': stride_velocity,
     }
 
-    return {**stride_info, **temporal_params, **spatial._asdict()}
+    return {**dict_spatial, **dict_temporal}
 
 
-def foot_contacts_to_gait(df_contact):
+@require("All input arrays must have the same length.", lambda args: len(set(len(x) for x in args)) == 1)
+@ensure(
+    "The output must have the required columns.",
+    lambda _, result: set(result.columns) == {'num_stance', 'position', 'frame_i', 'frame_f', 'side'},
+)
+def labels_to_stances(frames, points_l, points_r, labels_l, labels_r):
+    """
+    Return a DataFrame with median positions and initial/final frames
+    for each stance phase in a walking pass.
+
+    Parameters
+    ----------
+    frames : ndarray
+        (n,) array of frames for the walking pass.
+    points_l, points_r : ndarray
+        (n, 2) arrays for left and right foot points.
+    labels_l, labels_r : ndarray
+        (n,) array of labels indicating stance phases.
+
+    Returns
+    -------
+    df_stance : DataFrame
+        Each row is a stance phase.
+        The columns are 'num_stance', 'position', 'frame_i', 'frame_f', 'side'.
+
+    """
+    df_stance_l = pd.DataFrame(pde.stance_medians(frames, points_l, labels_l))
+    df_stance_r = pd.DataFrame(pde.stance_medians(frames, points_r, labels_r))
+
+    df_stance_l['side'] = 'L'
+    df_stance_r['side'] = 'R'
+
+    df_stance = pd.concat((df_stance_l, df_stance_r), ignore_index=True)
+
+    # Sort stance phases by median frame.
+    df_stance = df_stance.sort_values('frame_i').reset_index(drop=True)
+
+    return df_stance
+
+
+@require(
+    "DataFrame must include the required columns.",
+    lambda args: set(args.df_stance.columns) == {'num_stance', 'position', 'frame_i', 'frame_f', 'side'},
+)
+def stances_to_gait(df_stance):
     """
     Calculate gait parameters from all instances of feet contacting the floor.
 
     Parameters
     ----------
-    df_contact : DataFrame
-        Each row represents an instance of a foot contacting the floor.
-        Columns are 'frame', 'position', 'stride', 'side'.
+    df_stance : DataFrame
+        Each row represents a stance phase.
+        Columns are 'num_stance', 'position', 'frame_i', 'frame_f', 'side'.
 
     Returns
     -------
     df_gait : DataFrame
         Each row represents a set of gait parameters from one stride.
         Columns include gait parameter names, e.g., stride_velocity.
-        Columns also include 'stride' and 'side'.
 
     """
-    foot_tuples = df_contact.itertuples(index=False)
+    tuples_stance = df_stance.itertuples(index=False)
 
     def yield_parameters():
         """Inner function to yield parameters for each stride."""
-        for foot_tuple in sw.generate_window(foot_tuples, n=3):
+        for stance_a_i, stance_b, stance_a_f in sw.generate_window(tuples_stance, n=3):
 
-            yield stride_parameters(*foot_tuple)
+            dict_stride = stride_parameters(stance_a_i, stance_b, stance_a_f)
 
-    df_gait = pd.DataFrame(yield_parameters())
+            dict_stride['side'] = stance_a_i.side
+            dict_stride['num_stance'] = stance_a_i.num_stance
+
+            yield dict_stride
+
+    df_gait = pd.DataFrame(yield_parameters()).set_index(['num_stance', 'side'])
 
     return df_gait
 
 
-def walking_pass_parameters(df_pass, line_pass):
+@require("The frames must correspond to the points.", lambda args: args.frames.shape == (args.points_l.shape[0],))
+@require("The points must 3D.", lambda args: all(x.shape[1] == 3 for x in [args.points_l, args.points_r]))
+@require("The signals must 1D arrays.", lambda args: all(x.ndim == 1 for x in [args.signal_l, args.signal_r]))
+@ensure("The output must contain gait params.", lambda _, result: 'stride_length' in result.columns)
+@ensure(
+    "The output must have the required MultiIndex.",
+    lambda _, result: result.index.names == ['num_stance', 'side'],
+)
+def walking_pass_parameters(frames, points_l, points_r, signal_l, signal_r):
     """
     Calculate gait parameters from a single walking pass.
 
     Parameters
     ----------
-    df_pass
-        See module docstring.
-    line_pass : Line
-        Best-fit line for the walking pass.
 
     Returns
     -------
-    df_pass_parameters : DataFrame
-        All parameters for a walking pass.
-        Columns are parameters names.
+    df_gait_pass : DataFrame
+        Gait parameters of the walking pass.
+        The columns include parameters names.
 
     """
-    df_contact_l = pde.get_contacts(df_pass.L_FOOT, line_pass)
-    df_contact_r = pde.get_contacts(df_pass.R_FOOT, line_pass)
+    labels_l = pde.detect_stance_phases(signal_l)
+    labels_r = pde.detect_stance_phases(signal_r)
 
-    df_contact_l['side'] = 'L'
-    df_contact_r['side'] = 'R'
+    # Filter out false stance phases
+    labels_l, labels_r = pde.filter_stances(signal_l, signal_r, labels_l, labels_r)
 
-    # Combine left and right contact instances and sort by frame
-    df_contact = pd.concat([df_contact_l, df_contact_r]).sort_values('frame')
+    df_stance = labels_to_stances(frames, points_l, points_r, labels_l, labels_r)
+    df_gait_pass = stances_to_gait(df_stance)
 
-    df_pass_parameters = foot_contacts_to_gait(df_contact)
-
-    return df_pass_parameters
-
-
-def combine_walking_passes(df_assigned, lines_fit):
-    """
-    Combine gait parameters from all walking passes in a trial.
-
-    Parameters
-    ----------
-    df_assigned : DataFrame
-        Each row contains head and foot positions
-        after assigning L/R sides to the feet.
-        MultiIndex of form (pass, frame)
-
-    lines_fit : list
-        Element i is the best-fit line of walking pass i.
-
-    Returns
-    -------
-    df_trial : DataFrame
-        Each row represents a single stride.
-        There can be multiple strides in a walking pass.
-        Columns are gait parameters for left/right sides.
-
-    """
-    # List of DataFrames with gait parameters
-    param_dfs = []
-
-    n_passes = len(lines_fit)
-
-    for num_pass in range(n_passes):
-
-        df_assigned_pass = df_assigned.loc[num_pass]
-        line_pass = lines_fit[num_pass]
-
-        df_pass = df_assigned_pass
-
-        # Ensure there are no missing frames in the walking pass
-        df_pass = pf.make_index_consecutive(df_pass)
-        df_pass = df_pass.applymap(
-            lambda x: x if isinstance(x, np.ndarray) else np.full(line_pass.direction.size, np.nan)
-        )
-
-        df_pass_parameters = walking_pass_parameters(df_pass, line_pass)
-
-        if df_pass_parameters is not None:
-            # Add column to record the walking pass
-            df_pass_parameters['pass'] = num_pass
-
-        param_dfs.append(df_pass_parameters)
-
-    # Gait parameters of full walking trial
-    df_trial = pd.concat(param_dfs, sort=True).reset_index(drop=True)
-
-    return df_trial
+    return df_gait_pass

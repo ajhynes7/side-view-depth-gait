@@ -10,9 +10,6 @@ def main():
     df_gait_k = pd.read_pickle(join('data', 'kinect', 'df_gait.pkl'))
     df_gait_z = pd.read_pickle(join('data', 'zeno', 'df_gait.pkl'))
 
-    # Remove negative values from Zeno data
-    df_gait_z = df_gait_z.applymap(lambda x: abs(x) if isinstance(x, float) else x)
-
     df_match = pd.read_csv(join('data', 'matching', 'match_kinect_zeno.csv'), index_col=0)
 
     dict_k, dict_z = {}, {}
@@ -24,20 +21,18 @@ def main():
         trial_name_k = tuple_row.kinect
         trial_name_z = tuple_row.zeno
 
-        dict_k[trial_id] = df_gait_k.loc[trial_name_k]
-        dict_z[trial_id] = df_gait_z.loc[trial_name_z]
+        dict_k[(trial_id, trial_name_k)] = df_gait_k.loc[trial_name_k]
+        dict_z[(trial_id, trial_name_z)] = df_gait_z.loc[trial_name_z]
 
     # Gait parameters with matching trial IDs
-    df_trial_id_k = pd.concat(dict_k)
-    df_trial_id_z = pd.concat(dict_z)
+    df_matched_k = pd.concat(dict_k)
+    df_matched_z = pd.concat(dict_z)
 
-    # Drop columns for walking pass and stride number
-    # (not needed for further calculations)
-    df_trial_id_k = df_trial_id_k.drop(columns=['pass', 'stride'])
-    df_trial_id_z = df_trial_id_z.drop(columns=['pass', 'stride'])
+    df_matched_k.index = df_matched_k.index.rename(['trial_id', 'trial_name'], level=[0, 1])
+    df_matched_z.index = df_matched_z.index.rename(['trial_id', 'trial_name'], level=[0, 1])
 
-    df_trial_id_k.to_pickle(join('data', 'kinect', 'df_trial_id.pkl'))
-    df_trial_id_z.to_pickle(join('data', 'zeno', 'df_trial_id.pkl'))
+    df_matched_k.to_pickle(join('data', 'kinect', 'df_matched.pkl'))
+    df_matched_z.to_pickle(join('data', 'zeno', 'df_matched.pkl'))
 
 
 if __name__ == '__main__':

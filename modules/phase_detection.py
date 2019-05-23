@@ -1,177 +1,82 @@
 """Module for detecting the phases of a foot during a walking pass."""
 
+import copy
+from collections import namedtuple
+from itertools import product
+
 import numpy as np
-import pandas as pd
-from sklearn.cluster import KMeans
+from sklearn.cluster import DBSCAN
+from statsmodels.robust import mad
 
-import modules.iterable_funcs as itf
+import analysis.math_funcs as mf
 import modules.numpy_funcs as nf
-import modules.pandas_funcs as pf
-import modules.point_processing as pp
-import modules.sliding_window as sw
 
 
-def detect_phases(step_signal):
-    """
-    Detect the stance/swing phases of a foot during a walking pass.
+def detect_stance_phases(signal):
 
-    Parameters
-    ----------
-    step_signal : ndarray
-        (n, ) array of values indicating the motion of one foot.
+    dbscan = DBSCAN(eps=5).fit(signal.reshape(-1, 1))
 
-    Returns
-    -------
-    is_stance : ndarray
-        (n, ) array of boolean values.
-        Element is True if the corresponding foot is in the stance phase.
+    labels_stance = dbscan.labels_.astype(float)
+    labels_stance[labels_stance == -1] = np.nan
 
-    """
-    pad_width = 5
-    variances = sw.apply_to_padded(step_signal, np.nanvar, pad_width, 'reflect', reflect_type='odd')
-
-    points_to_cluster = nf.to_column(nf.remove_nan(np.array(variances)))
-    k_means = KMeans(n_clusters=2, random_state=0).fit(points_to_cluster)
-
-    signal_labels = pp.assign_to_closest(nf.to_column(variances), k_means.cluster_centers_)
-
-    stance_label = np.argmin(k_means.cluster_centers_)
-    is_stance = np.logical_and(signal_labels == stance_label, ~np.isnan(variances))
-
-    # Filter groups of stance frames that are too small
-
-    labels = np.fromiter(itf.label_repeated_elements(is_stance), 'int')
-
-    is_real = ~np.isnan(step_signal)
-    good_labels = nf.large_boolean_groups(is_stance & is_real, labels, min_length=10)
-
-    good_elements = np.in1d(labels, list(good_labels))
-
-    is_stance &= good_elements
-
-    return is_stance
+    return labels_stance
 
 
-def get_phase_dataframe(foot_series, line_pass):
-    """
-    Return a DataFrame displaying the phase and phase number of each frame.
+def stance_stats(signal, labels_stance):
 
-    The phase number is a count of the phase occurrence.
-    (e.g., stance 0, 1, ...).
+    groups_stance = [*nf.group_by_label(signal, labels_stance)]
 
-    Parameters
-    ----------
-    foot_series : ndarray
-        Index is 'frame'.
-        Values are foot positions.
-    line_pass : Line
-        Best-fit line for the walking pass.
+    StanceStats = namedtuple('StanceStats', ['number', 'limits', 'count'])
 
-    Returns
-    -------
-    df_phase : DataFrame
-        Index is 'frame'.
-        Columns are 'phase', 'position', 'stride'.
+    for i, group_stance in enumerate(groups_stance):
 
-    """
-    frames = foot_series.index.values
-    foot_points = np.stack(foot_series)
+        med_value = np.median(group_stance)
+        mad_ = mad(group_stance)
+        count = len(group_stance)
 
-    step_signal = pp.apply_to_real_points(line_pass.transform_points, foot_points)
+        limits = mf.limits(med_value, mad_)
 
-    is_stance = detect_phases(step_signal)
-
-    is_stance_series = pd.Series(is_stance, index=frames)
-    is_stance_series.replace({True: 'stance', False: 'swing'}, inplace=True)
-
-    df_phase = pd.DataFrame({'phase': is_stance_series}, dtype='category')
-    df_phase['position'] = foot_series
-
-    # Unique label for each distinct phase in the walking pass.
-    # e.g. swing, stance, swing section get labelled 0, 1, 2.
-    phase_labels = np.array([*itf.label_repeated_elements(is_stance)])
-
-    is_swing = ~is_stance
-
-    # Count of each phase in the walking pass.
-    stance_numbers = [*itf.label_repeated_elements(phase_labels[is_stance])]
-    swing_numbers = [*itf.label_repeated_elements(phase_labels[is_swing])]
-
-    stance_series = pd.Series(stance_numbers, index=frames[is_stance])
-    swing_series = pd.Series(swing_numbers, index=frames[is_swing])
-    df_phase['stride'] = pd.concat([stance_series, swing_series])
-
-    df_phase.index.name = 'frame'
-
-    return df_phase
+        yield StanceStats(i, limits, count)
 
 
-def group_stance_frames(df_phase):
-    """
-    Create a DataFrame of stance frames grouped by contact number.
+def filter_stances(signal_l, signal_r, labels_l, labels_r):
 
-    Parameters
-    ----------
-    df_phase : DataFrame
-        Index is 'frame'.
-        Columns are 'phase', 'stride', 'position',
-        'first_contact', 'last_contact'.
+    stats_stance_l = stance_stats(signal_l, labels_l)
+    stats_stance_r = stance_stats(signal_r, labels_r)
 
-    Returns
-    -------
-    df_grouped : DataFrame
-        Columns are 'frame', 'position'
+    pairs_stats = product(stats_stance_l, stats_stance_r)
 
-    Examples
-    --------
-    >>> pos = [[1, 2], [3, 4]]
-    >>> d = {'phase': ['stance', 'stance'], 'stride': [0, 0], 'position': pos}
+    labels_filt_l = copy.copy(labels_l)
+    labels_filt_r = copy.copy(labels_r)
 
-    >>> df = pd.DataFrame(d, index=[175, 176])
-    >>> df.index.name = 'frame'
+    for stats_l, stats_r in pairs_stats:
 
-    >>> group_stance_frames(df)
-       stride  frame    position  first_contact  last_contact
-    0       0  175.5  [2.0, 3.0]            175           176
+        if mf.check_overlap(stats_l.limits, stats_r.limits):
+            # The left and right stance phases overlap.
+            # Keep the phase with more values.
 
-    """
-    df_stance = df_phase[df_phase.phase == 'stance'].reset_index()
+            if stats_l.count < stats_r.count:
+                # Delete the left stance phase.
+                labels_filt_l[labels_l == stats_l.number] = np.nan
 
-    column_funcs = {'frame': np.median, 'position': np.stack}
-    df_grouped = pf.apply_to_grouped(df_stance, 'stride', column_funcs)
+            elif stats_l.count > stats_r.count:
+                # Delete the right stance phase.
+                labels_filt_r[labels_r == stats_r.number] = np.nan
 
-    df_grouped.position = df_grouped.position.apply(np.nanmedian, axis=0)
-
-    # Record first and last stance frame of each stride
-    contact_frames = df_stance.groupby('stride').frame.agg(['min', 'max'])
-    contact_frames.columns = ['first_contact', 'last_contact']
-
-    df_grouped = pd.concat((df_grouped, contact_frames), axis=1)
-
-    return df_grouped.reset_index()
+    return labels_filt_l, labels_filt_r
 
 
-def get_contacts(foot_series, line_pass):
-    """
-    Return a DataFrame containing contact frames and positions for one foot.
+def stance_medians(frames, points, labels_stance):
 
-    A contact frame is when the foot is contacting the floor
-    (in a stance phase).
+    groups_frames = nf.group_by_label(frames, labels_stance)
+    groups_points = nf.group_by_label(points, labels_stance)
 
-    Parameters
-    ----------
-    foot_series : ndarray
-        Index is 'frame'.
-        Values are foot positions.
-    line_pass : Line
-        Best-fit line for the walking pass.
+    Stance = namedtuple('Stance', ['num_stance', 'position', 'frame_i', 'frame_f'])
 
-    Returns
-    -------
-    DataFrame
-        Columns are 'frame', 'position'
+    for i, (group_frames, group_points) in enumerate(zip(groups_frames, groups_points)):
 
-    """
-    df_phase = get_phase_dataframe(foot_series, line_pass)
+        point_med = np.median(group_points, axis=0)
 
-    return group_stance_frames(df_phase)
+        frame_i, frame_f = group_frames[[0, -1]]
+
+        yield Stance(i, point_med, frame_i, frame_f)

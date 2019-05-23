@@ -2,6 +2,7 @@
 \toprule
 {} &  Head \\
 \midrule
-Truth &  0.98 \\
+Truth    &  0.98 \\
+Modified &  1.00 \\
 \bottomrule
 \end{tabular}
