@@ -5,6 +5,7 @@ from dpcontracts import require, ensure
 from skspatial.objects import Vector, Line
 
 import modules.phase_detection as pde
+import modules.side_assignment as sa
 import modules.sliding_window as sw
 
 
