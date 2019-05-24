@@ -10,29 +10,20 @@ import modules.gait_parameters as gp
 
 def main():
 
-    df_assigned_2d = pd.read_pickle(join('data', 'kinect', 'df_assigned_2d.pkl'))
-    df_assigned_3d = pd.read_pickle(join('data', 'kinect', 'df_assigned_3d.pkl'))
+    df_selected_passes = pd.read_pickle(join('data', 'kinect', 'df_selected_passes.pkl'))
 
-    tuples_trial_pass = df_assigned_2d.index.droplevel('frame').values
+    tuples_trial_pass = df_selected_passes.index.droplevel('frame').values
     dict_gait = dict.fromkeys(tuples_trial_pass)
 
-    for tuple_trial_pass, df_pass_2d in df_assigned_2d.groupby(level=[0, 1]):
+    for tuple_trial_pass, df_pass in df_selected_passes.groupby(level=[0, 1]):
 
-        frames = df_pass_2d.reset_index().frame.values
+        frames = df_pass.reset_index().frame.values
 
-        df_pass_3d = df_assigned_3d.loc[tuple_trial_pass]
+        points_head = np.stack(df_pass.HEAD)
+        points_a = np.stack(df_pass.L_FOOT)
+        points_b = np.stack(df_pass.R_FOOT)
 
-        points_2d_l = np.stack(df_pass_2d.L_FOOT)
-        points_2d_r = np.stack(df_pass_2d.R_FOOT)
-
-        points_3d_l = np.stack(df_pass_3d.L_FOOT)
-        points_3d_r = np.stack(df_pass_3d.R_FOOT)
-
-        # The 1D foot signal is the Y coordinate of the 2D points.
-        signal_l = points_2d_l[:, 1]
-        signal_r = points_2d_r[:, 1]
-
-        df_gait_pass = gp.walking_pass_parameters(frames, points_3d_l, points_3d_r, signal_l, signal_r)
+        df_gait_pass = gp.walking_pass_parameters(frames, points_head, points_a, points_b)
 
         dict_gait[tuple_trial_pass] = df_gait_pass
 

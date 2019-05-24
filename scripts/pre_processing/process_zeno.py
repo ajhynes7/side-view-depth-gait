@@ -76,12 +76,7 @@ def main():
 
     for file_path in file_paths:
 
-        df_trial = (
-            pd.read_excel(file_path)
-            .pipe(extract_measurements)
-            .pipe(parse_walking_info)
-            .pipe(select_parameters)
-        )
+        df_trial = pd.read_excel(file_path).pipe(extract_measurements).pipe(parse_walking_info).pipe(select_parameters)
 
         trial_name = splitext(basename(file_path))[0]
         dict_trials[trial_name] = df_trial

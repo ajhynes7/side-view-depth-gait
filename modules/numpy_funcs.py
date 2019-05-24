@@ -4,36 +4,6 @@ from itertools import chain
 
 import numpy as np
 
-import modules.iterable_funcs as itf
-
-
-def to_column(array):
-    """
-    Convert a 1D array to a 2D column.
-
-    Parameters
-    ----------
-    array : array_like
-        Input array with n elements.
-
-    Returns
-    -------
-    ndarray
-        (n, 1) array.
-
-    Examples
-    --------
-    >>> array = np.array([1, 2, 3])
-    >>> array.shape
-    (3,)
-
-    >>> column = to_column(array)
-    >>> column.shape
-    (3, 1)
-
-    """
-    return np.array(array).reshape(-1, 1)
-
 
 def remove_nan(array):
     """
@@ -120,37 +90,6 @@ def unique_no_sort(array):
     unique, return_ind = np.unique(array, return_index=True)
 
     return unique[np.argsort(return_ind)]
-
-
-def map_to_whole(array):
-    """
-    Map elements in an array to whole numbers in order (0, 1, 2, ...).
-
-    Parameters
-    ----------
-    array : array_like
-        Input array of numbers.
-
-    Returns
-    -------
-    list
-        List of sorted labels.
-
-    Examples
-    --------
-    >>> map_to_whole([1, 1, 1, 0, 0, 2, 2, 3, 3, 3])
-    [0, 0, 0, 1, 1, 2, 2, 3, 3, 3]
-
-    >>> map_to_whole([3, 3, 5, 5, 5, 10, 2])
-    [0, 0, 1, 1, 1, 2, 3]
-
-    """
-    unique = unique_no_sort(array)
-    output_values = [i for i, _ in enumerate(unique)]
-
-    mapping = {k: v for k, v in zip(unique, output_values)}
-
-    return itf.map_with_dict(array, mapping)
 
 
 def group_by_label(array, labels):

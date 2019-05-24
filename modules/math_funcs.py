@@ -1,7 +1,6 @@
 """Math functions."""
 
 import numpy as np
-from dpcontracts import require
 
 
 def limits(x, tolerance):
@@ -32,46 +31,6 @@ def limits(x, tolerance):
     lower_lim, upper_lim = x - tolerance, x + tolerance
 
     return lower_lim, upper_lim
-
-
-@require("The inputs must have length two.", lambda args: all(len(x) == 2 for x in [args.limits_a, args.limits_b]))
-@require(
-    "The upper limit must be >= the lower limit.",
-    lambda args: all(lims[1] >= lims[0] for lims in [args.limits_a, args.limits_b]),
-)
-def check_overlap(limits_a, limits_b):
-    """
-    Check if two ranges of numbers overlap.
-
-    Parameters
-    ----------
-    limits_a, limits_b : tuple
-        Tuple of form (min, max).
-
-    Returns
-    -------
-    bool
-        True if the ranges overlap; false otherwise.
-
-    Examples
-    --------
-    >>> check_overlap([0, 1], [2, 3])
-    False
-
-    >>> check_overlap([1, 1], [1, 2])
-    True
-
-    >>> check_overlap([4, 7], [5, 10])
-    True
-
-    >>> check_overlap([5, 10], [4, 7])
-    True
-
-    """
-    min_a, max_a = limits_a
-    min_b, max_b = limits_b
-
-    return min_a <= max_b and max_a >= min_b
 
 
 def norm_ratio(a, b):

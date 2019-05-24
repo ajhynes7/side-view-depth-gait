@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 
-import analysis.math_funcs as mf
+import modules.math_funcs as mf
 
 
 @pytest.mark.parametrize(

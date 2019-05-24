@@ -4,7 +4,7 @@ from collections import namedtuple
 
 import numpy as np
 
-import analysis.math_funcs as mf
+import modules.math_funcs as mf
 
 
 def relative_difference(x, y):
@@ -45,7 +45,7 @@ def relative_error(measured, actual):
     """
     Return the relative errors between measured and actual values.
 
-    Calculated as (measure - actual) / actual.
+    Calculated as (measured - actual) / actual.
 
     Parameters
     ----------

@@ -78,15 +78,6 @@ def all_consecutive(array):
     return np.all(np.diff(array) == 1)
 
 
-@given(array_like_1d)
-def test_to_column(array):
-    """Test converting an array_like to a column ndarray."""
-    column_array = nf.to_column(array)
-    n_rows, n_cols = column_array.shape
-
-    assert n_rows == len(array) and n_cols == 1
-
-
 @given(arrays(float, array_lengths, st.floats(allow_nan=True)))
 def test_remove_nan(array):
     """Test removing nans from an array."""
@@ -132,21 +123,6 @@ def test_unique_no_sort(array):
     else:
         # Sorting the preserved order should return the regular unique array
         assert np.array_equal(np.sort(unique_preserved), unique_regular)
-
-
-@given(array_like_1d)
-def test_map_to_whole(array):
-    """Test mapping elements in an array to whole numbers starting at zero."""
-    mapped = nf.map_to_whole(array)
-
-    unique, counts = np.unique(array, return_counts=True)
-    unique_mapped, counts_mapped = np.unique(mapped, return_counts=True)
-
-    # Whole numbers from zero to the number of unique values.
-    whole_nums = np.arange(len(unique_mapped))
-
-    assert np.array_equal(unique_mapped, whole_nums)
-    assert set(counts_mapped) == set(counts)
 
 
 @given(st.data())

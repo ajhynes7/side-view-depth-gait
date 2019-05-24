@@ -23,7 +23,7 @@ def main():
     # Trials and frames common to ground truth and selected positions
     index_intersection = df_truth.index.intersection(df_selected.index)
 
-    index_sorted = index_intersection.sort_values(('trial_name', 'frame'))[0]
+    index_sorted, _ = index_intersection.sort_values(('trial_name', 'frame'))
 
     # The assigned DataFrame had an extra index for the walking pass
     # This is dropped so the MultiIndex is the same as the other DataFrames
@@ -90,11 +90,7 @@ def main():
 
     # %% Organize into DataFrames
 
-    df_acc_head = pd.DataFrame(
-        index=['Truth', 'Modified'],
-        columns=['Head'],
-        data=[acc_head, acc_mod_head],
-    )
+    df_acc_head = pd.DataFrame(index=['Truth', 'Modified'], columns=['Head'], data=[acc_head, acc_mod_head])
 
     df_acc_matched = pd.DataFrame(
         index=['Truth', 'Modified'],

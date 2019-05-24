@@ -6,7 +6,7 @@ from os.path import join
 import numpy as np
 import pandas as pd
 
-import analysis.math_funcs as mf
+import modules.math_funcs as mf
 import modules.pose_estimation as pe
 from modules.constants import PART_CONNECTIONS
 

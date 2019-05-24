@@ -62,7 +62,9 @@ def test_track_two_objects(data):
     points_1, points_2 = data.draw(array_like), data.draw(array_like)
 
     array_correspondence = pp.track_two_objects(points_1, points_2)
-    points_new_1, points_new_2 = pp.correspond_points(points_1, points_2, array_correspondence)
+    points_new_1, points_new_2 = pp.correspond_points(
+        points_1, points_2, array_correspondence
+    )
 
     sum_1 = sum(pp.consecutive_dist(points_1))
     sum_2 = sum(pp.consecutive_dist(points_2))

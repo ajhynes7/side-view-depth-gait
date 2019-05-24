@@ -1,86 +1,72 @@
 """Module for assigning correct sides to the feet."""
 
 import numpy as np
-from dpcontracts import require, ensure
+from dpcontracts import require
 from skspatial.objects import Vector
 from skspatial.transformation import transform_coordinates
 
-import modules.numpy_funcs as nf
-import modules.point_processing as pp
-import modules.signals as sig
-import modules.sliding_window as sw
-
 
 @require("The input points must be 3D.", lambda args: all(x.shape[1] == 3 for x in args))
-@ensure("The output points must be 2D.", lambda _, results: all(x.shape[1] == 2 for x in results))
-def convert_to_2d(points_head, points_a, points_b):
+def median_basis(points_head, points_a, points_b):
 
-    points_foot = np.vstack((points_a, points_b))
-
-    point_foot_med = np.median(points_foot, axis=0)
-    point_head_med = np.median(points_head, axis=0)
-
-    # Up direction defined as vector from median foot point to
-    # median head point
-    vector_up = Vector.from_points(point_foot_med, point_head_med).unit()
-
-    # Forward direction defined as median vector from one frame to next
     points_foot_mean = (points_a + points_b) / 2
+
+    # Forward direction defined as median vector from one frame to next.
     differences = np.diff(points_foot_mean, axis=0)
     vector_forward = Vector(np.median(differences, axis=0)).unit()
 
+    # Up direction defined as median of vectors from foot to head.
+    vectors_up = points_head - points_foot_mean
+    vector_up = Vector(np.median(vectors_up, axis=0)).unit()
+
     vector_perp = vector_up.cross(vector_forward)
-    vectors_basis = (vector_perp, vector_forward)
+    vectors_basis = (vector_forward, vector_up, vector_perp)
 
-    # Represent the 3D foot points in a new 2D coordinate system
-    points_2d_a = transform_coordinates(points_a, point_foot_med, vectors_basis)
-    points_2d_b = transform_coordinates(points_b, point_foot_med, vectors_basis)
+    origin = np.median(np.vstack((points_a, points_b)), axis=0)
 
-    return points_2d_a, points_2d_b
+    return origin, vectors_basis
 
 
-def split_walking_pass(frames, points_a, points_b):
+@require(
+    "The median point and perpendicular vector must be 3D.",
+    lambda args: all(x.size == 3 for x in [args.point_med, args.vector_perp]),
+)
+def assign_sides_pass(df_stance, point_med, vector_perp):
 
-    distances_feet = np.linalg.norm(points_a - points_b, axis=1)
+    # Ensure that the stances are in temporal order.
+    df_stance = df_stance.sort_values('frame_i')
 
-    # Find local minima in the foot distances.
-    signal = 1 - sig.nan_normalize(distances_feet)
-    rms = sig.root_mean_square(signal)
-    peak_frames, _ = sw.detect_peaks(frames, signal, window_length=3, min_height=rms)
+    df_stance_even = df_stance[::2]
+    df_stance_odd = df_stance[1::2]
 
-    # Split the pass into portions between local minima.
-    labels = np.array(nf.label_by_split(frames, peak_frames))
+    points_stance_even = np.stack(df_stance_even.position)
+    points_stance_odd = np.stack(df_stance_odd.position)
 
-    return labels
+    # Convert stance points to 1D coordinate system.
+    # The values are coordinate along the perpendicular direction.
+    values_side_even = transform_coordinates(points_stance_even, point_med, [vector_perp])
+    values_side_odd = transform_coordinates(points_stance_odd, point_med, [vector_perp])
 
+    value_side_even = np.median(values_side_even)
+    value_side_odd = np.median(values_side_odd)
 
-@require("The points must be 2D", lambda args: all(x.shape[1] == 2 for x in (args.points_2d_a, args.points_2d_b)))
-def assign_sides_pass(points_2d_a, points_2d_b, labels_portions):
+    # Initially assume even stances belong to the left foot.
+    side_even, side_odd = 'L', 'R'
 
-    n_points_pass = len(points_2d_a)
-    array_assignment = np.full(n_points_pass, True)
+    if value_side_even > value_side_odd:
+        side_even, side_odd = side_odd, side_even
 
-    for label in np.unique(labels_portions):
+    n_stances = df_stance.shape[0]
 
-        is_portion = labels_portions == label
+    sides = np.full(n_stances, None)
+    sides[::2] = side_even
+    sides[1::2] = side_odd
 
-        points_portion_a = points_2d_a[is_portion]
-        points_portion_b = points_2d_b[is_portion]
+    nums_stance = np.zeros(n_stances).astype(int)
+    nums_stance[::2] = np.arange(len(values_side_even))
+    nums_stance[1::2] = np.arange(len(values_side_odd))
 
-        array_correspondence = pp.track_two_objects(points_portion_a, points_portion_b)
+    df_stance['side'] = sides
+    df_stance['num_stance'] = nums_stance
 
-        points_tracked_a, points_tracked_b = pp.correspond_points(
-            points_portion_a, points_portion_b, array_correspondence
-        )
-
-        value_side_a = points_tracked_a[:, 0].sum()
-        value_side_b = points_tracked_b[:, 0].sum()
-
-        # Assume that points A are left foot points, and vice versa.
-        if value_side_a > value_side_b:
-            # Swap left and right foot points.
-            array_correspondence = np.logical_not(array_correspondence)
-
-        array_assignment[is_portion] = array_correspondence
-
-    return array_assignment
+    return df_stance
