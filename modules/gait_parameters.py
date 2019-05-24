@@ -179,7 +179,7 @@ def labels_to_stances(frames, points_l, points_r, labels_l, labels_r):
 
 
 @require(
-    "DataFrame must include the required columns.",
+    "The stance DataFrame must include the required columns.",
     lambda args: set(args.df_stance.columns) == {'num_stance', 'position', 'frame_i', 'frame_f', 'side'},
 )
 def stances_to_gait(df_stance):
@@ -217,20 +217,24 @@ def stances_to_gait(df_stance):
     return df_gait
 
 
-@require("The frames must correspond to the points.", lambda args: args.frames.shape == (args.points_l.shape[0],))
-@require("The points must 3D.", lambda args: all(x.shape[1] == 3 for x in [args.points_l, args.points_r]))
-@require("The signals must 1D arrays.", lambda args: all(x.ndim == 1 for x in [args.signal_l, args.signal_r]))
-@ensure("The output must contain gait params.", lambda _, result: 'stride_length' in result.columns)
-@ensure(
-    "The output must have the required MultiIndex.",
-    lambda _, result: result.index.names == ['num_stance', 'side'],
+@require(
+    "The points must be 3D.",
+    lambda args: all(x.shape[1] == 3 for x in [args.points_head, args.points_a, args.points_b]),
 )
-def walking_pass_parameters(frames, points_l, points_r, signal_l, signal_r):
+@ensure("The output must contain gait params.", lambda _, result: 'stride_length' in result.columns)
+@ensure("The output must have the required MultiIndex.", lambda _, result: result.index.names == ['num_stance', 'side'])
+def walking_pass_parameters(frames, points_head, points_a, points_b):
     """
     Calculate gait parameters from a single walking pass.
 
     Parameters
     ----------
+    frames : ndarray
+        (n,) array of frames for the pass.
+    points_head : ndarray
+        (n, 3) array of head points.
+    points_a, points_b : ndarray
+        (n, 3) array of foot points A and B.
 
     Returns
     -------
@@ -239,13 +243,12 @@ def walking_pass_parameters(frames, points_l, points_r, signal_l, signal_r):
         The columns include parameters names.
 
     """
-    labels_l = pde.detect_stance_phases(signal_l)
-    labels_r = pde.detect_stance_phases(signal_r)
+    df_stance = pde.detect_stance_phases(frames, points_a, points_b)
 
-    # Filter out false stance phases
-    labels_l, labels_r = pde.filter_stances(signal_l, signal_r, labels_l, labels_r)
+    origin, vectors_basis = sa.median_basis(points_head, points_a, points_b)
+    vector_perp = vectors_basis[-1]
 
-    df_stance = labels_to_stances(frames, points_l, points_r, labels_l, labels_r)
+    df_stance = sa.assign_sides_pass(df_stance, origin, vector_perp)
     df_gait_pass = stances_to_gait(df_stance)
 
     return df_gait_pass
