@@ -29,7 +29,7 @@ def median_basis(points_head, points_a, points_b):
 
 @require(
     "The median point and perpendicular vector must be 3D.",
-    lambda args: all(x.size == 3 for x in [args.point_med, args.vector_perp])
+    lambda args: all(x.size == 3 for x in [args.point_med, args.vector_perp]),
 )
 def assign_sides_pass(df_stance, point_med, vector_perp):
 

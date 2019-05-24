@@ -90,11 +90,7 @@ def main():
 
     # %% Organize into DataFrames
 
-    df_acc_head = pd.DataFrame(
-        index=['Truth', 'Modified'],
-        columns=['Head'],
-        data=[acc_head, acc_mod_head],
-    )
+    df_acc_head = pd.DataFrame(index=['Truth', 'Modified'], columns=['Head'], data=[acc_head, acc_mod_head])
 
     df_acc_matched = pd.DataFrame(
         index=['Truth', 'Modified'],
