@@ -6,8 +6,6 @@ import numpy as np
 import pandas as pd
 from sklearn.cluster import DBSCAN
 
-import modules.math_funcs as mf
-
 
 def stance_props(frames_grouped, points_foot_grouped, labels):
     """

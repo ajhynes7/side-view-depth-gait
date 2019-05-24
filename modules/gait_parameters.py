@@ -138,46 +138,6 @@ def stride_parameters(foot_a_i, foot_b, foot_a_f, *, fps=30):
     return {**dict_spatial, **dict_temporal}
 
 
-@require("All input arrays must have the same length.", lambda args: len(set(len(x) for x in args)) == 1)
-@ensure(
-    "The output must have the required columns.",
-    lambda _, result: set(result.columns) == {'num_stance', 'position', 'frame_i', 'frame_f', 'side'},
-)
-def labels_to_stances(frames, points_l, points_r, labels_l, labels_r):
-    """
-    Return a DataFrame with median positions and initial/final frames
-    for each stance phase in a walking pass.
-
-    Parameters
-    ----------
-    frames : ndarray
-        (n,) array of frames for the walking pass.
-    points_l, points_r : ndarray
-        (n, 2) arrays for left and right foot points.
-    labels_l, labels_r : ndarray
-        (n,) array of labels indicating stance phases.
-
-    Returns
-    -------
-    df_stance : DataFrame
-        Each row is a stance phase.
-        The columns are 'num_stance', 'position', 'frame_i', 'frame_f', 'side'.
-
-    """
-    df_stance_l = pd.DataFrame(pde.stance_medians(frames, points_l, labels_l))
-    df_stance_r = pd.DataFrame(pde.stance_medians(frames, points_r, labels_r))
-
-    df_stance_l['side'] = 'L'
-    df_stance_r['side'] = 'R'
-
-    df_stance = pd.concat((df_stance_l, df_stance_r), ignore_index=True)
-
-    # Sort stance phases by median frame.
-    df_stance = df_stance.sort_values('frame_i').reset_index(drop=True)
-
-    return df_stance
-
-
 @require(
     "The stance DataFrame must include the required columns.",
     lambda args: set(args.df_stance.columns) == {'num_stance', 'position', 'frame_i', 'frame_f', 'side'},
