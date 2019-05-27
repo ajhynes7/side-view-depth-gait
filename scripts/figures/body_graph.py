@@ -1,6 +1,6 @@
 """Generate diagram of body part graph."""
 
-import os
+from os.path import join
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -59,8 +59,7 @@ def main():
     plt.xlim((0, 1.1))
     plt.axis('off')
 
-    save_path = os.path.join('figures', 'body_graph.pdf')
-    fig.savefig(save_path, format='pdf', dpi=1200)
+    fig.savefig(join('figures', 'body_graph.pdf'), dpi=1200)
 
 
 if __name__ == '__main__':
