@@ -2,6 +2,7 @@
 
 import numpy as np
 from numpy.linalg import norm
+from scipy.spatial.distance import cdist
 
 
 def consecutive_dist(points):
@@ -82,6 +83,21 @@ def closest_proposals(proposals, targets):
         closest[i, :] = close_point
 
     return closest
+
+
+def assign_pair(point_pair, target_pair):
+
+    dist_matrix = cdist(point_pair, target_pair)
+
+    sum_diagonal = dist_matrix.trace()
+    sum_reverse = np.fliplr(dist_matrix).trace()
+
+    assigned_pair = point_pair
+
+    if sum_reverse < sum_diagonal:
+        assigned_pair = np.flip(point_pair, axis=0)
+
+    return assigned_pair
 
 
 def match_pairs(points_1, points_2, targets_1, targets_2):
