@@ -48,14 +48,7 @@ def main():
 
     plt.scatter(x[is_noise], y[is_noise], c='k', s=10)
 
-    plt.scatter(
-        x[~is_noise],
-        y[~is_noise],
-        c=labels[~is_noise],
-        cmap='Set1',
-        edgecolor='k',
-        s=50,
-    )
+    plt.scatter(x[~is_noise], y[~is_noise], c=labels[~is_noise], cmap='Set1', edgecolor='k', s=50)
 
     plt.xlabel('Perpendicular coordinates [cm]')
     plt.ylabel('Forward coordinates [cm]')

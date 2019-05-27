@@ -99,7 +99,4 @@ def assign_sides_pass(df_stance):
     nums_stance[::2] = np.arange(points_stance_even.shape[0])
     nums_stance[1::2] = np.arange(points_stance_odd.shape[0])
 
-    return (
-        df_stance
-        .assign(side=sides, num_stance=nums_stance)
-    )
+    return df_stance.assign(side=sides, num_stance=nums_stance)
