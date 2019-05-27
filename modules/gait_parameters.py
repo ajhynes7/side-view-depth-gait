@@ -1,11 +1,13 @@
 """Module for calculating gait parameters from 3D body part positions."""
 
+import numpy as np
 import pandas as pd
 from dpcontracts import require, ensure
 from skspatial.objects import Vector, Line
+from skspatial.transformation import transform_coordinates
 
+import modules.numpy_funcs as nf
 import modules.phase_detection as pde
-import modules.side_assignment as sa
 import modules.sliding_window as sw
 
 
@@ -155,27 +157,26 @@ def stances_to_gait(df_stance):
 
     Returns
     -------
-    df_gait : DataFrame
+    DataFrame
         Each row represents a set of gait parameters from one stride.
         Columns include gait parameter names, e.g., stride_velocity.
 
     """
-    tuples_stance = df_stance.itertuples(index=False)
-
     def yield_parameters():
         """Inner function to yield parameters for each stride."""
+
+        tuples_stance = df_stance.itertuples(index=False)
+
         for stance_a_i, stance_b, stance_a_f in sw.generate_window(tuples_stance, n=3):
 
             dict_stride = stride_parameters(stance_a_i, stance_b, stance_a_f)
 
+            dict_stride['num_stride'] = stance_a_i.num_stance
             dict_stride['side'] = stance_a_i.side
-            dict_stride['num_stance'] = stance_a_i.num_stance
 
             yield dict_stride
 
-    df_gait = pd.DataFrame(yield_parameters()).set_index(['num_stance', 'side'])
-
-    return df_gait
+    return pd.DataFrame(yield_parameters()).set_index(['num_stride', 'side'])
 
 
 @require(
@@ -183,7 +184,7 @@ def stances_to_gait(df_stance):
     lambda args: all(x.shape[1] == 3 for x in [args.points_head, args.points_a, args.points_b]),
 )
 @ensure("The output must contain gait params.", lambda _, result: 'stride_length' in result.columns)
-@ensure("The output must have the required MultiIndex.", lambda _, result: result.index.names == ['num_stance', 'side'])
+@ensure("The output must have the required MultiIndex.", lambda _, result: result.index.names == ['num_stride', 'side'])
 def walking_pass_parameters(frames, points_head, points_a, points_b):
     """
     Calculate gait parameters from a single walking pass.
@@ -199,17 +200,34 @@ def walking_pass_parameters(frames, points_head, points_a, points_b):
 
     Returns
     -------
-    df_gait_pass : DataFrame
+    DataFrame
         Gait parameters of the walking pass.
         The columns include parameters names.
 
     """
-    df_stance = pde.detect_stance_phases(frames, points_a, points_b)
+    # Group points together by alternating from groups A and B.
+    # This ensures that the points move in one general direction.
+    points_foot = nf.interweave_rows(points_a, points_b)
 
-    origin, vectors_basis = sa.median_basis(points_head, points_a, points_b)
-    vector_perp = vectors_basis[-1]
+    frames_column = frames.reshape(-1, 1)
+    frames_grouped = nf.interweave_rows(frames_column, frames_column)
 
-    df_stance = sa.assign_sides_pass(df_stance, origin, vector_perp)
-    df_gait_pass = stances_to_gait(df_stance)
+    model_ransac, is_inlier = pde.fit_ransac(points_foot)
+    basis = pde.compute_basis(points_head, points_a, points_b, model_ransac)
 
-    return df_gait_pass
+    # Keep only foot points marked as inliers by RANSAC.
+    points_foot_inlier = points_foot[is_inlier]
+    frames_grouped_inlier = frames_grouped[is_inlier]
+
+    # Convert foot points into new coordinates defined by forward, up, and perpendicular directions.
+    points_transformed = transform_coordinates(points_foot_inlier, basis.origin, (basis.up, basis.perp, basis.forward))
+    coords_up, coords_perp, coords_forward = np.split(points_transformed, 3, 1)
+
+    points_2d = np.column_stack((coords_perp, coords_forward))
+    labels_stance = pde.label_stance_phases(points_2d)
+
+    return (
+        pde.stance_props(frames_grouped_inlier, points_2d, labels_stance)
+        .pipe(pde.assign_sides_pass)
+        .pipe(stances_to_gait)
+    )

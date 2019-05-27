@@ -3,7 +3,7 @@
 import matplotlib
 from matplotlib import rc
 
-from scripts.figures import body_graph, joint_proposals, signals, truth_positions
+from scripts.figures import body_graph, joint_proposals, stance_clusters, truth_positions
 
 
 def main():
@@ -17,7 +17,7 @@ def main():
     # Run scripts to make figures
     body_graph.main()
     joint_proposals.main()
-    signals.main()
+    stance_clusters.main()
     truth_positions.main()
 
 

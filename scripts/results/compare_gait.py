@@ -18,6 +18,10 @@ def main():
     df_matched_k = pd.read_pickle(join('data', 'kinect', 'df_matched.pkl'))
     df_matched_z = pd.read_pickle(join('data', 'zeno', 'df_matched.pkl'))
 
+    # Ensure Kinect and Zeno DataFrames have the same MultiIndex and columns.
+    assert df_matched_k.index.names == df_matched_z.index.names
+    assert set(df_matched_k.columns) == set(df_matched_z.columns)
+
     # Median gait parameters of each walking trial.
     df_trials_k = df_matched_k.groupby(['trial_id']).median()
     df_trials_z = df_matched_z.groupby(['trial_id']).median()

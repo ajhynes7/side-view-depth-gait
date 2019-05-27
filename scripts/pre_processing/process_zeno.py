@@ -45,7 +45,7 @@ def parse_walking_info(df_trial):
             yield num_pass, num_stance, side
 
     series_info = df_trial.iloc[:, 0]
-    df_parsed = pd.DataFrame(yield_parsed(series_info), columns=['num_pass', 'num_stance', 'side'])
+    df_parsed = pd.DataFrame(yield_parsed(series_info), columns=['num_pass', 'num_stride', 'side'])
 
     return pd.concat((df_parsed, df_trial), axis=1).set_index(df_parsed.columns.to_list())
 
