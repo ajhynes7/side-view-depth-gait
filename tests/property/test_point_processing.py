@@ -45,31 +45,3 @@ def test_consecutive_dist(points):
     dist_matrix = cdist(points, points)
 
     assert np.array_equal(lengths, np.diag(dist_matrix, k=1))
-
-
-@given(st.data())
-def test_track_two_objects(data):
-    """Test tracking two objects by assigning positions to the objects."""
-    n_dim = data.draw(st.integers(min_value=1, max_value=5))
-    n_points = data.draw(st.integers(min_value=2, max_value=50))
-
-    array_like = st.lists(
-        st.lists(ints, min_size=n_dim, max_size=n_dim),
-        min_size=n_points,
-        max_size=n_points,
-    )
-
-    points_1, points_2 = data.draw(array_like), data.draw(array_like)
-
-    array_correspondence = pp.track_two_objects(points_1, points_2)
-    points_new_1, points_new_2 = pp.correspond_points(
-        points_1, points_2, array_correspondence
-    )
-
-    sum_1 = sum(pp.consecutive_dist(points_1))
-    sum_2 = sum(pp.consecutive_dist(points_2))
-
-    sum_new_1 = sum(pp.consecutive_dist(points_new_1))
-    sum_new_2 = sum(pp.consecutive_dist(points_new_2))
-
-    assert sum_new_1 + sum_new_2 <= sum_1 + sum_2
