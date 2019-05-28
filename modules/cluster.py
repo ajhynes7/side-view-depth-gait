@@ -172,3 +172,53 @@ def region_query(dist_matrix, eps, idx_pt):
 
     """
     return set(np.nonzero(dist_matrix[idx_pt] <= eps)[0])
+
+
+def region_query_st(D_spatial, D_temporal, eps_spatial, eps_temporal, idx_pt):
+    """
+    Perform spatiotemporal region query for DBSCAN.
+
+    Returns the intersection of spatial and temporal reqion queries.
+
+    Parameters
+    ----------
+    D_spatial : ndarray
+        (n, n) matrix of distances between points.
+    D_temporal : ndarray
+        (m, m) matrix of distances between times.
+    eps_spatial : float
+        Maximum distance between two points for one to be
+        considered in the neighbourhood of the other.
+    eps_temporal : float
+        Maximum distance between two times for one to be
+        considered in the neighbourhood of the other.
+    idx_pt : int
+        Index of the current point.
+
+    Returns
+    -------
+    set
+        Intersection of the spatial and temporal neighbourhoods.
+
+    Examples
+    --------
+    >>> points = [[0, 0], [1, 0], [2, 0], [0, 5], [1, 5], [2, 5]]
+    >>> times = np.row_stack([1, 2, 3, 4, 5, 1])
+
+    >>> eps_spatial, eps_temporal = 1, 5
+    >>> idx_pt = 5
+
+    >>> D_spatial = cdist(points, points)
+    >>> D_temporal = cdist(times, times)
+
+    >>> region_query_st(D_spatial, D_temporal, eps_spatial, eps_temporal, idx_pt)
+    {4, 5}
+
+    >>> region_query_st(D_spatial, D_temporal, eps_spatial, 1, idx_pt)
+    {5}
+
+    """
+    set_neighbours_spatial = region_query(D_spatial, eps_spatial, idx_pt)
+    set_neighbours_temporal = region_query(D_temporal, eps_temporal, idx_pt)
+
+    return set_neighbours_spatial.intersection(set_neighbours_temporal)
