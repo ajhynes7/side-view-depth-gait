@@ -6,16 +6,21 @@ import numpy as np
 from scipy.spatial.distance import cdist
 
 
-def dbscan(points, eps=0.5, min_pts=5):
+def dbscan_st(points, times=None, eps_spatial=0.5, eps_temporal=0.5, min_pts=5):
     """
-    Cluster points with DBSCAN algorithm.
+    Cluster points with spatiotemporal DBSCAN algorithm.
 
     Parameters
     ----------
     points : array_like
         (n, d) array of n points with dimension d.
-    eps : float, optional
+    times : array_like, optional
+        (n,) array of n times corresponding to the points.
+    eps_spatial : float, optional
         Maximum distance between two points for one to be
+        considered in the neighbourhood of the other.
+    eps_temporal : float, optional
+        Maximum distance between two times for one to be
         considered in the neighbourhood of the other.
     min_pts : int, optional
         Number of points in a neighbourhood for a point to be considered
@@ -30,13 +35,20 @@ def dbscan(points, eps=0.5, min_pts=5):
     --------
     >>> points = [[0, 0], [1, 0], [2, 0], [0, 5], [1, 5], [2, 5]]
 
-    >>> dbscan(points, eps=1, min_pts=2)
+    >>> dbscan_st(points, eps_spatial=1, min_pts=2)
     array([0, 0, 0, 1, 1, 1])
 
     """
-    dist_matrix = cdist(points, points)
+    D_spatial = cdist(points, points)
 
     n_points = len(points)
+
+    if times is None:
+        times = np.zeros(n_points)
+
+    times = np.array(times).reshape(-1, 1)
+    D_temporal = cdist(times, times)
+
     labels = np.zeros(n_points, dtype=int)
 
     label_cluster = 0
@@ -47,7 +59,7 @@ def dbscan(points, eps=0.5, min_pts=5):
             # Only unlabelled points can be considered as seed points.
             continue
 
-        set_neighbours = region_query(dist_matrix, eps, idx_pt)
+        set_neighbours = region_query_st(D_spatial, D_temporal, eps_spatial, eps_temporal, idx_pt)
 
         if len(set_neighbours) < min_pts:
             # The neighbourhood of the point is smaller than the minimum.
@@ -60,7 +72,9 @@ def dbscan(points, eps=0.5, min_pts=5):
             # Assign the point to the current cluster
             labels[idx_pt] = label_cluster
 
-            grow_cluster(dist_matrix, labels, set_neighbours, label_cluster, eps, min_pts)
+            grow_cluster_st(
+                D_spatial, D_temporal, labels, set_neighbours, label_cluster, eps_spatial, eps_temporal, min_pts
+            )
 
     # Subtract 1 from non-noise labels so they begin at zero (this is consistent with scikit-learn).
     labels[labels != -1] -= 1
@@ -68,22 +82,27 @@ def dbscan(points, eps=0.5, min_pts=5):
     return labels
 
 
-def grow_cluster(dist_matrix, labels, set_neighbours, label_cluster, eps, min_pts):
+def grow_cluster_st(D_spatial, D_temporal, labels, set_neighbours, label_cluster, eps_spatial, eps_temporal, min_pts):
     """
     Grow a cluster starting from a seed point.
 
     Parameters
     ----------
-    dist_matrix : ndarray
-        (n, n) distance matrix.
+    D_spatial : ndarray
+        (n, n) matrix of distances between points.
+    D_temporal : ndarray
+        (n, n) matrix of distances between times.
     labels : ndarray
         (n,) array of cluster labels.
     set_neighbours : set
         Set of indices for neighbours of the seed point.
     label_cluster : int
         Label of the current cluster.
-    eps : float
+    eps_spatial : float
         Maximum distance between two points for one to be
+        considered in the neighbourhood of the other.
+    eps_temporal : float
+        Maximum distance between two times for one to be
         considered in the neighbourhood of the other.
     min_pts : int
         Number of points in a neighbourhood for a point to be considered
@@ -93,14 +112,17 @@ def grow_cluster(dist_matrix, labels, set_neighbours, label_cluster, eps, min_pt
     --------
     >>> points = [[0, 0], [1, 0], [2, 0], [0, 5], [1, 5], [2, 5]]
 
-    >>> idx_pt, label_cluster = 0, 1
-    >>> eps, min_pts = 1, 2
+    >>> idx_pt, label = 0, 1
+    >>> eps_spatial, eps_temporal, min_pts = 1, 1, 2
 
-    >>> dist_matrix = cdist(points, points)
+    >>> D_spatial = cdist(points, points)
+    >>> D_temporal = np.zeros_like(D_spatial)
+
     >>> labels = np.zeros(len(points))
 
-    >>> set_neighbours = region_query(dist_matrix, eps, idx_pt)
-    >>> grow_cluster(dist_matrix, labels, set_neighbours, label_cluster, eps, min_pts)
+    >>> set_neighbours = region_query_st(D_spatial, D_temporal, eps_spatial, eps_temporal, idx_pt)
+
+    >>> grow_cluster_st(D_spatial, D_temporal, labels, set_neighbours, label, eps_spatial, eps_temporal, min_pts)
 
     >>> labels
     array([1., 1., 1., 0., 0., 0.])
@@ -129,7 +151,7 @@ def grow_cluster(dist_matrix, labels, set_neighbours, label_cluster, eps, min_pt
             # Add the next point to the cluster.
             labels[idx_next] = label_cluster
 
-            set_neighbours_next = region_query(dist_matrix, eps, idx_next)
+            set_neighbours_next = region_query_st(D_spatial, D_temporal, eps_spatial, eps_temporal, idx_next)
 
             if len(set_neighbours_next) >= min_pts:
                 # The next point is a core point.
@@ -185,7 +207,7 @@ def region_query_st(D_spatial, D_temporal, eps_spatial, eps_temporal, idx_pt):
     D_spatial : ndarray
         (n, n) matrix of distances between points.
     D_temporal : ndarray
-        (m, m) matrix of distances between times.
+        (n, n) matrix of distances between times.
     eps_spatial : float
         Maximum distance between two points for one to be
         considered in the neighbourhood of the other.
