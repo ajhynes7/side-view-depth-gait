@@ -225,7 +225,7 @@ def walking_pass_parameters(frames, points_head, points_a, points_b):
     coords_up, coords_perp, coords_forward = np.split(points_transformed, 3, 1)
 
     points_2d = np.column_stack((coords_perp, coords_forward))
-    labels_stance = pde.label_stance_phases(points_2d)
+    labels_stance = pde.label_stance_phases(frames_grouped_inlier, points_2d)
 
     return (
         pde.stance_props(frames_grouped_inlier, points_2d, labels_stance)

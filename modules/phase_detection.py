@@ -5,7 +5,6 @@ from collections import namedtuple
 import numpy as np
 import pandas as pd
 from skimage.measure import LineModelND, ransac
-from sklearn.cluster import DBSCAN
 from skspatial.objects import Vector
 from statsmodels.robust import mad
 
@@ -36,9 +35,9 @@ def compute_basis(points_head, points_a, points_b, model_ransac):
     return basis
 
 
-def label_stance_phases(points_2d):
+def label_stance_phases(frames, points_2d):
 
-    return DBSCAN(eps=5).fit(points_2d).labels_
+    return cl.dbscan_st(points_2d, frames, eps_spatial=5, eps_temporal=15)
 
 
 def stance_props(frames, points_foot, labels_stance):
