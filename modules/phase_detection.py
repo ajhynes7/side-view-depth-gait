@@ -9,7 +9,7 @@ from sklearn.cluster import DBSCAN
 from skspatial.objects import Vector
 from statsmodels.robust import mad
 
-import modules.math_funcs as mf
+import modules.cluster as cl
 
 
 def fit_ransac(points_foot):
@@ -56,14 +56,10 @@ def stance_props(frames, points_foot, labels_stance):
 
             is_cluster = labels_stance == label
 
-            frames_cluster = np.unique(frames[is_cluster])
             points_foot_cluster = points_foot[is_cluster]
-
             point_foot_med = np.median(points_foot_cluster, axis=0)
 
-            # Remove outlier frames from the cluster.
-            frames_cluster = mf.mad_filter(frames_cluster, c=3)
-
+            frames_cluster = frames[is_cluster]
             frame_i = frames_cluster.min()
             frame_f = frames_cluster.max()
 
