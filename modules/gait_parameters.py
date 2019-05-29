@@ -214,14 +214,16 @@ def walking_pass_parameters(frames, points_head, points_a, points_b):
     frames_grouped = nf.interweave_rows(frames_column, frames_column)
 
     model_ransac, is_inlier = pde.fit_ransac(points_foot)
-    basis = pde.compute_basis(points_head, points_a, points_b, model_ransac)
+    basis = pde.compute_basis_vectors(points_head, points_a, points_b, model_ransac)
 
     # Keep only foot points marked as inliers by RANSAC.
     points_foot_inlier = points_foot[is_inlier]
     frames_grouped_inlier = frames_grouped[is_inlier]
 
+    point_origin = np.median(points_foot_inlier, axis=0)
+
     # Convert foot points into new coordinates defined by forward, up, and perpendicular directions.
-    points_transformed = transform_coordinates(points_foot_inlier, basis.origin, (basis.up, basis.perp, basis.forward))
+    points_transformed = transform_coordinates(points_foot_inlier, point_origin, (basis.up, basis.perp, basis.forward))
     coords_up, coords_perp, coords_forward = np.split(points_transformed, 3, 1)
 
     points_2d = np.column_stack((coords_perp, coords_forward))

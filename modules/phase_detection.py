@@ -20,7 +20,7 @@ def fit_ransac(points_foot):
     return model, is_inlier
 
 
-def compute_basis(points_head, points_a, points_b, model_ransac):
+def compute_basis_vectors(points_head, points_a, points_b, model_ransac):
 
     # Define the up direction as the median of vectors to the head.
     points_mean = (points_a + points_b) / 2
@@ -29,10 +29,9 @@ def compute_basis(points_head, points_a, points_b, model_ransac):
     point_origin, vector_forward = model_ransac.params
     vector_perp = vector_up.cross(vector_forward)
 
-    Basis = namedtuple('Basis', 'origin, forward, up, perp')
-    basis = Basis(point_origin, vector_forward, vector_up, vector_perp)
+    BasisVectors = namedtuple('Basis', 'forward, up, perp')
 
-    return basis
+    return BasisVectors(vector_forward, vector_up, vector_perp)
 
 
 def label_stance_phases(frames, points_2d):
