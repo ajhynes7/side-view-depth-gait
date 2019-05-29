@@ -2,12 +2,12 @@
 \toprule
 {} &   bias &  lower\_limit &  upper\_limit &  range\_ \\
 \midrule
-absolute\_step\_length &  0.011 &       -0.053 &        0.075 &   0.128 \\
+absolute\_step\_length &  0.011 &       -0.054 &        0.076 &   0.129 \\
 stance\_percentage    & -0.014 &       -0.105 &        0.077 &   0.182 \\
-step\_length          &  0.003 &       -0.059 &        0.065 &   0.124 \\
-stride\_length        & -0.001 &       -0.121 &        0.120 &   0.241 \\
-stride\_time          & -0.199 &       -0.338 &       -0.060 &   0.277 \\
-stride\_velocity      &  0.194 &        0.071 &        0.316 &   0.244 \\
-stride\_width         &  0.426 &       -0.231 &        1.084 &   1.315 \\
+step\_length          &  0.003 &       -0.062 &        0.068 &   0.130 \\
+stride\_length        &  0.006 &       -0.039 &        0.052 &   0.091 \\
+stride\_time          & -0.196 &       -0.330 &       -0.062 &   0.267 \\
+stride\_velocity      &  0.194 &        0.065 &        0.323 &   0.258 \\
+stride\_width         &  0.422 &       -0.245 &        1.089 &   1.334 \\
 \bottomrule
 \end{tabular}
