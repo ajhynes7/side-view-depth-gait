@@ -162,6 +162,7 @@ def stances_to_gait(df_stance):
         Columns include gait parameter names, e.g., stride_velocity.
 
     """
+    df_stance = df_stance.sort_values('frame_i')
 
     def yield_parameters():
         """Inner function to yield parameters for each stride."""
