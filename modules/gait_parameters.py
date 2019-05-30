@@ -143,7 +143,7 @@ def stride_parameters(foot_a_i, foot_b, foot_a_f, *, fps=30):
 
 @require(
     "The stance DataFrame must include the required columns.",
-    lambda args: set(args.df_stance.columns) == {'num_stance', 'position', 'frame_i', 'frame_f', 'side'},
+    lambda args: set(args.df_stance.columns) == {'position', 'frame_i', 'frame_f', 'side'},
 )
 def stances_to_gait(df_stance):
     """
@@ -153,7 +153,7 @@ def stances_to_gait(df_stance):
     ----------
     df_stance : DataFrame
         Each row represents a stance phase.
-        Columns are 'num_stance', 'position', 'frame_i', 'frame_f', 'side'.
+        Columns are 'position', 'frame_i', 'frame_f', 'side'.
 
     Returns
     -------

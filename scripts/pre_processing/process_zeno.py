@@ -37,15 +37,13 @@ def parse_walking_info(df_trial):
                 # Subtract one to match zero-indexing of Kinect passes.
                 num_pass = int(first_char) - 1
 
-            num_stance = int(string[-1]) - 1
-
             # Match 'Right' or 'Left' and take first character ('R' or 'L')
             side = re.search(r'(\w+)\s', string).group(1)[0]
 
-            yield num_pass, num_stance, side
+            yield num_pass, side
 
     series_info = df_trial.iloc[:, 0]
-    df_parsed = pd.DataFrame(yield_parsed(series_info), columns=['num_pass', 'num_stride', 'side'])
+    df_parsed = pd.DataFrame(yield_parsed(series_info), columns=['num_pass', 'side'])
 
     return pd.concat((df_parsed, df_trial), axis=1).set_index(df_parsed.columns.to_list())
 
