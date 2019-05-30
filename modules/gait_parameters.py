@@ -166,20 +166,24 @@ def stances_to_gait(df_stance):
 
     def yield_parameters():
         """Inner function to yield parameters for each stride."""
-
         tuples_stance = df_stance.itertuples(index=False)
 
         for stance_a_i, stance_b, stance_a_f in sw.generate_window(tuples_stance, n=3):
 
-            dict_stride = stride_parameters(stance_a_i, stance_b, stance_a_f)
+            if stance_a_i.side == stance_a_f.side != stance_b.side:
+                # The sides must alternate between L and R (either L-R-L or R-L-R).
 
-            dict_stride['num_stride'] = stance_a_i.num_stance
-            dict_stride['side'] = stance_a_i.side
+                dict_stride = stride_parameters(stance_a_i, stance_b, stance_a_f)
+                dict_stride['side'] = stance_a_i.side
 
-            yield dict_stride
+                yield dict_stride
 
-    return pd.DataFrame(yield_parameters()).set_index(['num_stride', 'side'])
+    df_gait = pd.DataFrame(yield_parameters())
 
+    if not df_gait.empty:
+        df_gait = df_gait.set_index('side')
+
+    return df_gait
 
 @require(
     "The points must be 3D.",
