@@ -49,7 +49,7 @@ def compute_basis(frames, points_head, points_a, points_b):
 
 def label_stance_phases(frames, points_2d):
 
-    return cl.dbscan_st(points_2d, frames, eps_spatial=5, eps_temporal=15)
+    return cl.dbscan_st(points_2d, frames, eps_spatial=5, eps_temporal=30)
 
 
 def stance_props(frames, points_foot, labels_stance):
