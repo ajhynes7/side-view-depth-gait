@@ -80,30 +80,11 @@ def stance_props(frames, points_foot, labels_stance):
 
 
 def assign_sides_pass(df_stance):
+    """Assign sides to detected stance clusters in a walking pass."""
 
-    df_stance = df_stance.sort_values('frame_i')
+    points_2d = np.stack(df_stance.position)
+    is_left = points_2d[:, 0] < 0
 
-    points_stance = np.stack(df_stance.position)
-    points_stance_even = points_stance[::2]
-    points_stance_odd = points_stance[1::2]
+    df_stance['side'] = ['L' if x else 'R' for x in is_left]
 
-    value_side_even = np.median(points_stance_even[:, 0])
-    value_side_odd = np.median(points_stance_odd[:, 0])
-
-    # Initially assume even stances belong to the left foot.
-    side_even, side_odd = 'L', 'R'
-
-    if value_side_even > value_side_odd:
-        side_even, side_odd = side_odd, side_even
-
-    n_stances = df_stance.shape[0]
-
-    sides = np.full(n_stances, None)
-    sides[::2] = side_even
-    sides[1::2] = side_odd
-
-    nums_stance = np.zeros(n_stances).astype(int)
-    nums_stance[::2] = np.arange(points_stance_even.shape[0])
-    nums_stance[1::2] = np.arange(points_stance_odd.shape[0])
-
-    return df_stance.assign(side=sides, num_stance=nums_stance)
+    return df_stance
