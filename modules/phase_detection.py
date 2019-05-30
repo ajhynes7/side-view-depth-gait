@@ -9,29 +9,42 @@ from skspatial.objects import Vector
 from statsmodels.robust import mad
 
 import modules.cluster as cl
+import modules.numpy_funcs as nf
 
 
-def fit_ransac(points_foot):
-    """Fit a line to the foot points with RANSAC."""
+def fit_ransac(points):
+    """Fit a line to 3D points with RANSAC."""
 
-    thresh = 3 * min(mad(points_foot))
-    model, is_inlier = ransac(points_foot, LineModelND, min_samples=2, residual_threshold=thresh)
+    thresh = 3 * min(mad(points))
+    model, is_inlier = ransac(points, LineModelND, min_samples=2, residual_threshold=thresh)
 
     return model, is_inlier
 
 
-def compute_basis_vectors(points_head, points_a, points_b, model_ransac):
+def compute_basis(frames, points_head, points_a, points_b):
 
-    # Define the up direction as the median of vectors to the head.
-    points_mean = (points_a + points_b) / 2
-    vector_up = Vector(np.median(points_head - points_mean, axis=0)).unit()
+    points_head_grouped = nf.interweave_rows(points_head, points_head)
+    points_foot_grouped = nf.interweave_rows(points_a, points_b)
 
-    point_origin, vector_forward = model_ransac.params
+    frames_column = frames.reshape(-1, 1)
+    frames_grouped = nf.interweave_rows(frames_column, frames_column)
+
+    model_ransac, is_inlier = fit_ransac(points_foot_grouped)
+
+    points_head_inlier = points_head_grouped[is_inlier]
+    points_foot_inlier = points_foot_grouped[is_inlier]
+    frames_grouped_inlier = frames_grouped[is_inlier]
+
+    vector_up = Vector(np.median(points_head_inlier - points_foot_inlier, axis=0)).unit()
+    vector_forward = Vector(model_ransac.params[1]).unit()
     vector_perp = vector_up.cross(vector_forward)
 
-    BasisVectors = namedtuple('Basis', 'forward, up, perp')
+    point_origin = model_ransac.params[0]
 
-    return BasisVectors(vector_forward, vector_up, vector_perp)
+    Basis = namedtuple('Basis', 'origin, forward, up, perp')
+    basis = Basis(point_origin, vector_forward, vector_up, vector_perp)
+
+    return basis, points_foot_inlier, frames_grouped_inlier
 
 
 def label_stance_phases(frames, points_2d):
