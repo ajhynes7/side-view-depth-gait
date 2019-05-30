@@ -12,6 +12,7 @@ from scripts.results import (
     group_lengths,
     match_trials,
     plot_accuracy_radii,
+    plot_bland,
     process_ground_truth,
 )
 
@@ -44,6 +45,7 @@ def main():
 
     match_trials.main()
     compare_gait.main()
+    plot_bland.main()
 
 
 if __name__ == '__main__':

@@ -1,0 +1,14 @@
+\begin{tabular}{lrrrr}
+\toprule
+{} & \multicolumn{2}{l}{ICC\_21} & \multicolumn{2}{l}{ICC\_31} \\
+{} &      L &     R &      L &     R \\
+\midrule
+absolute\_step\_length &   0.91 &  0.96 &   0.95 &  0.96 \\
+stance\_percentage    &   0.77 &  0.78 &   0.77 &  0.78 \\
+step\_length          &   0.93 &  0.95 &   0.96 &  0.95 \\
+stride\_length        &   0.96 &  0.95 &   0.95 &  0.96 \\
+stride\_time          &   0.68 &  0.70 &   0.94 &  0.94 \\
+stride\_velocity      &   0.77 &  0.78 &   0.92 &  0.94 \\
+stride\_width         &   0.54 &  0.57 &   0.80 &  0.87 \\
+\bottomrule
+\end{tabular}

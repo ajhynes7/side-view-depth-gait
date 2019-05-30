@@ -6,7 +6,6 @@ from dpcontracts import require, ensure
 from skspatial.objects import Vector, Line
 from skspatial.transformation import transform_coordinates
 
-import modules.numpy_funcs as nf
 import modules.phase_detection as pde
 import modules.sliding_window as sw
 
@@ -143,7 +142,7 @@ def stride_parameters(foot_a_i, foot_b, foot_a_f, *, fps=30):
 
 @require(
     "The stance DataFrame must include the required columns.",
-    lambda args: set(args.df_stance.columns) == {'num_stance', 'position', 'frame_i', 'frame_f', 'side'},
+    lambda args: set(args.df_stance.columns) == {'position', 'frame_i', 'frame_f', 'side'},
 )
 def stances_to_gait(df_stance):
     """
@@ -153,7 +152,7 @@ def stances_to_gait(df_stance):
     ----------
     df_stance : DataFrame
         Each row represents a stance phase.
-        Columns are 'num_stance', 'position', 'frame_i', 'frame_f', 'side'.
+        Columns are 'position', 'frame_i', 'frame_f', 'side'.
 
     Returns
     -------
@@ -162,30 +161,42 @@ def stances_to_gait(df_stance):
         Columns include gait parameter names, e.g., stride_velocity.
 
     """
+    df_stance = df_stance.sort_values('frame_i')
 
     def yield_parameters():
         """Inner function to yield parameters for each stride."""
-
         tuples_stance = df_stance.itertuples(index=False)
 
         for stance_a_i, stance_b, stance_a_f in sw.generate_window(tuples_stance, n=3):
 
-            dict_stride = stride_parameters(stance_a_i, stance_b, stance_a_f)
+            if stance_a_i.side == stance_a_f.side != stance_b.side:
+                # The sides must alternate between L and R (either L-R-L or R-L-R).
 
-            dict_stride['num_stride'] = stance_a_i.num_stance
-            dict_stride['side'] = stance_a_i.side
+                dict_stride = stride_parameters(stance_a_i, stance_b, stance_a_f)
+                dict_stride['side'] = stance_a_i.side
 
-            yield dict_stride
+                yield dict_stride
 
-    return pd.DataFrame(yield_parameters()).set_index(['num_stride', 'side'])
+    df_gait = pd.DataFrame(yield_parameters())
+
+    if not df_gait.empty:
+        df_gait = df_gait.set_index('side')
+
+    return df_gait
 
 
 @require(
     "The points must be 3D.",
     lambda args: all(x.shape[1] == 3 for x in [args.points_head, args.points_a, args.points_b]),
 )
-@ensure("The output must contain gait params.", lambda _, result: 'stride_length' in result.columns)
-@ensure("The output must have the required MultiIndex.", lambda _, result: result.index.names == ['num_stride', 'side'])
+@ensure(
+    "The output must contain gait params.",
+    lambda _, result: 'stride_length' in result.columns if not result.empty else True,
+)
+@ensure(
+    "The output must have the required index.",
+    lambda _, result: result.index.name == 'side' if not result.empty else True,
+)
 def walking_pass_parameters(frames, points_head, points_a, points_b):
     """
     Calculate gait parameters from a single walking pass.
