@@ -27,7 +27,7 @@ def main():
 
         dict_gait[tuple_trial_pass] = df_gait_pass
 
-    df_gait = pd.concat(dict_gait)
+    df_gait = pd.concat(dict_gait, sort=False)
     df_gait.index = df_gait.index.rename(['trial_name', 'num_pass'], level=[0, 1])
 
     # Save the gait parameters for each trial
