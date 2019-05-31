@@ -1,7 +1,6 @@
 """Math functions."""
 
 import numpy as np
-from statsmodels.robust import mad
 
 
 def limits(x, tolerance):
@@ -75,43 +74,3 @@ def norm_ratio(a, b):
         ratio = np.reciprocal(ratio)
 
     return ratio
-
-
-def within_mad(array, c=1):
-    """
-    Check if elements are within limits defined by the median absolute deviation (MAD).
-
-    The limits are defined as median +- c * MAD.
-
-    Parameters
-    ----------
-    array : array_like
-        (n,) Input 1D array.
-    c : number
-        Coefficient of MAD (default 1).
-
-    Returns
-    -------
-    ndarray
-        (n,) Boolean mask.
-        Element is true if value is within the limits; false otherwise.
-
-    Examples
-    --------
-    >>> array = [1, 2, 3, 4, 100, 5]
-
-    >>> mad_filter(array)
-    array([False, True, True, True, False, True])
-
-    >>> mad_filter(array, c=3)
-    array([True, True, True, True, False, True])
-
-    """
-    array = np.array(array)
-
-    median = np.median(array)
-    mad_ = mad(array)
-
-    limits_mad = limits(median, c * mad_)
-
-    return np.logical_and(array > limits_mad[0], array < limits_mad[1])

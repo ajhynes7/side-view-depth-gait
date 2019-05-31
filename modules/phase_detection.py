@@ -1,6 +1,7 @@
 """Module for detecting the phases of a foot during a walking pass."""
 
 from collections import namedtuple
+from copy import copy
 
 import numpy as np
 import pandas as pd
@@ -10,7 +11,6 @@ from sklearn.linear_model import LinearRegression
 from skspatial.objects import Vector
 from statsmodels.robust import mad
 
-import modules.math_funcs as mf
 import modules.numpy_funcs as nf
 
 
@@ -56,10 +56,9 @@ def label_stance_phases(signal):
     return DBSCAN(eps=5).fit(points_to_cluster).labels_.flatten()
 
 
-def filter_stances(frames, signal, labels):
+def filter_stances(frames, signal, labels, c=3):
 
     labels_unique = np.unique(labels[labels != -1])
-
     regressor = LinearRegression()
 
     def yield_slopes():
@@ -73,16 +72,18 @@ def filter_stances(frames, signal, labels):
             model_linear = regressor.fit(frames_cluster, signal_cluster)
             yield float(model_linear.coef_)
 
-    slopes = [*yield_slopes()]
+    slopes_abs = np.abs([*yield_slopes()])
+    median, mad_ = np.median(slopes_abs), mad(slopes_abs)
 
-    is_inlier_label = mf.within_mad(slopes, c=3)
+    is_outlier_label = slopes_abs > median + c * mad_
+
+    labels_filtered = copy(labels)
 
     for i, label in enumerate(labels_unique):
+        if is_outlier_label[i]:
+            labels_filtered[labels == label] = -1
 
-        if not is_inlier_label[i]:
-            labels[labels == label] = -1
-
-    return labels
+    return labels_filtered
 
 
 def stance_props(frames, points_foot, labels_stance):
