@@ -36,6 +36,4 @@ def test_pop_shortest_paths(sample_population):
         population, labels, label_adj_list, cost_func
     )
 
-    print(dist)
-
     assert prev == {0: np.nan, 1: np.nan, 2: 0, 3: 0, 4: 2, 5: 2}
