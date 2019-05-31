@@ -144,6 +144,7 @@ def stride_parameters(foot_a_i, foot_b, foot_a_f, *, fps=30):
     "The stance DataFrame must include the required columns.",
     lambda args: set(args.df_stance.columns) == {'position', 'frame_i', 'frame_f', 'side'},
 )
+@require("The stances must be sorted by initial frame.", lambda args: args.df_stance.frame_i.is_monotonic)
 def stances_to_gait(df_stance):
     """
     Calculate gait parameters from all instances of feet contacting the floor.
@@ -161,8 +162,6 @@ def stances_to_gait(df_stance):
         Columns include gait parameter names, e.g., stride_velocity.
 
     """
-    df_stance = df_stance.sort_values('frame_i')
-
     def yield_parameters():
         """Inner function to yield parameters for each stride."""
         tuples_stance = df_stance.itertuples(index=False)
