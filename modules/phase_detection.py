@@ -127,7 +127,4 @@ def detect_side_stances(frames, points, coords_forward, is_side):
     # Detect stance phases from the signal.
     labels_side = label_stance_phases(signal_side)
 
-    # Remove outlier stances from the labels.
-    labels_side = filter_stances(frames_side, signal_side, labels_side)
-
     return stance_props(frames_side, points_side, labels_side)
