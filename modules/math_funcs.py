@@ -77,33 +77,34 @@ def norm_ratio(a, b):
     return ratio
 
 
-def mad_filter(array, c=1):
+def within_mad(array, c=1):
     """
-    Filter a 1D array with the median absolute deviation (MAD).
+    Check if elements are within limits defined by the median absolute deviation (MAD).
 
-    Values outside median +- c * MAD are removed.
+    The limits are defined as median +- c * MAD.
 
     Parameters
     ----------
     array : array_like
-        Input 1D array.
+        (n,) Input 1D array.
     c : number
         Coefficient of MAD (default 1).
 
     Returns
     -------
     ndarray
-        Filtered array.
+        (n,) Boolean mask.
+        Element is true if value is within the limits; false otherwise.
 
     Examples
     --------
     >>> array = [1, 2, 3, 4, 100, 5]
 
     >>> mad_filter(array)
-    array([2, 3, 4, 5])
+    array([False, True, True, True, False, True])
 
     >>> mad_filter(array, c=3)
-    array([1, 2, 3, 4, 5])
+    array([True, True, True, True, False, True])
 
     """
     array = np.array(array)
@@ -113,6 +114,4 @@ def mad_filter(array, c=1):
 
     limits_mad = limits(median, c * mad_)
 
-    is_good = np.logical_and(array > limits_mad[0], array < limits_mad[1])
-
-    return array[is_good]
+    return np.logical_and(array > limits_mad[0], array < limits_mad[1])
