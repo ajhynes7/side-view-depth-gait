@@ -162,6 +162,7 @@ def stances_to_gait(df_stance):
         Columns include gait parameter names, e.g., stride_velocity.
 
     """
+
     def yield_parameters():
         """Inner function to yield parameters for each stride."""
         tuples_stance = df_stance.itertuples(index=False)
@@ -233,9 +234,4 @@ def walking_pass_parameters(frames, points_head, points_a, points_b):
     if df_stance.empty:
         return df_stance
 
-    return (
-        df_stance
-        .sort_values('frame_i')
-        .reset_index(drop=True)
-        .pipe(stances_to_gait)
-    )
+    return df_stance.sort_values('frame_i').reset_index(drop=True).pipe(stances_to_gait)

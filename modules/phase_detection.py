@@ -18,10 +18,7 @@ def fit_ransac(points):
     """Fit a line to 3D points with RANSAC."""
 
     model, is_inlier = ransac(
-        points,
-        LineModelND,
-        min_samples=int(0.5 * len(points)),
-        residual_threshold=3 * min(mad(points)),
+        points, LineModelND, min_samples=int(0.5 * len(points)), residual_threshold=3 * min(mad(points))
     )
 
     return model, is_inlier
