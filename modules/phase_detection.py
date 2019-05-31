@@ -57,7 +57,7 @@ def label_stance_phases(signal):
 
     points_to_cluster = signal.reshape(-1, 1)
 
-    return DBSCAN(eps=5).fit(points_to_cluster).labels_.flatten()
+    return DBSCAN(eps=5, min_samples=10).fit(points_to_cluster).labels_.flatten()
 
 
 def filter_stances(frames, signal, labels, c=3):
