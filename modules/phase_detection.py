@@ -47,7 +47,12 @@ def compute_basis(frames, points_head, points_a, points_b):
     return basis, points_foot_inlier, frames_grouped_inlier
 
 
-def label_stance_phases(frames, points_2d):
+def label_stance_phases(signal):
+
+    points_to_cluster = signal.reshape(-1, 1)
+
+    return DBSCAN(eps=5).fit(points_to_cluster).labels_.flatten()
+
 
     return cl.dbscan_st(points_2d, eps_spatial=5)
 
@@ -79,12 +84,17 @@ def stance_props(frames, points_foot, labels_stance):
     return pd.DataFrame(yield_props())
 
 
-def assign_sides_pass(df_stance):
-    """Assign sides to detected stance clusters in a walking pass."""
+def detect_side_stances(frames, points, coords_forward, is_side):
+    """Detect stance phases of the left or right foot."""
 
-    points_2d = np.stack(df_stance.position)
-    is_left = points_2d[:, 0] < 0
+    points_side = points[is_side]
+    frames_side = frames[is_side].flatten()
+    signal_side = coords_forward[is_side].flatten()
 
-    df_stance['side'] = ['L' if x else 'R' for x in is_left]
+    # Detect stance phases from the signal.
+    labels_side = label_stance_phases(signal_side)
 
-    return df_stance
+    # Remove outlier stances from the labels.
+    labels_side = filter_stances(frames_side, signal_side, labels_side)
+
+    return stance_props(frames_side, points_side, labels_side)

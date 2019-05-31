@@ -217,17 +217,26 @@ def walking_pass_parameters(frames, points_head, points_a, points_b):
         The columns include parameters names.
 
     """
-    basis, points_foot_inlier, frames_grouped_inlier = pde.compute_basis(frames, points_head, points_a, points_b)
+    basis, points_foot_inlier, frames_inlier = pde.compute_basis(frames, points_head, points_a, points_b)
 
     # Convert foot points into new coordinates defined by forward, up, and perpendicular directions.
     points_transformed = transform_coordinates(points_foot_inlier, basis.origin, (basis.up, basis.perp, basis.forward))
     coords_up, coords_perp, coords_forward = np.split(points_transformed, 3, 1)
 
-    points_2d = np.column_stack((coords_perp, coords_forward))
-    labels_stance = pde.label_stance_phases(frames_grouped_inlier, points_2d)
+    is_l = (coords_perp < 0).flatten()
+    is_r = (coords_perp > 0).flatten()
+
+    df_stance_l = pde.detect_side_stances(frames_inlier, points_foot_inlier, coords_forward, is_l).assign(side='L')
+    df_stance_r = pde.detect_side_stances(frames_inlier, points_foot_inlier, coords_forward, is_r).assign(side='R')
+
+    df_stance = pd.concat((df_stance_l, df_stance_r), sort=False)
+
+    if df_stance.empty:
+        return df_stance
 
     return (
-        pde.stance_props(frames_grouped_inlier, points_2d, labels_stance)
-        .pipe(pde.assign_sides_pass)
+        df_stance
+        .sort_values('frame_i')
+        .reset_index(drop=True)
         .pipe(stances_to_gait)
     )
