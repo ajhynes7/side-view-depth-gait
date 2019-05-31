@@ -5,10 +5,12 @@ from collections import namedtuple
 import numpy as np
 import pandas as pd
 from skimage.measure import LineModelND, ransac
+from sklearn.cluster import DBSCAN
+from sklearn.linear_model import LinearRegression
 from skspatial.objects import Vector
 from statsmodels.robust import mad
 
-import modules.cluster as cl
+import modules.math_funcs as mf
 import modules.numpy_funcs as nf
 
 
@@ -54,7 +56,33 @@ def label_stance_phases(signal):
     return DBSCAN(eps=5).fit(points_to_cluster).labels_.flatten()
 
 
-    return cl.dbscan_st(points_2d, eps_spatial=5)
+def filter_stances(frames, signal, labels):
+
+    labels_unique = np.unique(labels[labels != -1])
+
+    regressor = LinearRegression()
+
+    def yield_slopes():
+
+        for label in labels_unique:
+
+            is_cluster = labels == label
+            frames_cluster = frames[is_cluster].reshape(-1, 1)
+            signal_cluster = signal[is_cluster].reshape(-1, 1)
+
+            model_linear = regressor.fit(frames_cluster, signal_cluster)
+            yield float(model_linear.coef_)
+
+    slopes = [*yield_slopes()]
+
+    is_inlier_label = mf.within_mad(slopes, c=3)
+
+    for i, label in enumerate(labels_unique):
+
+        if not is_inlier_label[i]:
+            labels[labels == label] = -1
+
+    return labels
 
 
 def stance_props(frames, points_foot, labels_stance):
