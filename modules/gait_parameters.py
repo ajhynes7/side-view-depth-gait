@@ -6,6 +6,7 @@ from dpcontracts import require, ensure
 from skspatial.objects import Vector, Line
 from skspatial.transformation import transform_coordinates
 
+import modules.numpy_funcs as nf
 import modules.phase_detection as pde
 import modules.sliding_window as sw
 
@@ -223,8 +224,14 @@ def walking_pass_parameters(frames, points_head, points_a, points_b):
     points_transformed = transform_coordinates(points_foot_inlier, basis.origin, (basis.up, basis.perp, basis.forward))
     coords_up, coords_perp, coords_forward = np.split(points_transformed, 3, 1)
 
-    is_l = (coords_perp < 0).flatten()
-    is_r = (coords_perp > 0).flatten()
+    x_foot_2d = coords_forward.flatten()
+    y_foot_2d = coords_perp.flatten()
+
+    coeffs_fit = np.polyfit(x_foot_2d, y_foot_2d, deg=2)
+    y_curve = nf.calc_polynomial(x_foot_2d, coeffs_fit)
+
+    is_l = y_foot_2d > y_curve
+    is_r = y_foot_2d < y_curve
 
     df_stance_l = pde.detect_side_stances(frames_inlier, points_foot_inlier, coords_forward, is_l).assign(side='L')
     df_stance_r = pde.detect_side_stances(frames_inlier, points_foot_inlier, coords_forward, is_r).assign(side='R')
