@@ -13,3 +13,14 @@ def interweave_rows(array_a, array_b):
     array_c[1::2] = array_b
 
     return array_c
+
+
+def calc_polynomial(xs, coeffs):
+
+    deg = len(coeffs) - 1
+    ys = np.zeros_like(xs)
+
+    for i, coeff in enumerate(coeffs):
+        ys += coeff * xs ** (deg - i)
+
+    return ys

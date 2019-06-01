@@ -1,13 +1,11 @@
 """Module for detecting the phases of a foot during a walking pass."""
 
 from collections import namedtuple
-from copy import copy
 
 import numpy as np
 import pandas as pd
 from skimage.measure import LineModelND, ransac
 from sklearn.cluster import DBSCAN
-from sklearn.linear_model import LinearRegression
 from skspatial.objects import Vector
 from statsmodels.robust import mad
 
@@ -50,43 +48,6 @@ def compute_basis(frames, points_head, points_a, points_b):
     return basis, points_foot_inlier, frames_grouped_inlier
 
 
-def label_stance_phases(signal):
-
-    points_to_cluster = signal.reshape(-1, 1)
-
-    return DBSCAN(eps=5, min_samples=10).fit(points_to_cluster).labels_.flatten()
-
-
-def filter_stances(frames, signal, labels, c=3):
-
-    labels_unique = np.unique(labels[labels != -1])
-    regressor = LinearRegression()
-
-    def yield_slopes():
-
-        for label in labels_unique:
-
-            is_cluster = labels == label
-            frames_cluster = frames[is_cluster].reshape(-1, 1)
-            signal_cluster = signal[is_cluster].reshape(-1, 1)
-
-            model_linear = regressor.fit(frames_cluster, signal_cluster)
-            yield float(model_linear.coef_)
-
-    slopes_abs = np.abs([*yield_slopes()])
-    median, mad_ = np.median(slopes_abs), mad(slopes_abs)
-
-    is_outlier_label = slopes_abs > median + c * mad_
-
-    labels_filtered = copy(labels)
-
-    for i, label in enumerate(labels_unique):
-        if is_outlier_label[i]:
-            labels_filtered[labels == label] = -1
-
-    return labels_filtered
-
-
 def stance_props(frames, points_foot, labels_stance):
     """
     Return properties of each stance phase from one foot in a walking pass.
@@ -119,9 +80,14 @@ def detect_side_stances(frames, points, coords_forward, is_side):
 
     points_side = points[is_side]
     frames_side = frames[is_side].flatten()
-    signal_side = coords_forward[is_side].flatten()
+    signal_side = coords_forward[is_side]
 
     # Detect stance phases from the signal.
-    labels_side = label_stance_phases(signal_side)
+    labels_side = DBSCAN(eps=5).fit(signal_side).labels_.flatten()
 
-    return stance_props(frames_side, points_side, labels_side)
+    df_stance = stance_props(frames_side, points_side, labels_side)
+
+    # Drop stance phases that are too short.
+    df_stance = df_stance[df_stance.frame_f - df_stance.frame_i >= 10]
+
+    return df_stance
