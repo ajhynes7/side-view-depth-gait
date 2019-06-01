@@ -50,12 +50,6 @@ def compute_basis(frames, points_head, points_a, points_b):
     return basis, points_foot_inlier, frames_grouped_inlier
 
 
-def label_stance_phases(signal):
-
-    points_to_cluster = signal.reshape(-1, 1)
-
-    return DBSCAN(eps=5, min_samples=10).fit(points_to_cluster).labels_.flatten()
-
 
 def filter_stances(frames, signal, labels, c=3):
 
@@ -119,9 +113,11 @@ def detect_side_stances(frames, points, coords_forward, is_side):
 
     points_side = points[is_side]
     frames_side = frames[is_side].flatten()
-    signal_side = coords_forward[is_side].flatten()
+    signal_side = coords_forward[is_side]
 
     # Detect stance phases from the signal.
-    labels_side = label_stance_phases(signal_side)
+    labels_side = DBSCAN(eps=5).fit(signal_side).labels_.flatten()
+
+    df_stance = stance_props(frames_side, points_side, labels_side)
 
     return stance_props(frames_side, points_side, labels_side)
