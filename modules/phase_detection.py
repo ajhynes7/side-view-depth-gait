@@ -5,7 +5,6 @@ from collections import namedtuple
 import numpy as np
 import pandas as pd
 from skimage.measure import LineModelND, ransac
-from sklearn.cluster import DBSCAN
 from skspatial.objects import Vector
 from statsmodels.robust import mad
 
@@ -75,19 +74,21 @@ def stance_props(frames, points_foot, labels_stance):
     return pd.DataFrame(yield_props())
 
 
-def detect_side_stances(frames, points, coords_forward, is_side):
-    """Detect stance phases of the left or right foot."""
+def assign_sides_pass(df_stance, coeffs_fit):
 
-    points_side = points[is_side]
-    frames_side = frames[is_side].flatten()
-    signal_side = coords_forward[is_side]
+    points_stance = np.stack(df_stance.position)
 
-    # Detect stance phases from the signal.
-    labels_side = DBSCAN(eps=5).fit(signal_side).labels_.flatten()
+    x_stance, y_stance = points_stance[:, 0], points_stance[:, 1]
+    y_predicted = nf.calc_polynomial(x_stance, coeffs_fit)
 
-    df_stance = stance_props(frames_side, points_side, labels_side)
+    is_above_curve = y_stance > y_predicted
 
-    # Drop stance phases that are too short.
-    df_stance = df_stance[df_stance.frame_f - df_stance.frame_i >= 10]
+    return (
+        df_stance
+        .assign(side=['L' if x else 'R' for x in is_above_curve])
+    )
 
-    return df_stance
+
+def filter_stances(df_stance):
+
+    return df_stance[df_stance.frame_f - df_stance.frame_i >= 10]

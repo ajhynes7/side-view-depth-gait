@@ -3,10 +3,10 @@
 import numpy as np
 import pandas as pd
 from dpcontracts import require, ensure
+from sklearn.cluster import DBSCAN
 from skspatial.objects import Vector, Line
 from skspatial.transformation import transform_coordinates
 
-import modules.numpy_funcs as nf
 import modules.phase_detection as pde
 import modules.sliding_window as sw
 
@@ -226,17 +226,21 @@ def walking_pass_parameters(frames, points_head, points_a, points_b):
 
     x_foot_2d = coords_forward.flatten()
     y_foot_2d = coords_perp.flatten()
+    points_2d = np.column_stack((x_foot_2d, y_foot_2d))
 
-    coeffs_fit = np.polyfit(x_foot_2d, y_foot_2d, deg=2)
-    y_curve = nf.calc_polynomial(x_foot_2d, coeffs_fit)
+    labels = DBSCAN(eps=5).fit(points_2d).labels_
+    is_noise = labels == -1
 
-    is_l = y_foot_2d > y_curve
-    is_r = y_foot_2d < y_curve
+    x_to_fit = x_foot_2d[is_noise]
+    y_to_fit = y_foot_2d[is_noise]
 
-    df_stance_l = pde.detect_side_stances(frames_inlier, points_foot_inlier, coords_forward, is_l).assign(side='L')
-    df_stance_r = pde.detect_side_stances(frames_inlier, points_foot_inlier, coords_forward, is_r).assign(side='R')
+    coeffs_fit = np.polyfit(x_to_fit, y_to_fit, deg=2)
 
-    df_stance = pd.concat((df_stance_l, df_stance_r), sort=False)
+    df_stance = (
+        pde.stance_props(frames_inlier, points_2d, labels)
+        .pipe(pde.assign_sides_pass, coeffs_fit)
+        .pipe(pde.filter_stances)
+    )
 
     if df_stance.empty:
         return df_stance
