@@ -1,6 +1,7 @@
 """Module for establishing a motion correspondence between multiple points."""
 
 import numpy as np
+from dpcontracts import require
 from numpy.linalg import norm
 
 
@@ -99,6 +100,7 @@ def frame_correspondence(X_frames, phi_k_minus_1):
     return phi_k.astype(int)
 
 
+@require("There must be at least three points.", lambda args: args.points_stacked.shape[0] >= 3)
 def correspond_motion(points_stacked, correspondence_initial):
     """
     Establish a motion correspondence between points over multiple frames.
