@@ -3,11 +3,12 @@
 import numpy as np
 import pandas as pd
 from dpcontracts import require, ensure
-from sklearn.cluster import DBSCAN
 from skspatial.objects import Vector, Line
 from skspatial.transformation import transform_coordinates
 
+import modules.dimension_reduction as dr
 import modules.phase_detection as pde
+import modules.side_assignment as sa
 import modules.sliding_window as sw
 
 
@@ -218,29 +219,29 @@ def walking_pass_parameters(frames, points_head, points_a, points_b):
         The columns include parameters names.
 
     """
-    basis, points_foot_inlier, frames_inlier = pde.compute_basis(frames, points_head, points_a, points_b)
+    basis, points_grouped_inlier, frames_grouped_inlier = dr.compute_basis(frames, points_head, points_a, points_b)
 
     # Convert foot points into new coordinates defined by forward, up, and perpendicular directions.
-    points_transformed = transform_coordinates(points_foot_inlier, basis.origin, (basis.up, basis.perp, basis.forward))
+    points_transformed = transform_coordinates(
+        points_grouped_inlier, basis.origin, (basis.up, basis.perp, basis.forward)
+    )
+
     coords_up, coords_perp, coords_forward = np.split(points_transformed, 3, 1)
 
-    x_foot_2d = coords_forward.flatten()
-    y_foot_2d = coords_perp.flatten()
+    x_foot_2d = coords_perp.flatten()
+    y_foot_2d = coords_forward.flatten()
     points_2d = np.column_stack((x_foot_2d, y_foot_2d))
 
-    labels = DBSCAN(eps=5).fit(points_2d).labels_
-    is_noise = labels == -1
+    # Split the grouped points into sides A and B.
+    frames_inlier, points_stacked_2d = dr.split_points(frames_grouped_inlier.flatten(), points_2d)
+    points_2d_a, points_2d_b = [x.squeeze() for x in np.dsplit(points_stacked_2d, 2)]
 
-    x_to_fit = x_foot_2d[is_noise]
-    y_to_fit = y_foot_2d[is_noise]
+    frames_2d, points_2d_l, points_2d_r = sa.assign_sides_pass(frames_inlier, points_2d_a, points_2d_b)
 
-    coeffs_fit = np.polyfit(x_to_fit, y_to_fit, deg=2)
+    df_stance_l = pde.detect_side_stances(frames_2d, points_2d_l).assign(side='L')
+    df_stance_r = pde.detect_side_stances(frames_2d, points_2d_r).assign(side='R')
 
-    df_stance = (
-        pde.stance_props(frames_inlier, points_2d, labels)
-        .pipe(pde.assign_sides_pass, coeffs_fit)
-        .pipe(pde.filter_stances)
-    )
+    df_stance = pd.concat((df_stance_l, df_stance_r), sort=False)
 
     if df_stance.empty:
         return df_stance

@@ -4,54 +4,21 @@ from collections import namedtuple
 
 import numpy as np
 import pandas as pd
-from skimage.measure import LineModelND, ransac
-from skspatial.objects import Vector
-from statsmodels.robust import mad
-
-import modules.numpy_funcs as nf
+from dpcontracts import require
+from sklearn.cluster import DBSCAN
 
 
-def fit_ransac(points):
-    """Fit a line to 3D points with RANSAC."""
+def label_stance_phases(signal):
+    """Detect stance phases and return corresponding labels."""
 
-    model, is_inlier = ransac(
-        points, LineModelND, min_samples=int(0.5 * len(points)), residual_threshold=3 * min(mad(points))
-    )
+    labels = DBSCAN(eps=5, min_samples=10).fit(signal.reshape(-1, 1)).labels_
 
-    return model, is_inlier
-
-
-def compute_basis(frames, points_head, points_a, points_b):
-
-    points_head_grouped = nf.interweave_rows(points_head, points_head)
-    points_foot_grouped = nf.interweave_rows(points_a, points_b)
-
-    frames_column = frames.reshape(-1, 1)
-    frames_grouped = nf.interweave_rows(frames_column, frames_column)
-
-    model_ransac, is_inlier = fit_ransac(points_foot_grouped)
-
-    points_head_inlier = points_head_grouped[is_inlier]
-    points_foot_inlier = points_foot_grouped[is_inlier]
-    frames_grouped_inlier = frames_grouped[is_inlier]
-
-    vector_up = Vector(np.median(points_head_inlier - points_foot_inlier, axis=0)).unit()
-    vector_forward = Vector(model_ransac.params[1]).unit()
-    vector_perp = vector_up.cross(vector_forward)
-
-    point_origin = model_ransac.params[0]
-
-    Basis = namedtuple('Basis', 'origin, forward, up, perp')
-    basis = Basis(point_origin, vector_forward, vector_up, vector_perp)
-
-    return basis, points_foot_inlier, frames_grouped_inlier
+    return labels.flatten()
 
 
 def stance_props(frames, points_foot, labels_stance):
-    """
-    Return properties of each stance phase from one foot in a walking pass.
+    """Return properties of each stance phase from one foot in a walking pass."""
 
-    """
     labels_unique = np.unique(labels_stance[labels_stance != -1])
 
     Stance = namedtuple('Stance', ['frame_i', 'frame_f', 'position'])
@@ -74,21 +41,11 @@ def stance_props(frames, points_foot, labels_stance):
     return pd.DataFrame(yield_props())
 
 
-def assign_sides_pass(df_stance, coeffs_fit):
+@require("The points must be 2D.", lambda args: args.points_2d_side.shape[1] == 2)
+@require("The frames must correspond to the points.", lambda args: args.frames.size == args.points_2d_side.shape[0])
+def detect_side_stances(frames, points_2d_side):
 
-    points_stance = np.stack(df_stance.position)
+    signal_side = points_2d_side[:, 1]
+    labels_stance = label_stance_phases(signal_side)
 
-    x_stance, y_stance = points_stance[:, 0], points_stance[:, 1]
-    y_predicted = nf.calc_polynomial(x_stance, coeffs_fit)
-
-    is_above_curve = y_stance > y_predicted
-
-    return (
-        df_stance
-        .assign(side=['L' if x else 'R' for x in is_above_curve])
-    )
-
-
-def filter_stances(df_stance):
-
-    return df_stance[df_stance.frame_f - df_stance.frame_i >= 10]
+    return stance_props(frames, points_2d_side, labels_stance)
