@@ -99,22 +99,23 @@ def frame_correspondence(X_frames, phi_k_minus_1):
     return phi_k.astype(int)
 
 
-def correspond_motion(list_points, correspondence_initial):
+def correspond_motion(points_stacked, correspondence_initial):
     """
     Establish a motion correspondence between points over multiple frames.
 
     Parameters
     ----------
-    list_points : list
-        Each element is an (m, d) array of m points with dimension d.
+    points_stacked : ndarray
+        (n_frames, n_dim, n_points) array.
+        Mu
     correspondence_initial : array_like
-        (m,) array
+        (n_points,) array.
         Initial correspondence of points from frames f_0 to f_1.
 
     Returns
     -------
     assignment : ndarray
-        (n, m) array for n frames and m points.
+        (n_frames, n_points) array.
         Element (i, j) is the label of point j on frame i.
 
     References
@@ -123,30 +124,34 @@ def correspond_motion(list_points, correspondence_initial):
     CVGIP: image understanding, 54(1), 56-73.
 
     """
-    n = len(list_points)  # Number of frames.
-    m = len(correspondence_initial)  # Number of points.
+    n_frames, _, n_points = points_stacked.shape
 
     # Begin with previously known correspondence between frames.
-    list_phi = [None] * (n - 1)
+    list_phi = [None] * (n_frames - 1)
     list_phi[0] = correspondence_initial
 
-    for k in range(1, n - 1):
+    for k in range(1, n_frames - 1):
 
         # Points from previous, current, and next frame.
-        X_frames = (list_points[k - 1], list_points[k], list_points[k + 1])
+        X_k_minus_1 = points_stacked[k - 1].T
+        X_k = points_stacked[k].T
+        X_k_plus_1 = points_stacked[k + 1].T
+
+        X_frames = (X_k_minus_1, X_k, X_k_plus_1)
 
         list_phi[k] = frame_correspondence(X_frames, list_phi[k - 1])
 
     # %% Assign labels to the points.
 
-    assignment = np.zeros((n, m))
-    assignment[0] = range(m)
+    assignment = np.zeros((n_frames, n_points))
+    assignment[0] = range(n_points)
 
-    for k in range(1, n):
+    for k in range(1, n_frames):
         correspondence_prev = list_phi[k - 1]
         assignment[k, :] = assignment[k - 1, correspondence_prev]
 
-    return assignment
+    return assignment.astype(int)
+
 
 def assign_points(points_stacked, assignment):
     """

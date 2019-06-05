@@ -1,5 +1,6 @@
 """Unit tests for finding a motion correspondence of multiple points."""
 
+import numpy as np
 from numpy.testing import assert_array_equal
 
 import modules.motion_correspondence as mc
@@ -33,7 +34,7 @@ def test_correspondence():
         [1, 2, 0],
     ]
 
-    initial_correspondence = [0, 1, 2]
-    assignment = mc.correspond_motion(list_points, initial_correspondence)
+    points_stacked = np.swapaxes(list_points, 1, 2)
+    assignment = mc.correspond_motion(points_stacked, [0, 1, 2])
 
     assert_array_equal(assignment, assignment_expected)
