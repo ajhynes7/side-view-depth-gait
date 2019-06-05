@@ -147,3 +147,57 @@ def correspond_motion(list_points, correspondence_initial):
         assignment[k, :] = assignment[k - 1, correspondence_prev]
 
     return assignment
+
+def assign_points(points_stacked, assignment):
+    """
+    Assign points to their respective groups with an assignment matrix.
+
+    Parameters
+    ----------
+    points_stacked : ndarray
+        (n_frames, n_dim, n_points) array for points over multiple frames.
+    assignment : ndarray
+        (n_frames, n_points) array.
+        Each row is the assignment of labels
+
+    Examples
+    --------
+    >>> points_a = [[1, 6], [2, 6], [3, 0], [4, 3]]
+    >>> points_b = [[1, 0], [2, 0], [3, 6], [4, 6]]
+    >>> points_c = [[1, 3], [2, 3], [3, 3], [4, 0]]
+
+    >>> points_stacked = np.dstack((points_a, points_b, points_c))
+    >>> assignment = correspond_motion(points_stacked, [0, 1, 2])
+
+    >>> points_stacked = np.dstack((points_a, points_b, points_c))
+    >>> points_stacked_assigned = assign_points(points_stacked, assignment)
+
+    >>> points_stacked_assigned[:, :, 0]
+    array([[1, 6],
+           [2, 6],
+           [3, 6],
+           [4, 6]])
+
+    >>> points_stacked_assigned[:, :, 1]
+    array([[1, 0],
+           [2, 0],
+           [3, 0],
+           [4, 0]])
+
+    >>> points_stacked_assigned[:, :, 2]
+    array([[1, 3],
+           [2, 3],
+           [3, 3],
+           [4, 3]])
+
+    """
+    points_stack_assigned = np.zeros_like(points_stacked)
+    n_frames, _, n_points = points_stacked.shape
+
+    for i in range(n_frames):
+        row_labels = assignment[i]
+
+        for j in range(n_points):
+            points_stack_assigned[i, :, row_labels[j]] = points_stacked[i, :, j]
+
+    return points_stack_assigned
