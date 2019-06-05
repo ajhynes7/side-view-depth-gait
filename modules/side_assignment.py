@@ -19,8 +19,8 @@ def split_walking_pass(frames, points_a, points_b):
 
     points_stacked = np.dstack((points_a, points_b))
 
-    # Split into portions between the detected peaks and remove portions that are too short.
-    # The portions should have at least three frames so motion correspondence algorithm can be run.
+    # Split into sections between the detected peaks and remove sections that are too short.
+    # The sections should have at least three frames so motion correspondence algorithm can be run.
     list_points = [x for x in np.split(points_stacked, indices_min) if len(x) >= 3]
     list_frames = [x for x in np.split(frames, indices_min) if len(x) >= 3]
 
@@ -33,29 +33,29 @@ def assign_sides_pass(frames, points_a, points_b):
 
     list_frames, list_points = split_walking_pass(frames, points_a, points_b)
 
-    def yield_assigned_portions():
-        """Yield each portion of a walking pass with foot points assigned to left/right."""
+    def yield_assigned_sections():
+        """Yield each section of a walking pass with foot points assigned to left/right."""
 
-        for points_stacked_portion in list_points:
+        for points_stacked_section in list_points:
 
-            assignment = mc.correspond_motion(points_stacked_portion, [0, 1])
-            points_stacked_assigned = mc.assign_points(points_stacked_portion, assignment)
+            assignment = mc.correspond_motion(points_stacked_section, [0, 1])
+            points_stacked_assigned = mc.assign_points(points_stacked_section, assignment)
 
-            points_portion_l = points_stacked_assigned[:, :, 0]
-            points_portion_r = points_stacked_assigned[:, :, 1]
+            points_section_l = points_stacked_assigned[:, :, 0]
+            points_section_r = points_stacked_assigned[:, :, 1]
 
-            value_side_l = np.median(points_portion_l[:, 0])
-            value_side_r = np.median(points_portion_r[:, 0])
+            value_side_l = np.median(points_section_l[:, 0])
+            value_side_r = np.median(points_section_r[:, 0])
 
             if value_side_l > value_side_r:
 
-                points_portion_l, points_portion_r = points_portion_r, points_portion_l
+                points_section_l, points_section_r = points_section_r, points_section_l
 
-            points_stacked_portion_lr = np.dstack((points_portion_l, points_portion_r))
+            points_stacked_section_lr = np.dstack((points_section_l, points_section_r))
 
-            yield points_stacked_portion_lr
+            yield points_stacked_section_lr
 
-    points_stacked_lr = np.vstack([*yield_assigned_portions()])
+    points_stacked_lr = np.vstack([*yield_assigned_sections()])
     frames_lr = np.concatenate(list_frames)
 
     points_l = points_stacked_lr[:, :, 0]
