@@ -98,18 +98,22 @@ def reassign_stances(frames, signal_l, signal_r, labels_l, labels_r):
     return labels_filt_l, labels_filt_r
 
 
-def detect_stances(frames, points_l, points_r, basis):
+def detect_stances(frames, points_a, points_b, basis):
 
-    signal_l = transform_coordinates(points_l, basis.origin, [basis.forward])
-    signal_r = transform_coordinates(points_r, basis.origin, [basis.forward])
+    points_foot_grouped = nf.interweave_rows(points_a, points_b)
 
-    labels_l = label_stance_phases(signal_l)
-    labels_r = label_stance_phases(signal_r)
+    frames_column = frames.reshape(-1, 1)
+    frames_grouped = nf.interweave_rows(frames_column, frames_column).flatten()
 
-    labels, labels_r = reassign_stances(frames, signal_l, signal_r, labels_l, labels_r)
+    signal_grouped = transform_coordinates(points_foot_grouped, basis.origin, [basis.forward])
+    values_side_grouped = transform_coordinates(points_foot_grouped, basis.origin, [basis.perp])
 
-    df_stance_l = stance_props(frames, points_l, labels_l).assign(side='L')
-    df_stance_r = stance_props(frames, points_r, labels_r).assign(side='R')
+    labels_grouped = cl.dbscan_st(signal_grouped, times=frames_grouped, eps_spatial=5, eps_temporal=10, min_pts=7)
+
+    labels_grouped_l, labels_grouped_r = sa.assign_sides_grouped(frames_grouped, values_side_grouped, labels_grouped)
+
+    df_stance_l = stance_props(frames_grouped, points_foot_grouped, labels_grouped_l).assign(side='L')
+    df_stance_r = stance_props(frames_grouped, points_foot_grouped, labels_grouped_r).assign(side='R')
 
     df_stance = pd.concat((df_stance_l, df_stance_r), sort=False)
 
