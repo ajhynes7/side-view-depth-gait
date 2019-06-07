@@ -9,14 +9,6 @@ from sklearn.cluster import DBSCAN
 from skspatial.transformation import transform_coordinates
 
 
-def label_stance_phases(signal):
-    """Detect stance phases and return corresponding labels."""
-
-    labels = DBSCAN(eps=5, min_samples=10).fit(signal.reshape(-1, 1)).labels_
-
-    return labels.flatten()
-
-
 def stance_props(frames, points_foot, labels_stance):
     """Return properties of each stance phase from one foot in a walking pass."""
 
