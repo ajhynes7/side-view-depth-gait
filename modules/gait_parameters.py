@@ -1,13 +1,12 @@
 """Module for calculating gait parameters from 3D body part positions."""
 
-import numpy as np
 import pandas as pd
 from dpcontracts import require, ensure
-from sklearn.cluster import DBSCAN
 from skspatial.objects import Vector, Line
-from skspatial.transformation import transform_coordinates
 
+import modules.dimension_reduction as dr
 import modules.phase_detection as pde
+import modules.side_assignment as sa
 import modules.sliding_window as sw
 
 
@@ -218,29 +217,11 @@ def walking_pass_parameters(frames, points_head, points_a, points_b):
         The columns include parameters names.
 
     """
-    basis, points_foot_inlier, frames_inlier = pde.compute_basis(frames, points_head, points_a, points_b)
+    basis, frames, points_a, points_b = dr.compute_basis(frames, points_head, points_a, points_b)
 
-    # Convert foot points into new coordinates defined by forward, up, and perpendicular directions.
-    points_transformed = transform_coordinates(points_foot_inlier, basis.origin, (basis.up, basis.perp, basis.forward))
-    coords_up, coords_perp, coords_forward = np.split(points_transformed, 3, 1)
+    frames_lr, points_l, points_r = sa.assign_sides_pass(frames, points_a, points_b, basis)
 
-    x_foot_2d = coords_forward.flatten()
-    y_foot_2d = coords_perp.flatten()
-    points_2d = np.column_stack((x_foot_2d, y_foot_2d))
-
-    labels = DBSCAN(eps=5).fit(points_2d).labels_
-    is_noise = labels == -1
-
-    x_to_fit = x_foot_2d[is_noise]
-    y_to_fit = y_foot_2d[is_noise]
-
-    coeffs_fit = np.polyfit(x_to_fit, y_to_fit, deg=2)
-
-    df_stance = (
-        pde.stance_props(frames_inlier, points_2d, labels)
-        .pipe(pde.assign_sides_pass, coeffs_fit)
-        .pipe(pde.filter_stances)
-    )
+    df_stance = pde.detect_stances(frames_lr, points_l, points_r, basis)
 
     if df_stance.empty:
         return df_stance
