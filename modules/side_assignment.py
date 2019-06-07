@@ -138,3 +138,42 @@ def assign_sides_pass(frames, points_a, points_b, basis):
     frames_lr = frames[~is_noise]
 
     return frames_lr, points_l, points_r
+
+
+def assign_sides_grouped(frames_grouped, values_side_grouped, labels_grouped):
+
+    is_stance_grouped = labels_grouped != -1
+
+    labels_unique = np.unique(labels_grouped[is_stance_grouped])
+
+    # Assume all stance phases are from the left foot.
+    is_label_l = np.ones_like(labels_unique, dtype=bool)
+
+    for i, label in enumerate(labels_unique):
+
+        is_cluster = labels_grouped == label
+
+        frames_cluster = frames_grouped[is_cluster]
+        is_frame_cluster = np.in1d(frames_grouped, frames_cluster)
+
+        is_foot_swing = is_frame_cluster & ~is_cluster
+
+        value_side_foot_stance = np.median(values_side_grouped[is_cluster])
+        value_side_foot_swing = np.median(values_side_grouped[is_foot_swing])
+
+        if value_side_foot_stance > value_side_foot_swing:
+            is_label_l[i] = False
+
+    labels_unique_l = labels_unique[is_label_l]
+    labels_unique_r = labels_unique[~is_label_l]
+
+    is_stance_grouped_l = np.in1d(labels_grouped, labels_unique_l)
+    is_stance_grouped_r = np.in1d(labels_grouped, labels_unique_r)
+
+    labels_grouped_l = np.copy(labels_grouped)
+    labels_grouped_r = np.copy(labels_grouped)
+
+    labels_grouped_l[~is_stance_grouped_l] = -1
+    labels_grouped_r[~is_stance_grouped_r] = -1
+
+    return labels_grouped_l, labels_grouped_r
