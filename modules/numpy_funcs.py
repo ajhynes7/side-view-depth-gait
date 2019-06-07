@@ -51,6 +51,7 @@ def label_by_split(indices_split, n_elements):
     array([0, 0, 1, 2])
 
     """
+
     def yield_label_sections():
 
         list_sections = np.split(np.zeros(n_elements), indices_split)
