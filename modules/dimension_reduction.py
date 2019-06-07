@@ -15,7 +15,7 @@ def fit_ransac(points):
     """Fit a line to 3D points with RANSAC."""
 
     model, is_inlier = ransac(
-        points, LineModelND, min_samples=int(0.5 * len(points)), residual_threshold=3 * min(mad(points))
+        points, LineModelND, min_samples=int(0.9 * len(points)), residual_threshold=3 * min(mad(points))
     )
 
     return model, is_inlier
@@ -24,19 +24,17 @@ def fit_ransac(points):
 def compute_basis(frames, points_head, points_a, points_b):
     """Return origin and basis vectors of new coordinate system found with RANSAC."""
 
-    points_head_grouped = nf.interweave_rows(points_head, points_head)
-    points_foot_grouped = nf.interweave_rows(points_a, points_b)
+    model_ransac, is_inlier = fit_ransac(points_head)
 
-    frames_column = frames.reshape(-1, 1)
-    frames_grouped = nf.interweave_rows(frames_column, frames_column)
+    frames_inlier = frames[is_inlier]
+    points_head_inlier = points_head[is_inlier]
+    points_a_inlier = points_a[is_inlier]
+    points_b_inlier = points_b[is_inlier]
 
-    model_ransac, is_inlier = fit_ransac(points_foot_grouped)
+    points_mean = (points_a_inlier + points_b_inlier) / 2
 
-    points_head_inlier = points_head_grouped[is_inlier]
-    points_foot_inlier = points_foot_grouped[is_inlier]
-    frames_grouped_inlier = frames_grouped[is_inlier]
+    vector_up = Vector(np.median(points_head_inlier - points_mean, axis=0)).unit()
 
-    vector_up = Vector(np.median(points_head_inlier - points_foot_inlier, axis=0)).unit()
     vector_forward = Vector(model_ransac.params[1]).unit()
     vector_perp = vector_up.cross(vector_forward)
 
@@ -45,7 +43,7 @@ def compute_basis(frames, points_head, points_a, points_b):
     Basis = namedtuple('Basis', 'origin, forward, up, perp')
     basis = Basis(point_origin, vector_forward, vector_up, vector_perp)
 
-    return basis, points_foot_inlier, frames_grouped_inlier
+    return basis, frames_inlier, points_a_inlier, points_b_inlier
 
 
 @require("The input frames must be a 1D array.", lambda args: args.frames_grouped.ndim == 1)
