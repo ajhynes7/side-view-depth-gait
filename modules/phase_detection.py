@@ -4,9 +4,11 @@ from collections import namedtuple
 
 import numpy as np
 import pandas as pd
-from dpcontracts import require
-from sklearn.cluster import DBSCAN
 from skspatial.transformation import transform_coordinates
+
+import modules.cluster as cl
+import modules.numpy_funcs as nf
+import modules.side_assignment as sa
 
 
 def stance_props(frames, points_foot, labels_stance):
