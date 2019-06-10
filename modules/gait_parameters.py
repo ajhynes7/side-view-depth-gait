@@ -4,7 +4,6 @@ import pandas as pd
 from dpcontracts import require, ensure
 from skspatial.objects import Vector, Line
 
-import modules.dimension_reduction as dr
 import modules.phase_detection as pde
 import modules.side_assignment as sa
 import modules.sliding_window as sw
@@ -217,11 +216,9 @@ def walking_pass_parameters(frames, points_head, points_a, points_b):
         The columns include parameters names.
 
     """
-    basis, frames, points_a, points_b = dr.compute_basis(frames, points_head, points_a, points_b)
+    basis, frames, points_a, points_b = sa.compute_basis(frames, points_head, points_a, points_b)
 
-    frames_lr, points_l, points_r = sa.assign_sides_pass(frames, points_a, points_b, basis)
-
-    df_stance = pde.detect_stances(frames_lr, points_l, points_r, basis)
+    df_stance = pde.detect_stances(frames, points_a, points_b, basis)
 
     if df_stance.empty:
         return df_stance
