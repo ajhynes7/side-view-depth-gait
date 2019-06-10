@@ -81,8 +81,9 @@ def main():
 
     df_gait = (
         pd.concat(dict_trials)
-        # Remove negative values
-        .applymap(lambda x: np.nan if x < 0 else x).dropna()
+        .dropna()
+        # Take absolute value of negatives
+        .applymap(lambda x: abs(x))
     )
 
     df_gait.index = df_gait.index.rename(level=0, names='trial_name')
