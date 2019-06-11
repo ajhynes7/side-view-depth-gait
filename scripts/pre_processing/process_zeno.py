@@ -79,8 +79,7 @@ def main():
         dict_trials[trial_name] = df_trial
 
     df_gait = (
-        pd.concat(dict_trials)
-        .dropna()
+        pd.concat(dict_trials).dropna()
         # Take absolute value of negatives
         .applymap(lambda x: abs(x))
     )
