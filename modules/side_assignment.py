@@ -8,6 +8,8 @@ from skimage.measure import LineModelND, ransac
 from skspatial.objects import Vector
 from statsmodels.robust import mad
 
+import modules.numpy_funcs as nf
+
 
 @require("The input points must be 3D.", lambda args: args.points.shape[1] == 3)
 @ensure("The output points must be 2D.", lambda _, result: result.shape[1] == 2)
@@ -26,29 +28,27 @@ def fit_ransac(points):
     return model, is_inlier
 
 
-def compute_basis(frames, points_head, points_a, points_b):
+def compute_basis(frames, points_a, points_b):
     """Return origin and basis vectors of new coordinate system found with RANSAC."""
 
-    model_ransac, is_inlier = fit_ransac(points_head)
+    frames_grouped = np.repeat(frames, 2)
+    points_grouped = nf.interweave_rows(points_a, points_b)
 
-    frames_inlier = frames[is_inlier]
-    points_head_inlier = points_head[is_inlier]
-    points_a_inlier = points_a[is_inlier]
-    points_b_inlier = points_b[is_inlier]
+    points_grouped_2d = reduce_dimension(points_grouped)
 
-    points_mean = (points_a_inlier + points_b_inlier) / 2
+    model_ransac, is_inlier = fit_ransac(points_grouped_2d)
+    point_origin, vector_forward = model_ransac.params
 
-    vector_up = Vector(np.median(points_head_inlier - points_mean, axis=0)).unit()
+    vector_up = [0, 0, 1]
+    vector_perp = Vector(vector_forward).cross(vector_up)[:-1]
 
-    vector_forward = Vector(model_ransac.params[1]).unit()
-    vector_perp = vector_up.cross(vector_forward)
-
-    point_origin = model_ransac.params[0]
+    frames_grouped_inlier = frames_grouped[is_inlier]
+    points_grouped_inlier = points_grouped_2d[is_inlier]
 
     Basis = namedtuple('Basis', 'origin, forward, up, perp')
     basis = Basis(point_origin, vector_forward, vector_up, vector_perp)
 
-    return basis, frames_inlier, points_a_inlier, points_b_inlier
+    return basis, frames_grouped_inlier, points_grouped_inlier
 
 
 def assign_sides_grouped(frames_grouped, values_side_grouped, labels_grouped):
