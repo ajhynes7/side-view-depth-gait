@@ -7,7 +7,6 @@ import pandas as pd
 from skspatial.transformation import transform_coordinates
 
 import modules.cluster as cl
-import modules.numpy_funcs as nf
 import modules.side_assignment as sa
 
 
@@ -36,12 +35,7 @@ def stance_props(frames, points_foot, labels_stance):
     return pd.DataFrame(yield_props())
 
 
-def detect_stances(frames, points_a, points_b, basis):
-
-    points_foot_grouped = nf.interweave_rows(points_a, points_b)
-
-    frames_column = frames.reshape(-1, 1)
-    frames_grouped = nf.interweave_rows(frames_column, frames_column).flatten()
+def detect_stances(frames_grouped, points_foot_grouped, basis):
 
     signal_grouped = transform_coordinates(points_foot_grouped, basis.origin, [basis.forward])
     values_side_grouped = transform_coordinates(points_foot_grouped, basis.origin, [basis.perp])
