@@ -19,11 +19,10 @@ def main():
 
         frames = df_pass.reset_index().frame.values
 
-        points_head = np.stack(df_pass.HEAD)
         points_a = np.stack(df_pass.L_FOOT)
         points_b = np.stack(df_pass.R_FOOT)
 
-        df_gait_pass = gp.walking_pass_parameters(frames, points_head, points_a, points_b)
+        df_gait_pass = gp.walking_pass_parameters(frames, points_a, points_b)
 
         dict_gait[tuple_trial_pass] = df_gait_pass
 
