@@ -7,7 +7,6 @@ import pandas as pd
 from skspatial.transformation import transform_coordinates
 
 import modules.cluster as cl
-import modules.numpy_funcs as nf
 import modules.side_assignment as sa
 
 
