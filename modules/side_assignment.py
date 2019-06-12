@@ -3,9 +3,17 @@
 from collections import namedtuple
 
 import numpy as np
+from dpcontracts import require, ensure
 from skimage.measure import LineModelND, ransac
 from skspatial.objects import Vector
 from statsmodels.robust import mad
+
+
+@require("The input points must be 3D.", lambda args: args.points.shape[1] == 3)
+@ensure("The output points must be 2D.", lambda _, result: result.shape[1] == 2)
+def reduce_dimension(points):
+
+    return np.column_stack((points[:, 0], points[:, 2]))
 
 
 def fit_ransac(points):
