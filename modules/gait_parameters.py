@@ -186,7 +186,7 @@ def stances_to_gait(df_stance):
 
 @require(
     "The points must be 3D.",
-    lambda args: all(x.shape[1] == 3 for x in [args.points_head, args.points_a, args.points_b]),
+    lambda args: all(x.shape[1] == 3 for x in [args.points_a, args.points_b]),
 )
 @ensure(
     "The output must contain gait params.",
@@ -196,7 +196,7 @@ def stances_to_gait(df_stance):
     "The output must have the required index.",
     lambda _, result: result.index.name == 'side' if not result.empty else True,
 )
-def walking_pass_parameters(frames, points_head, points_a, points_b):
+def walking_pass_parameters(frames, points_a, points_b):
     """
     Calculate gait parameters from a single walking pass.
 
