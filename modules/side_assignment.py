@@ -70,7 +70,11 @@ def assign_sides_grouped(frames_grouped, values_side_grouped, labels_grouped):
         is_foot_swing = is_frame_cluster & ~is_cluster
 
         value_side_foot_stance = np.median(values_side_grouped[is_cluster])
-        value_side_foot_swing = np.median(values_side_grouped[is_foot_swing])
+
+        if is_foot_swing.sum() > 0:
+            value_side_foot_swing = np.median(values_side_grouped[is_foot_swing])
+        else:
+            value_side_foot_swing = 0
 
         if value_side_foot_stance > value_side_foot_swing:
             is_label_l[i] = False
