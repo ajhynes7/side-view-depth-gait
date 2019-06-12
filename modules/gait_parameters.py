@@ -216,9 +216,9 @@ def walking_pass_parameters(frames, points_head, points_a, points_b):
         The columns include parameters names.
 
     """
-    basis, frames, points_a, points_b = sa.compute_basis(frames, points_head, points_a, points_b)
+    basis, frames_grouped_inlier, points_grouped_inlier = sa.compute_basis(frames, points_a, points_b)
 
-    df_stance = pde.detect_stances(frames, points_a, points_b, basis)
+    df_stance = pde.detect_stances(frames_grouped_inlier, points_grouped_inlier, basis)
 
     if df_stance.empty:
         return df_stance
