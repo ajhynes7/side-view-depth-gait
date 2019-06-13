@@ -168,7 +168,9 @@ def stances_to_gait(df_stance):
 
         for stance_a_i, stance_b, stance_a_f in sw.generate_window(tuples_stance, n=3):
 
-            if stance_a_i.side == stance_a_f.side != stance_b.side:
+            sides = ''.join([stance_a_i.side, stance_b.side, stance_a_f.side])
+
+            if sides in ('LRL', 'RLR'):
                 # The sides must alternate between L and R (either L-R-L or R-L-R).
 
                 dict_stride = stride_parameters(stance_a_i, stance_b, stance_a_f)
