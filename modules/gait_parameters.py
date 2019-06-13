@@ -9,7 +9,7 @@ import modules.side_assignment as sa
 import modules.sliding_window as sw
 
 
-def spatial_parameters(pos_a_i, pos_b, pos_a_f):
+def spatial_parameters(point_a_i, point_b, point_a_f):
     """
     Calculate spatial gait parameters for a stride.
 
@@ -18,11 +18,11 @@ def spatial_parameters(pos_a_i, pos_b, pos_a_f):
 
     Parameters
     ----------
-    pos_a_i : array_like
+    point_a_i : array_like
         Initial position of foot A.
-    pos_b : array_like
+    point_b : array_like
         Position of foot B.
-    pos_a_f : array_like
+    point_a_f : array_like
         Final position of foot A.
 
     Returns
@@ -35,35 +35,36 @@ def spatial_parameters(pos_a_i, pos_b, pos_a_f):
     --------
     >>> import numpy as np
 
-    >>> pos_l_1 = [764.253, 28.798]
-    >>> pos_r_1 = [696.834, 37.141]
+    >>> point_l_1 = [764.253, 28.798]
+    >>> point_r_1 = [696.834, 37.141]
 
-    >>> pos_l_2 = [637.172, 24.508]
-    >>> pos_r_2 = [579.102, 35.457]
+    >>> point_l_2 = [637.172, 24.508]
+    >>> point_r_2 = [579.102, 35.457]
 
-    >>> pos_l_3 = [518.030, 30.507]
+    >>> point_l_3 = [518.030, 30.507]
 
-    >>> values = list(spatial_parameters(pos_l_1, pos_r_1, pos_l_2).values())
+    >>> values = list(spatial_parameters(point_l_1, point_r_1, point_l_2).values())
     >>> np.round(values, 1)
     array([ 61. ,  60.1, 127.2,  10.6])
 
-    >>> values = list(spatial_parameters(pos_r_1, pos_l_2, pos_r_2).values())
+    >>> values = list(spatial_parameters(point_r_1, point_l_2, point_r_2).values())
     >>> np.round(values, 1)
     array([ 59.1,  57.9, 117.7,  11.8])
 
-    >>> values = list(spatial_parameters(pos_l_2, pos_r_2, pos_l_3).values())
+    >>> values = list(spatial_parameters(point_l_2, point_r_2, point_l_3).values())
     >>> np.round(values, 1)
     array([ 61.3,  60.7, 119.3,   8. ])
 
     """
-    line_a = Line.from_points(pos_a_i, pos_a_f)
+    line_a = Line.from_points(point_a_i, point_a_f)
 
-    pos_b_proj = line_a.project_point(pos_b)
+    point_b_proj = line_a.project_point(point_b)
 
     stride_length = line_a.direction.norm()
-    absolute_step_length = Vector.from_points(pos_b, pos_a_f).norm()
-    step_length = Vector.from_points(pos_b_proj, pos_a_f).norm()
-    stride_width = Vector.from_points(pos_b_proj, pos_b).norm()
+
+    absolute_step_length = Vector.from_points(point_b, point_a_f).norm()
+    step_length = Vector.from_points(point_b_proj, point_a_f).norm()
+    stride_width = Vector.from_points(point_b_proj, point_b).norm()
 
     return {
         'absolute_step_length': absolute_step_length,
@@ -118,10 +119,10 @@ def stride_parameters(foot_a_i, foot_b, foot_a_f, *, fps=30):
     80.0
 
     """
-    pos_a_i, pos_a_f = foot_a_i.position, foot_a_f.position
-    pos_b = foot_b.position
+    point_a_i, point_a_f = foot_a_i.position, foot_a_f.position
+    point_b = foot_b.position
 
-    dict_spatial = spatial_parameters(pos_a_i, pos_b, pos_a_f)
+    dict_spatial = spatial_parameters(point_a_i, point_b, point_a_f)
 
     stride_time = (foot_a_f.frame_i - foot_a_i.frame_i) / fps
     stance_time = (foot_a_i.frame_f - foot_a_i.frame_i) / fps
