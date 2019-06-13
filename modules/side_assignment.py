@@ -53,42 +53,42 @@ def compute_basis(frames, points_a, points_b):
 
 def assign_sides_grouped(frames_grouped, values_side_grouped, labels_grouped):
 
-    is_stance_grouped = labels_grouped != -1
+    labels_unique = np.unique(labels_grouped[labels_grouped != -1])
+    set_labels_r = set()
 
-    labels_unique = np.unique(labels_grouped[is_stance_grouped])
-
-    # Assume all stance phases are from the left foot.
-    is_label_l = np.ones_like(labels_unique, dtype=bool)
-
-    for i, label in enumerate(labels_unique):
+    for label in labels_unique:
 
         is_cluster = labels_grouped == label
 
-        frames_cluster = frames_grouped[is_cluster]
-        is_frame_cluster = np.in1d(frames_grouped, frames_cluster)
+        # Element is True for all cluster frames in the grouped array.
+        is_frame_cluster = np.in1d(frames_grouped, frames_grouped[is_cluster])
 
+        # Element is True if the corresponding foot point occurred on a frame in the cluster,
+        # but is not a part of the cluster itself. This means it is a swing foot.
         is_foot_swing = is_frame_cluster & ~is_cluster
 
-        value_side_foot_stance = np.median(values_side_grouped[is_cluster])
+        value_side_stance = np.median(values_side_grouped[is_cluster])
 
         if is_foot_swing.sum() > 0:
-            value_side_foot_swing = np.median(values_side_grouped[is_foot_swing])
+            value_side_swing = np.median(values_side_grouped[is_foot_swing])
         else:
-            value_side_foot_swing = 0
+            # It's possible that there are no swing feet in the cluster.
+            # In this case, the swing value is assumed to be zero.
+            value_side_swing = 0
 
-        if value_side_foot_stance > value_side_foot_swing:
-            is_label_l[i] = False
+        if value_side_stance > value_side_swing:
+            # The current label is on the right side.
+            set_labels_r.add(label)
 
-    labels_unique_l = labels_unique[is_label_l]
-    labels_unique_r = labels_unique[~is_label_l]
+    set_labels_l = set(labels_unique) - set_labels_r
 
-    is_stance_grouped_l = np.in1d(labels_grouped, labels_unique_l)
-    is_stance_grouped_r = np.in1d(labels_grouped, labels_unique_r)
+    is_label_grouped_l = np.in1d(labels_grouped, list(set_labels_l))
+    is_label_grouped_r = np.in1d(labels_grouped, list(set_labels_r))
 
     labels_grouped_l = np.copy(labels_grouped)
     labels_grouped_r = np.copy(labels_grouped)
 
-    labels_grouped_l[~is_stance_grouped_l] = -1
-    labels_grouped_r[~is_stance_grouped_r] = -1
+    labels_grouped_l[~is_label_grouped_l] = -1
+    labels_grouped_r[~is_label_grouped_r] = -1
 
     return labels_grouped_l, labels_grouped_r
