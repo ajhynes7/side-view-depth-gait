@@ -63,8 +63,7 @@ def spatial_parameters(pos_a_i, pos_b, pos_a_f):
     stride_length = line_a.direction.norm()
     absolute_step_length = Vector.from_points(pos_b, pos_a_f).norm()
     step_length = Vector.from_points(pos_b_proj, pos_a_f).norm()
-
-    stride_width = line_a.distance_point(pos_b)
+    stride_width = Vector.from_points(pos_b_proj, pos_b).norm()
 
     return {
         'absolute_step_length': absolute_step_length,
