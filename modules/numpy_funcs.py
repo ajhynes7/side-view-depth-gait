@@ -4,7 +4,34 @@ import numpy as np
 
 
 def interweave_rows(array_a, array_b):
+    """
+    Interweave the rows of two arrays.
 
+    Parameters
+    ----------
+    array_a, array_b : (N, D) array_like
+        Input arrays with N rows.
+
+    Returns
+    -------
+    array_c : (2 * N, D) ndarray
+        Array with rows alternating from arrays A and B.
+
+    Examples
+    --------
+    >>> array_a = [[1, 2], [3, 4], [5, 6]]
+    >>> array_b = [[-1, -2], [-3, -4], [-5, -6]]
+
+    >>> interweave_rows(array_a, array_b)
+    array([[ 1,  2],
+           [-1, -2],
+           [ 3,  4],
+           [-3, -4],
+           [ 5,  6],
+           [-5, -6]])
+
+    """
+    array_a = np.array(array_a)
     n_points, n_dim = array_a.shape
 
     array_c = np.empty((2 * n_points, n_dim), dtype=array_a.dtype)
@@ -80,7 +107,6 @@ def filter_labels(labels, min_elements):
 
     Examples
     --------
-
     >>> filter_labels([0, 0, 0, 1, 1, 2, 2, 2], 1)
     array([0, 0, 0, 1, 1, 2, 2, 2])
 
