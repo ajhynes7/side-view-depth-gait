@@ -11,6 +11,9 @@ def main():
     df_matched_k = pd.read_pickle(join('data', 'kinect', 'df_matched.pkl'))
     df_matched_z = pd.read_pickle(join('data', 'zeno', 'df_matched.pkl'))
 
+    # Take only the gait parameters measured by Kinect.
+    df_matched_z = df_matched_z[df_matched_k.columns]
+
     df_sides_k = df_matched_k.groupby(['trial_id', 'side']).mean()
     df_sides_z = df_matched_z.groupby(['trial_id', 'side']).mean()
 
