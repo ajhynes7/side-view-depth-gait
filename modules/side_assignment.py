@@ -28,22 +28,45 @@ def fit_ransac(points):
     return model, is_inlier
 
 
-def compute_basis(frames, points_a, points_b):
-    """Return origin and basis vectors of new coordinate system found with RANSAC."""
+def compute_basis(frames, points_head, points_a, points_b):
+    """
+    Return origin and basis vectors of new coordinate system found with RANSAC.
 
+    Parameters
+    ----------
+    frames : (N,) ndarray
+        Frames in a walking pass.
+    points_head : ndarray
+        (N, 3) array of head points.
+    points_a, points_b : (N, D) ndarray
+        Foot points A and B on each frame.
+
+    Returns
+    -------
+    basis : namedtuple
+        Basis of new coordinate system (origin point and three unit vectors).
+        Fields include 'origin', 'forward', 'up', 'perp'.
+    frames_grouped_inlier : (N_grouped_inlier,) ndarray
+        Frames of grouped foot points that are marked inliers by RANSAC.
+    points_grouped_inlier : (N_grouped_inlier, D) ndarray
+        Grouped foot points that are marked inliers by RANSAC.
+
+    """
     frames_grouped = np.repeat(frames, 2)
     points_grouped = nf.interweave_rows(points_a, points_b)
 
-    points_grouped_2d = reduce_dimension(points_grouped)
-
-    model_ransac, is_inlier = fit_ransac(points_grouped_2d)
+    model_ransac, is_inlier = fit_ransac(points_grouped)
     point_origin, vector_forward = model_ransac.params
 
-    vector_up = [0, 0, 1]
-    vector_perp = Vector(vector_forward).cross(vector_up)[:-1]
+    points_foot_mean = (points_a + points_b) / 2
+
+    vectors_up = points_head - points_foot_mean
+    vector_up = np.median(vectors_up, axis=0)
+
+    vector_perp = Vector(vector_forward).cross(vector_up)
 
     frames_grouped_inlier = frames_grouped[is_inlier]
-    points_grouped_inlier = points_grouped_2d[is_inlier]
+    points_grouped_inlier = points_grouped[is_inlier]
 
     Basis = namedtuple('Basis', 'origin, forward, up, perp')
     basis = Basis(point_origin, vector_forward, vector_up, vector_perp)

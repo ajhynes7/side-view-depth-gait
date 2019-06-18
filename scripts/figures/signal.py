@@ -20,10 +20,11 @@ def main():
     df_pass = df_selected_passes.loc[(trial_name, num_pass)]
     frames = df_pass.index.values
 
+    points_head = np.stack(df_pass.HEAD)
     points_a = np.stack(df_pass.L_FOOT)
     points_b = np.stack(df_pass.R_FOOT)
 
-    basis, frames_grouped, points_foot_grouped = sa.compute_basis(frames, points_a, points_b)
+    basis, frames_grouped, points_foot_grouped = sa.compute_basis(frames, points_head, points_a, points_b)
 
     signal_grouped = transform_coordinates(points_foot_grouped, basis.origin, [basis.forward])
     values_side_grouped = transform_coordinates(points_foot_grouped, basis.origin, [basis.perp])
