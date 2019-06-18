@@ -61,7 +61,6 @@ def select_parameters(df_trial):
         'Toe In/Out Angle (degrees)': 'toe_angle',
         'Foot Length (cm.)': 'foot_length',
         'Foot Area (cm. x cm.)': 'foot_area',
-
     }
 
     return df_trial[dict_labels].rename(dict_labels, axis=1).dropna().astype(float)
