@@ -3,7 +3,6 @@
 from collections import namedtuple
 
 import numpy as np
-from dpcontracts import require, ensure
 from skimage.measure import LineModelND, ransac
 from skspatial.objects import Vector
 from statsmodels.robust import mad
@@ -11,16 +10,24 @@ from statsmodels.robust import mad
 import modules.numpy_funcs as nf
 
 
-@require("The input points must be 3D.", lambda args: args.points.shape[1] == 3)
-@ensure("The output points must be 2D.", lambda _, result: result.shape[1] == 2)
-def reduce_dimension(points):
-
-    return np.column_stack((points[:, 0], points[:, 2]))
-
-
 def fit_ransac(points):
-    """Fit a line to 3D points with RANSAC."""
+    """
+    Fit a line to the foot points with RANSAC.
 
+    Parameters
+    ----------
+    points : (N, D) ndarray
+        Input points.
+
+    Returns
+    -------
+    model : LineModelND
+        Linear model fitted with RANSAC.
+        Params consist of the point and unit vector defining the line.
+    is_inlier : (N,) ndarray
+        Boolean mask indicating inlier points.
+
+    """
     model, is_inlier = ransac(
         points, LineModelND, min_samples=int(0.5 * len(points)), residual_threshold=2.5 * min(mad(points))
     )
@@ -75,7 +82,25 @@ def compute_basis(frames, points_head, points_a, points_b):
 
 
 def assign_sides_grouped(frames_grouped, values_side_grouped, labels_grouped):
+    """
+    Assign left/right sides to clusters representing stance phases.
 
+    Parameters
+    ----------
+    frames_grouped : (N_grouped,) ndarray
+        Frames corresponding to grouped foot points.
+    values_side_grouped : (N_grouped,) ndarray
+        Values related to the side (left/right) of each foot point.
+    labels_grouped : (N_grouped,) ndarray
+        Labels indicating detected clusters (stance phases of the feet).
+        Non-cluster elements are marked with -1.
+
+    Returns
+    -------
+    labels_grouped_l, labels_grouped_r : (N_grouped,) ndarray
+        Arrays of labels for the left and right sides.
+
+    """
     labels_unique = np.unique(labels_grouped[labels_grouped != -1])
     set_labels_r = set()
 
