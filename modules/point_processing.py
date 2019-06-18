@@ -71,6 +71,7 @@ def closest_point(points, target):
 
 
 def closest_proposals(proposals, targets):
+    """Return index of closest proposal to each target."""
 
     closest = np.zeros(targets.shape)
 
@@ -86,6 +87,7 @@ def closest_proposals(proposals, targets):
 
 
 def assign_pair(point_pair, target_pair):
+    """Assign a pair of points to a pair of targets by minimizing point-target distance."""
 
     dist_matrix = cdist(point_pair, target_pair)
 
@@ -101,6 +103,7 @@ def assign_pair(point_pair, target_pair):
 
 
 def match_pairs(points_1, points_2, targets_1, targets_2):
+    """Match two sets of points to two sets of targets."""
 
     points_shape = points_1.shape
     assigned_1 = np.zeros(points_shape)
@@ -158,6 +161,7 @@ def position_accuracy(points, targets, max_dist=10):
 
 
 def double_position_accuracy(points_1, points_2, targets_1, targets_2, max_dist=10):
+    """Return ratio of both sets of points being within both targets."""
 
     within_dist_1 = norm(points_1 - targets_1, axis=1) <= max_dist
     within_dist_2 = norm(points_2 - targets_2, axis=1) <= max_dist

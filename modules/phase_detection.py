@@ -36,6 +36,7 @@ def stance_props(frames, points_foot, labels_stance):
 
 
 def detect_stances(frames_grouped, points_foot_grouped, basis):
+    """Detect all stance phases in a walking pass."""
 
     signal_grouped = transform_coordinates(points_foot_grouped, basis.origin, [basis.forward])
     values_side_grouped = transform_coordinates(points_foot_grouped, basis.origin, [basis.perp])
