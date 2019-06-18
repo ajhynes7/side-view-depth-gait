@@ -56,11 +56,13 @@ def main():
     is_cluster_l = labels_grouped_l != -1
     is_cluster_r = labels_grouped_r != -1
 
-    plt.scatter(frames_grouped[is_cluster_l], signal_grouped[is_cluster_l], c='b', edgecolor='k', s=75)
-    plt.scatter(frames_grouped[is_cluster_r], signal_grouped[is_cluster_r], c='r', edgecolor='k', s=75)
+    plt.scatter(frames_grouped[is_cluster_l], signal_grouped[is_cluster_l], c='b', edgecolor='k', s=75, label='Left')
+    plt.scatter(frames_grouped[is_cluster_r], signal_grouped[is_cluster_r], c='r', edgecolor='k', s=75, label='Right')
 
     plt.xlabel('Frame')
     plt.ylabel('Signal')
+
+    plt.legend()
 
     fig_2.savefig(join('figures', 'signal_sides.pdf'), dpi=1200)
 
