@@ -205,11 +205,11 @@ def walking_pass_parameters(frames, points_head, points_a, points_b):
     Parameters
     ----------
     frames : ndarray
-        (n,) array of frames for the pass.
+        (N,) array of frames for the pass.
     points_head : ndarray
-        (n, 3) array of head points.
+        (N, 3) array of head points.
     points_a, points_b : ndarray
-        (n, 3) array of foot points A and B.
+        (N, 3) array of foot points A and B.
 
     Returns
     -------
