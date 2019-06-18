@@ -82,12 +82,7 @@ def main():
         trial_name = splitext(basename(file_path))[0]
         dict_trials[trial_name] = df_trial
 
-    df_gait = (
-        pd.concat(dict_trials).dropna()
-        # Take absolute value of negatives
-        .applymap(lambda x: abs(x))
-    )
-
+    df_gait = pd.concat(dict_trials).dropna()
     df_gait.index = df_gait.index.rename(level=0, names='trial_name')
 
     df_gait.to_pickle(join('data', 'zeno', 'df_gait.pkl'))

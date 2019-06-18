@@ -11,6 +11,9 @@ def main():
     df_matched_k = pd.read_pickle(join('data', 'kinect', 'df_matched.pkl'))
     df_matched_z = pd.read_pickle(join('data', 'zeno', 'df_matched.pkl'))
 
+    # Take absolute value of Zeno parameters.
+    df_matched_z = df_matched_z.applymap(lambda x: abs(x))
+
     # Take only the gait parameters measured by Kinect.
     df_matched_z = df_matched_z[df_matched_k.columns]
 
