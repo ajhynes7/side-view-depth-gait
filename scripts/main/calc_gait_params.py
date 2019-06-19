@@ -4,6 +4,7 @@ from os.path import join
 
 import numpy as np
 import pandas as pd
+import xarray as xr
 
 import modules.gait_parameters as gp
 
@@ -23,7 +24,17 @@ def main():
         points_a = np.stack(df_pass.L_FOOT)
         points_b = np.stack(df_pass.R_FOOT)
 
-        df_gait_pass = gp.walking_pass_parameters(frames, points_head, points_a, points_b)
+        points_stacked = xr.DataArray(
+            np.dstack((points_a, points_b, points_head)),
+            coords=(
+                frames,
+                ['x', 'y', 'z'],
+                ['points_a', 'points_b', 'points_head'],
+            ),
+            dims=('frames', 'cols', 'layers'),
+        )
+
+        df_gait_pass = gp.walking_pass_parameters(points_stacked)
 
         dict_gait[tuple_trial_pass] = df_gait_pass
 
