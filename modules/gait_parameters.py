@@ -186,7 +186,10 @@ def stances_to_gait(df_stance):
     return df_gait
 
 
-@require("The points must be 3D.", lambda args: all(x.shape[1] == 3 for x in [args.points_a, args.points_b]))
+@require(
+    "The layers must inlcude head and two feet.",
+    lambda args: set(args.points_stacked.layers.values) == {'points_a', 'points_b', 'points_head'},
+)
 @ensure(
     "The output must contain gait params.",
     lambda _, result: 'stride_length' in result.columns if not result.empty else True,

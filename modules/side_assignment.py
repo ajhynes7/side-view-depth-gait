@@ -37,7 +37,11 @@ def fit_ransac(points):
     return model, is_inlier
 
 
-def compute_basis(frames, points_head, points_a, points_b):
+@require(
+    "The layers must include head and two feet.",
+    lambda args: set(args.points_stacked.layers.values) == {'points_a', 'points_b', 'points_head'},
+)
+def compute_basis(points_stacked):
     """
     Return origin and basis vectors of new coordinate system found with RANSAC.
 
