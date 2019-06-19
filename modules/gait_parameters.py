@@ -195,18 +195,15 @@ def stances_to_gait(df_stance):
     "The output must have the required index.",
     lambda _, result: result.index.name == 'side' if not result.empty else True,
 )
-def walking_pass_parameters(frames, points_head, points_a, points_b):
+def walking_pass_parameters(points_stacked):
     """
     Calculate gait parameters from a single walking pass.
 
     Parameters
     ----------
-    frames : ndarray
-        (N,) array of frames for the pass.
-    points_head : ndarray
-        (N, 3) array of head points.
-    points_a, points_b : ndarray
-        (N, 3) array of foot points A and B.
+    points_stacked : xarray.DataArray
+        (N_frames, N_dims, N_layers) array of points.
+        The layers are 'points_head', 'points_a', 'points_b'.
 
     Returns
     -------
@@ -215,9 +212,9 @@ def walking_pass_parameters(frames, points_head, points_a, points_b):
         The columns include parameters names.
 
     """
-    basis, frames_grouped_inlier, points_grouped_inlier = sa.compute_basis(frames, points_head, points_a, points_b)
+    basis, points_grouped_inlier = sa.compute_basis(points_stacked)
 
-    df_stance = pde.detect_stances(frames_grouped_inlier, points_grouped_inlier, basis)
+    df_stance = pde.detect_stances(points_grouped_inlier, basis)
 
     if df_stance.empty:
         return df_stance

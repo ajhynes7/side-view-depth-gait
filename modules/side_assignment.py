@@ -3,6 +3,8 @@
 from collections import namedtuple
 
 import numpy as np
+import xarray as xr
+from dpcontracts import require
 from skimage.measure import LineModelND, ransac
 from skspatial.objects import Vector
 from statsmodels.robust import mad
@@ -41,24 +43,25 @@ def compute_basis(frames, points_head, points_a, points_b):
 
     Parameters
     ----------
-    frames : (N,) ndarray
-        Frames in a walking pass.
-    points_head : ndarray
-        (N, 3) array of head points.
-    points_a, points_b : (N, D) ndarray
-        Foot points A and B on each frame.
+    points_stacked : xarray.DataArray
+        (N_frames, N_dims, N_layers) array of points.
 
     Returns
     -------
     basis : namedtuple
         Basis of new coordinate system (origin point and three unit vectors).
         Fields include 'origin', 'forward', 'up', 'perp'.
-    frames_grouped_inlier : (N_grouped_inlier,) ndarray
-        Frames of grouped foot points that are marked inliers by RANSAC.
-    points_grouped_inlier : (N_grouped_inlier, D) ndarray
+    points_grouped_inlier : xarray.DataArray
+        (N_frames, N_dims) array.
         Grouped foot points that are marked inliers by RANSAC.
 
     """
+    frames = points_stacked.coords['frames'].values
+
+    points_head = points_stacked.sel(layers='points_head')
+    points_a = points_stacked.sel(layers='points_a')
+    points_b = points_stacked.sel(layers='points_b')
+
     frames_grouped = np.repeat(frames, 2)
     points_grouped = nf.interweave_rows(points_a, points_b)
 
@@ -75,10 +78,19 @@ def compute_basis(frames, points_head, points_a, points_b):
     frames_grouped_inlier = frames_grouped[is_inlier]
     points_grouped_inlier = points_grouped[is_inlier]
 
+    points_grouped_inlier = xr.DataArray(
+        points_grouped_inlier,
+        coords=(
+            frames_grouped_inlier,
+            ['x', 'y', 'z'],
+        ),
+        dims=('frames', 'cols'),
+    )
+
     Basis = namedtuple('Basis', 'origin, forward, up, perp')
     basis = Basis(point_origin, vector_forward, vector_up, vector_perp)
 
-    return basis, frames_grouped_inlier, points_grouped_inlier
+    return basis, points_grouped_inlier
 
 
 def assign_sides_grouped(frames_grouped, values_side_grouped, labels_grouped):

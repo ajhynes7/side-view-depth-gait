@@ -10,8 +10,10 @@ import modules.cluster as cl
 import modules.side_assignment as sa
 
 
-def stance_props(frames, points_foot, labels_stance):
+def stance_props(points_foot, labels_stance):
     """Return properties of each stance phase from one foot in a walking pass."""
+
+    frames = points_foot.coords['frames'].values
 
     labels_unique = np.unique(labels_stance[labels_stance != -1])
 
@@ -35,8 +37,10 @@ def stance_props(frames, points_foot, labels_stance):
     return pd.DataFrame(yield_props())
 
 
-def detect_stances(frames_grouped, points_foot_grouped, basis):
+def detect_stances(points_foot_grouped, basis):
     """Detect all stance phases in a walking pass."""
+
+    frames_grouped = points_foot_grouped.coords['frames'].values
 
     signal_grouped = transform_coordinates(points_foot_grouped, basis.origin, [basis.forward])
     values_side_grouped = transform_coordinates(points_foot_grouped, basis.origin, [basis.perp])
@@ -45,8 +49,8 @@ def detect_stances(frames_grouped, points_foot_grouped, basis):
 
     labels_grouped_l, labels_grouped_r = sa.assign_sides_grouped(frames_grouped, values_side_grouped, labels_grouped)
 
-    df_stance_l = stance_props(frames_grouped, points_foot_grouped, labels_grouped_l).assign(side='L')
-    df_stance_r = stance_props(frames_grouped, points_foot_grouped, labels_grouped_r).assign(side='R')
+    df_stance_l = stance_props(points_foot_grouped, labels_grouped_l).assign(side='L')
+    df_stance_r = stance_props(points_foot_grouped, labels_grouped_r).assign(side='R')
 
     df_stance = pd.concat((df_stance_l, df_stance_r), sort=False)
 
