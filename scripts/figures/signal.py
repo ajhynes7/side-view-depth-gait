@@ -16,7 +16,7 @@ def main():
 
     df_selected_passes = pd.read_pickle(join('data', 'kinect', 'df_selected_passes.pkl'))
 
-    trial_name, num_pass = '2014-12-08_P006_Pre_001', 1
+    trial_name, num_pass = '2014-12-08_P004_Post_000', 1
 
     df_pass = df_selected_passes.loc[(trial_name, num_pass)]
     frames = df_pass.index.values
@@ -43,6 +43,8 @@ def main():
 
     is_noise = labels_grouped == -1
 
+    # %% Plot stance clusters
+
     fig_1 = plt.figure()
 
     plt.scatter(
@@ -53,14 +55,37 @@ def main():
         edgecolor='k',
         s=75,
     )
-    plt.scatter(frames_grouped[is_noise], signal_grouped[is_noise], c='k')
+    plt.scatter(frames_grouped[is_noise], signal_grouped[is_noise], c='k', s=20)
 
     plt.xlabel('Frame')
-    plt.ylabel('Signal')
+    plt.ylabel(r'Signal $\Phi$')
 
-    fig_1.savefig(join('figures', 'signal_clustered.pdf'), dpi=1200)
+    fig_1.savefig(join('figures', 'signal_forward_clustered.pdf'), dpi=1200)
+
+    # %% Plot side values
 
     fig_2 = plt.figure()
+
+    plt.scatter(
+        frames_grouped[~is_noise],
+        values_side_grouped[~is_noise],
+        c=labels_grouped[~is_noise],
+        cmap='Set1',
+        edgecolor='k',
+        s=75,
+    )
+    plt.scatter(frames_grouped[is_noise], values_side_grouped[is_noise], c='k', s=20)
+
+    plt.xlabel('Frame')
+    plt.ylabel(r'Signal $\Psi$')
+
+    plt.axis('equal')
+
+    fig_2.savefig(join('figures', 'signal_side.pdf'), dpi=1200)
+
+    # %% Plot stance clusters with assigned sides
+
+    fig_3 = plt.figure()
 
     is_cluster_l = labels_grouped_l != -1
     is_cluster_r = labels_grouped_r != -1
@@ -69,11 +94,11 @@ def main():
     plt.scatter(frames_grouped[is_cluster_r], signal_grouped[is_cluster_r], c='r', edgecolor='k', s=75, label='Right')
 
     plt.xlabel('Frame')
-    plt.ylabel('Signal')
+    plt.ylabel(r'Signal $\Phi$')
 
     plt.legend()
 
-    fig_2.savefig(join('figures', 'signal_sides.pdf'), dpi=1200)
+    fig_3.savefig(join('figures', 'signal_forward_assigned.pdf'), dpi=1200)
 
 
 if __name__ == '__main__':
