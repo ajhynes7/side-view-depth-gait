@@ -5,6 +5,7 @@ from os.path import join
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import xarray as xr
 from skspatial.transformation import transform_coordinates
 
 import modules.cluster as cl
@@ -24,10 +25,18 @@ def main():
     points_a = np.stack(df_pass.L_FOOT)
     points_b = np.stack(df_pass.R_FOOT)
 
-    basis, frames_grouped, points_foot_grouped = sa.compute_basis(frames, points_head, points_a, points_b)
+    points_stacked = xr.DataArray(
+        np.dstack((points_a, points_b, points_head)),
+        coords=(frames, ['x', 'y', 'z'], ['points_a', 'points_b', 'points_head']),
+        dims=('frames', 'cols', 'layers'),
+    )
+
+    basis, points_foot_grouped = sa.compute_basis(points_stacked)
 
     signal_grouped = transform_coordinates(points_foot_grouped, basis.origin, [basis.forward])
     values_side_grouped = transform_coordinates(points_foot_grouped, basis.origin, [basis.perp])
+
+    frames_grouped = points_foot_grouped.coords['frames'].values
 
     labels_grouped = cl.dbscan_st(signal_grouped, times=frames_grouped, eps_spatial=5, eps_temporal=10, min_pts=7)
     labels_grouped_l, labels_grouped_r = sa.assign_sides_grouped(frames_grouped, values_side_grouped, labels_grouped)
