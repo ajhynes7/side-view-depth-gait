@@ -75,7 +75,7 @@ def compute_basis(points_stacked):
     points_foot_mean = (points_a + points_b) / 2
 
     vectors_up = points_head - points_foot_mean
-    vector_up = np.median(vectors_up, axis=0)
+    vector_up = Vector(np.median(vectors_up, axis=0)).unit()
 
     vector_perp = Vector(vector_forward).cross(vector_up)
 
