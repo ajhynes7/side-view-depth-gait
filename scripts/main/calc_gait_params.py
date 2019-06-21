@@ -32,7 +32,8 @@ def main():
 
         df_gait_pass = gp.walking_pass_parameters(points_stacked)
 
-        dict_gait[tuple_trial_pass] = df_gait_pass
+        if not df_gait_pass.empty:
+            dict_gait[tuple_trial_pass] = df_gait_pass
 
     df_gait = pd.concat(dict_gait, sort=False)
     df_gait.index = df_gait.index.rename(['trial_name', 'num_pass'], level=[0, 1])
