@@ -26,7 +26,7 @@ def main():
 
     radii = [i for i in range(6)]
 
-    # DataFrame with position hypotheses (join proposals) for all trials
+    # DataFrame with position hypotheses (joint proposals) for all trials
     df_hypo = pd.read_pickle(join('data', 'kinect', 'df_hypo.pkl'))
 
     n_frames_total = df_hypo.shape[0]
