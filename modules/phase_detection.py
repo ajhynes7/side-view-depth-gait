@@ -52,6 +52,9 @@ def detect_stances(points_foot_grouped, basis):
     df_stance_l = stance_props(points_foot_grouped, labels_grouped_l).assign(side='L')
     df_stance_r = stance_props(points_foot_grouped, labels_grouped_r).assign(side='R')
 
-    df_stance = pd.concat((df_stance_l, df_stance_r), sort=False)
-
-    return df_stance
+    return (
+        pd.concat((df_stance_l, df_stance_r), sort=False)
+        .rename_axis('num_stride')
+        .sort_values('frame_i')
+        .reset_index()
+    )

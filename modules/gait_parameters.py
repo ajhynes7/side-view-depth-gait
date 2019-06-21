@@ -141,7 +141,7 @@ def stride_parameters(foot_a_i, foot_b, foot_a_f, *, fps=30):
 
 @require(
     "The stance DataFrame must include the required columns.",
-    lambda args: set(args.df_stance.columns) == {'position', 'frame_i', 'frame_f', 'side'},
+    lambda args: set(args.df_stance.columns) == {'num_stride', 'position', 'frame_i', 'frame_f', 'side'},
 )
 @require("The stances must be sorted by initial frame.", lambda args: args.df_stance.frame_i.is_monotonic)
 def stances_to_gait(df_stance):
@@ -174,20 +174,22 @@ def stances_to_gait(df_stance):
                 # The sides must alternate between L and R (either L-R-L or R-L-R).
 
                 dict_stride = stride_parameters(stance_a_i, stance_b, stance_a_f)
+
                 dict_stride['side'] = stance_a_i.side
+                dict_stride['num_stride'] = stance_a_i.num_stride
 
                 yield dict_stride
 
     df_gait = pd.DataFrame(yield_parameters())
 
     if not df_gait.empty:
-        df_gait = df_gait.set_index('side')
+        df_gait = df_gait.set_index(['side', 'num_stride'])
 
     return df_gait
 
 
 @require(
-    "The layers must inlcude head and two feet.",
+    "The layers must include head and two feet.",
     lambda args: set(args.points_stacked.layers.values) == {'points_a', 'points_b', 'points_head'},
 )
 @ensure(
@@ -196,7 +198,7 @@ def stances_to_gait(df_stance):
 )
 @ensure(
     "The output must have the required index.",
-    lambda _, result: result.index.name == 'side' if not result.empty else True,
+    lambda _, result: result.index.names == ['side', 'num_stride'] if not result.empty else True,
 )
 def walking_pass_parameters(points_stacked):
     """
@@ -219,7 +221,4 @@ def walking_pass_parameters(points_stacked):
 
     df_stance = pde.detect_stances(points_grouped_inlier, basis)
 
-    if df_stance.empty:
-        return df_stance
-
-    return df_stance.sort_values('frame_i').pipe(stances_to_gait)
+    return df_stance.pipe(stances_to_gait)

@@ -39,10 +39,13 @@ def parse_walking_info(df_trial):
             # Match 'Right' or 'Left' and take first character ('R' or 'L')
             side = re.search(r'(\w+)\s', string).group(1)[0]
 
-            yield num_pass, side
+            # Subtract 1 from the stride number so it is zero-based like Kinect.
+            num_stride = int(string[-1]) - 1
+
+            yield num_pass, side, num_stride
 
     series_info = df_trial.iloc[:, 0]
-    df_parsed = pd.DataFrame(yield_parsed(series_info), columns=['num_pass', 'side'])
+    df_parsed = pd.DataFrame(yield_parsed(series_info), columns=['num_pass', 'side', 'num_stride'])
 
     return pd.concat((df_parsed, df_trial), axis=1).set_index(df_parsed.columns.to_list())
 
