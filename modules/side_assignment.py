@@ -4,7 +4,7 @@ from collections import namedtuple
 
 import numpy as np
 import xarray as xr
-from dpcontracts import require
+from dpcontracts import require, ensure
 from skimage.measure import LineModelND, ransac
 from skspatial.objects import Vector
 from statsmodels.robust import mad
@@ -40,6 +40,12 @@ def fit_ransac(points):
 @require(
     "The layers must include head and two feet.",
     lambda args: set(args.points_stacked.layers.values) == {'points_a', 'points_b', 'points_head'},
+)
+@ensure(
+    # This contract assumes an orientation where x = length along walkway, z = depth.
+    # It can be removed if new data does not have this orientation.
+    "The perpendicular vector must be to the right of the forward vector.",
+    lambda _, result: Vector(result[0].forward[[0, 2]]).side_vector(result[0].perp[[0, 2]]) == 1,
 )
 def compute_basis(points_stacked):
     """
