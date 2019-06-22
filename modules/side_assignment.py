@@ -4,7 +4,7 @@ from collections import namedtuple
 
 import numpy as np
 import xarray as xr
-from dpcontracts import require
+from dpcontracts import require, ensure
 from skimage.measure import LineModelND, ransac
 from skspatial.objects import Vector
 from statsmodels.robust import mad
@@ -31,7 +31,7 @@ def fit_ransac(points):
 
     """
     model, is_inlier = ransac(
-        points, LineModelND, min_samples=int(0.5 * len(points)), residual_threshold=2.5 * min(mad(points))
+        points, LineModelND, min_samples=int(0.5 * len(points)), residual_threshold=2.5 * mad(points[:, 2], c=1)
     )
 
     return model, is_inlier
@@ -40,6 +40,12 @@ def fit_ransac(points):
 @require(
     "The layers must include head and two feet.",
     lambda args: set(args.points_stacked.layers.values) == {'points_a', 'points_b', 'points_head'},
+)
+@ensure(
+    # This contract assumes an orientation where x = length along walkway, z = depth.
+    # It can be removed if new data does not have this orientation.
+    "The perpendicular vector must be to the right of the forward vector.",
+    lambda _, result: Vector(result[0].forward[[0, 2]]).side_vector(result[0].perp[[0, 2]]) == 1,
 )
 def compute_basis(points_stacked):
     """
@@ -66,18 +72,18 @@ def compute_basis(points_stacked):
     points_a = points_stacked.sel(layers='points_a')
     points_b = points_stacked.sel(layers='points_b')
 
+    points_foot_mean = (points_a + points_b) / 2
+
+    vectors_up = points_head - points_foot_mean
+    vector_up = Vector(np.median(vectors_up, axis=0)).unit()
+
     frames_grouped = np.repeat(frames, 2)
     points_grouped = nf.interweave_rows(points_a, points_b)
 
     model_ransac, is_inlier = fit_ransac(points_grouped)
     point_origin, vector_forward = model_ransac.params
 
-    points_foot_mean = (points_a + points_b) / 2
-
-    vectors_up = points_head - points_foot_mean
-    vector_up = Vector(np.median(vectors_up, axis=0)).unit()
-
-    vector_perp = Vector(vector_forward).cross(vector_up)
+    vector_perp = Vector(vector_up).cross(vector_forward)
 
     frames_grouped_inlier = frames_grouped[is_inlier]
     points_grouped_inlier = points_grouped[is_inlier]
