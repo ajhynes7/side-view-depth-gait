@@ -14,15 +14,6 @@ def main():
     df_matched_k = pd.read_pickle(join('data', 'kinect', 'df_matched.pkl'))
     df_matched_z = pd.read_pickle(join('data', 'zeno', 'df_matched.pkl'))
 
-    # Ensure Kinect and Zeno DataFrames have the same MultiIndex.
-    assert df_matched_k.index.names == df_matched_z.index.names
-
-    # Ensure that all Kinect parameters are non-negative.
-    assert np.all(df_matched_k >= 0)
-
-    # Take absolute value of Zeno parameters.
-    df_matched_z = df_matched_z.applymap(lambda x: abs(x))
-
     gait_params = df_matched_k.columns
 
     # %% Calculate results per trial.

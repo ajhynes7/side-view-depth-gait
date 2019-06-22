@@ -2,6 +2,7 @@
 
 from os.path import join
 
+import numpy as np
 import pandas as pd
 
 
@@ -30,6 +31,15 @@ def main():
 
     df_matched_k.index = df_matched_k.index.rename(['trial_id', 'trial_name'], level=[0, 1])
     df_matched_z.index = df_matched_z.index.rename(['trial_id', 'trial_name'], level=[0, 1])
+
+    # Ensure Kinect and Zeno DataFrames have the same MultiIndex.
+    assert df_matched_k.index.names == df_matched_z.index.names
+
+    # Ensure that all Kinect parameters are non-negative.
+    assert np.all(df_matched_k >= 0)
+
+    # Take absolute value of Zeno parameters.
+    df_matched_z = df_matched_z.applymap(lambda x: abs(x))
 
     df_matched_k.to_pickle(join('data', 'kinect', 'df_matched.pkl'))
     df_matched_z.to_pickle(join('data', 'zeno', 'df_matched.pkl'))
