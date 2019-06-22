@@ -3,7 +3,7 @@
 import matplotlib
 from matplotlib import rc
 
-from scripts.results import plot_accuracy_radii, plot_bland
+from scripts.results import plot_accuracy_radii, compare_gait
 
 
 def main():
@@ -15,7 +15,7 @@ def main():
     rc('text', usetex=True)
 
     plot_accuracy_radii.main()
-    plot_bland.main()
+    compare_gait.main()
 
 
 if __name__ == '__main__':
