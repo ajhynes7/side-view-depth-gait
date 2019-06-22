@@ -66,18 +66,18 @@ def compute_basis(points_stacked):
     points_a = points_stacked.sel(layers='points_a')
     points_b = points_stacked.sel(layers='points_b')
 
+    points_foot_mean = (points_a + points_b) / 2
+
+    vectors_up = points_head - points_foot_mean
+    vector_up = Vector(np.median(vectors_up, axis=0)).unit()
+
     frames_grouped = np.repeat(frames, 2)
     points_grouped = nf.interweave_rows(points_a, points_b)
 
     model_ransac, is_inlier = fit_ransac(points_grouped)
     point_origin, vector_forward = model_ransac.params
 
-    points_foot_mean = (points_a + points_b) / 2
-
-    vectors_up = points_head - points_foot_mean
-    vector_up = Vector(np.median(vectors_up, axis=0)).unit()
-
-    vector_perp = Vector(vector_forward).cross(vector_up)
+    vector_perp = Vector(vector_up).cross(vector_forward)
 
     frames_grouped_inlier = frames_grouped[is_inlier]
     points_grouped_inlier = points_grouped[is_inlier]
