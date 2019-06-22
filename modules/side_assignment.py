@@ -31,7 +31,7 @@ def fit_ransac(points):
 
     """
     model, is_inlier = ransac(
-        points, LineModelND, min_samples=int(0.5 * len(points)), residual_threshold=2.5 * min(mad(points))
+        points, LineModelND, min_samples=int(0.5 * len(points)), residual_threshold=2.5 * mad(points[:, 2], c=1)
     )
 
     return model, is_inlier
