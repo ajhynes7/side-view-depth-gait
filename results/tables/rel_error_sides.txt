@@ -4,10 +4,10 @@
 \midrule
 absolute\_step\_length &   25.80 &    8.46 \\
 stance\_percentage    &   10.56 &    7.40 \\
-step\_length          &   25.64 &   11.14 \\
+step\_length          &   25.67 &   11.14 \\
 stride\_length        &    9.81 &   11.46 \\
 stride\_time          &   38.12 &   35.23 \\
 stride\_velocity      &   60.66 &   51.92 \\
-stride\_width         &  291.22 &  323.56 \\
+stride\_width         &  291.22 &  323.85 \\
 \bottomrule
 \end{tabular}

@@ -3,12 +3,12 @@
 {} & \multicolumn{2}{l}{bias} & \multicolumn{2}{l}{lower\_limit} & \multicolumn{2}{l}{upper\_limit} & \multicolumn{2}{l}{range\_} \\
 {} &     L &     R &           L &     R &           L &     R &      L &     R \\
 \midrule
-absolute\_step\_length &  0.05 & -0.02 &       -0.02 & -0.06 &        0.12 &  0.03 &   0.14 &  0.08 \\
+absolute\_step\_length &  0.05 & -0.01 &       -0.02 & -0.06 &        0.12 &  0.03 &   0.14 &  0.08 \\
 stance\_percentage    & -0.00 &  0.00 &       -0.10 & -0.06 &        0.09 &  0.06 &   0.19 &  0.13 \\
 step\_length          &  0.04 & -0.02 &       -0.02 & -0.07 &        0.11 &  0.03 &   0.13 &  0.10 \\
 stride\_length        &  0.00 &  0.01 &       -0.04 & -0.03 &        0.05 &  0.05 &   0.10 &  0.07 \\
 stride\_time          & -0.19 & -0.18 &       -0.33 & -0.30 &       -0.06 & -0.07 &   0.27 &  0.23 \\
-stride\_velocity      &  0.20 &  0.20 &        0.05 &  0.08 &        0.35 &  0.33 &   0.29 &  0.25 \\
-stride\_width         &  0.42 &  0.43 &       -0.42 & -0.22 &        1.25 &  1.08 &   1.67 &  1.30 \\
+stride\_velocity      &  0.20 &  0.20 &        0.05 &  0.08 &        0.35 &  0.33 &   0.30 &  0.25 \\
+stride\_width         &  0.42 &  0.43 &       -0.42 & -0.23 &        1.25 &  1.08 &   1.67 &  1.31 \\
 \bottomrule
 \end{tabular}
