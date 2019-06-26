@@ -57,12 +57,16 @@ def main():
 
     part_types = ['Head', 'Hip', 'Thigh', 'Knee', 'Calf', 'Foot']
 
-    fig = plt.figure()
-    plt.imshow(depth_image, cmap='gray')
+    fig, ax = plt.subplots()
+
+    ax.imshow(depth_image, cmap='gray')
     pl.scatter_labels(points_image[:, :2], labels, edgecolors='k', s=75)
     plt.legend(part_types, framealpha=1, loc='upper left', fontsize=12)
-    plt.axis('off')
-    fig.savefig(join('figures', 'joint_proposals_image.pdf'))
+
+    ax.set_yticks([])
+    ax.set_xticks([])
+
+    fig.savefig(join('figures', 'joint_proposals_image.png'))
 
     # %% Plot joint proposals
 
