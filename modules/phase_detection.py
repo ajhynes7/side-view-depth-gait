@@ -58,8 +58,5 @@ def get_stance_dataframe(points_foot_grouped, labels_grouped_l, labels_grouped_r
     df_stance_r = stance_props(points_foot_grouped, labels_grouped_r).assign(side='R')
 
     return (
-        pd.concat((df_stance_l, df_stance_r), sort=False)
-        .rename_axis('num_stride')
-        .sort_values('frame_i')
-        .reset_index()
+        pd.concat((df_stance_l, df_stance_r), sort=False).rename_axis('num_stride').sort_values('frame_i').reset_index()
     )

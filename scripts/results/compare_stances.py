@@ -13,18 +13,13 @@ import modules.side_assignment as sa
 import modules.xarray_funcs as xrf
 
 
-@ensure(
-    "The arrays must have the same shape",
-    lambda _, result: result[0].shape == result[1].shape,
-)
+@ensure("The arrays must have the same shape", lambda _, result: result[0].shape == result[1].shape)
 def match_frames(list_passes_x, df_truth_trial_x):
 
     points_trial_x = xr.concat(list_passes_x, dim='frames')
 
     truth_trial_x = xr.DataArray(
-        np.stack(df_truth_trial_x),
-        coords=(df_truth_trial_x.index.values, range(3)),
-        dims=('frames', 'cols'),
+        np.stack(df_truth_trial_x), coords=(df_truth_trial_x.index.values, range(3)), dims=('frames', 'cols')
     )
 
     # Take frames common to ground truth and selected stance positions.
@@ -123,10 +118,7 @@ def main():
 
         list_accuracy.append((acc_stance_l, acc_stance_r, acc_stance_mod_l, acc_stance_mod_r))
 
-    df_acc = pd.DataFrame(
-        list_accuracy,
-        columns=pd.MultiIndex.from_product((['Truth', 'Modified'], ['L', 'R'])),
-    )
+    df_acc = pd.DataFrame(list_accuracy, columns=pd.MultiIndex.from_product((['Truth', 'Modified'], ['L', 'R'])))
 
     df_acc.index.name = 'Trial'
 
