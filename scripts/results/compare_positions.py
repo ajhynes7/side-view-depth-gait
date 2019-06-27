@@ -86,10 +86,10 @@ def main():
 
     table_dir = join('results', 'tables')
 
-    for file_name, data_frame in dict_frames.items():
+    for file_name, df in dict_frames.items():
 
         with open(join(table_dir, file_name + '.txt'), 'w') as file:
-            file.write(data_frame.round(2).to_latex())
+            file.write(df.round(2).to_latex())
 
 
 if __name__ == '__main__':
