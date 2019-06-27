@@ -37,8 +37,8 @@ def stance_props(points_foot, labels_stance):
     return pd.DataFrame(yield_props())
 
 
-def detect_stances(points_foot_grouped, basis):
-    """Detect all stance phases in a walking pass."""
+def label_stances(points_foot_grouped, basis):
+    """Label all stance phases in a walking pass."""
 
     frames_grouped = points_foot_grouped.coords['frames'].values
 
@@ -46,8 +46,13 @@ def detect_stances(points_foot_grouped, basis):
     values_side_grouped = transform_coordinates(points_foot_grouped, basis.origin, [basis.perp])
 
     labels_grouped = cl.dbscan_st(signal_grouped, times=frames_grouped, eps_spatial=5, eps_temporal=10, min_pts=7)
-
     labels_grouped_l, labels_grouped_r = sa.assign_sides_grouped(frames_grouped, values_side_grouped, labels_grouped)
+
+    return labels_grouped_l, labels_grouped_r
+
+
+def get_stance_dataframe(points_foot_grouped, labels_grouped_l, labels_grouped_r):
+    """Return DataFrame where each row is a stance phase."""
 
     df_stance_l = stance_props(points_foot_grouped, labels_grouped_l).assign(side='L')
     df_stance_r = stance_props(points_foot_grouped, labels_grouped_r).assign(side='R')
