@@ -22,15 +22,15 @@ def main():
         clustering = DBSCAN(eps=5).fit(frames.reshape(-1, 1))
         labels = clustering.labels_
 
-        df_selected_trial['pass'] = labels
+        df_selected_trial['num_pass'] = labels
 
         # Drop frames marked as noise
         frames_to_drop = frames[labels == -1]
         df_selected_trial = df_selected_trial.drop(frames_to_drop)
 
         # Add the pass number to the index
-        df_selected_trial = df_selected_trial.set_index('pass', append=True)
-        df_selected_trial = df_selected_trial.reorder_levels(['pass', 'frame'])
+        df_selected_trial = df_selected_trial.set_index('num_pass', append=True)
+        df_selected_trial = df_selected_trial.reorder_levels(['num_pass', 'frame'])
 
         dict_trials[trial_name] = df_selected_trial
 
