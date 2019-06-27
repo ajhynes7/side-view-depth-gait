@@ -18,6 +18,8 @@ def main():
 
     for tuple_trial_pass, df_pass in df_selected_passes.groupby(level=[0, 1]):
 
+        print(tuple_trial_pass)
+
         frames = df_pass.reset_index().frame.values
 
         points_head = np.stack(df_pass.HEAD)
