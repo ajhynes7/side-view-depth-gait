@@ -70,6 +70,8 @@ def main():
 
     trial_names = index_sorted.get_level_values(level=0).unique()
 
+    list_accuracy = []
+
     for trial_name in trial_names:
 
         df_hypo_trial = df_hypo.loc[trial_name]
@@ -119,7 +121,17 @@ def main():
         acc_stance_mod_l = modified_stance_accuracy(points_trial_l, truth_trial_l, proposals_foot_trial)
         acc_stance_mod_r = modified_stance_accuracy(points_trial_r, truth_trial_r, proposals_foot_trial)
 
-        print(acc_stance_l, acc_stance_r, acc_stance_mod_l, acc_stance_mod_r)
+        list_accuracy.append((acc_stance_l, acc_stance_r, acc_stance_mod_l, acc_stance_mod_r))
+
+    df_acc = pd.DataFrame(
+        list_accuracy,
+        columns=pd.MultiIndex.from_product((['Truth', 'Modified'], ['L', 'R'])),
+    )
+
+    df_acc.index.name = 'Trial'
+
+    with open(join('results', 'tables', 'accuracy_stance.txt'), 'w') as file:
+        file.write(df_acc.round(2).to_latex())
 
 
 if __name__ == '__main__':
