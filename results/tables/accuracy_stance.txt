@@ -1,10 +1,8 @@
-\begin{tabular}{lrrrr}
+\begin{tabular}{lrr}
 \toprule
-{} & \multicolumn{2}{l}{Truth} & \multicolumn{2}{l}{Modified} \\
-{} &     L &     R &        L &     R \\
-Trial &       &       &          &       \\
+{} &   Left &  Right \\
 \midrule
-0     &  0.89 &  0.88 &     0.99 &  1.00 \\
-1     &  0.77 &  0.76 &     1.00 &  0.99 \\
+Truth    &  0.822 &  0.809 \\
+Modified &  0.995 &  0.995 \\
 \bottomrule
 \end{tabular}

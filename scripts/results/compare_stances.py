@@ -31,19 +31,6 @@ def match_frames(list_passes_x, df_truth_trial_x):
     return points_trial_x, truth_trial_x
 
 
-def modified_stance_accuracy(points_trial_x, truth_trial_x, proposals_foot_trial):
-
-    array_proposals_x = np.array(proposals_foot_trial.reindex(truth_trial_x.frames))
-
-    truth_trial_mod_x = xr.DataArray(
-        pp.closest_proposals(array_proposals_x, truth_trial_x.values),
-        coords=(truth_trial_x.frames, range(3)),
-        dims=('frames', 'cols'),
-    )
-
-    return pp.position_accuracy(points_trial_x.values, truth_trial_mod_x.values)
-
-
 def main():
 
     kinect_dir = join('data', 'kinect')
@@ -65,7 +52,9 @@ def main():
 
     trial_names = index_sorted.get_level_values(level=0).unique()
 
-    list_accuracy = []
+    list_points_l, list_points_r = [], []
+    list_truth_l, list_truth_r = [], []
+    list_truth_mod_l, list_truth_mod_r = [], []
 
     for trial_name in trial_names:
 
@@ -93,37 +82,61 @@ def main():
 
             labels_grouped_l, labels_grouped_r = pde.label_stances(points_grouped_inlier, basis)
 
-            points_stance_l = points_grouped_inlier[labels_grouped_l != -1]
-            points_stance_r = points_grouped_inlier[labels_grouped_r != -1]
+            points_pass_l = points_grouped_inlier[labels_grouped_l != -1]
+            points_pass_r = points_grouped_inlier[labels_grouped_r != -1]
 
             # Ensure all frames are unique by taking mean of points on the same frame.
-            points_stance_l = xrf.unique_frames(points_stance_l, lambda rows: np.mean(rows, axis=0))
-            points_stance_r = xrf.unique_frames(points_stance_r, lambda rows: np.mean(rows, axis=0))
+            points_pass_l = xrf.unique_frames(points_pass_l, lambda rows: np.mean(rows, axis=0))
+            points_pass_r = xrf.unique_frames(points_pass_r, lambda rows: np.mean(rows, axis=0))
 
-            list_passes_l.append(points_stance_l)
-            list_passes_r.append(points_stance_r)
+            list_passes_l.append(points_pass_l)
+            list_passes_r.append(points_pass_r)
 
         # Combine stance points from all walking passes in the trial, and take frames common to
         # trial points and the truth.
         points_trial_l, truth_trial_l = match_frames(list_passes_l, df_truth_trial.L_FOOT.dropna())
         points_trial_r, truth_trial_r = match_frames(list_passes_r, df_truth_trial.R_FOOT.dropna())
 
-        # Pass in NumPy array instead of xarray.DataArray to avoid errors from mismatched coordinates.
-        acc_stance_l = pp.position_accuracy(points_trial_l.values, truth_trial_l.values)
-        acc_stance_r = pp.position_accuracy(points_trial_r.values, truth_trial_r.values)
-
         proposals_foot_trial = df_hypo_trial.apply(lambda row: row.population[row.labels == row.labels.max()], axis=1)
-        acc_stance_mod_l = modified_stance_accuracy(points_trial_l, truth_trial_l, proposals_foot_trial)
-        acc_stance_mod_r = modified_stance_accuracy(points_trial_r, truth_trial_r, proposals_foot_trial)
+        array_proposals_l = np.array(proposals_foot_trial.reindex(truth_trial_l.frames))
+        array_proposals_r = np.array(proposals_foot_trial.reindex(truth_trial_r.frames))
 
-        list_accuracy.append((acc_stance_l, acc_stance_r, acc_stance_mod_l, acc_stance_mod_r))
+        truth_mod_trial_l = pp.closest_proposals(array_proposals_l, truth_trial_l.values)
+        truth_mod_trial_r = pp.closest_proposals(array_proposals_r, truth_trial_r.values)
 
-    df_acc = pd.DataFrame(list_accuracy, columns=pd.MultiIndex.from_product((['Truth', 'Modified'], ['L', 'R'])))
+        list_points_l.append(points_trial_l)
+        list_points_r.append(points_trial_r)
 
-    df_acc.index.name = 'Trial'
+        list_truth_l.append(truth_trial_l)
+        list_truth_r.append(truth_trial_r)
+
+        list_truth_mod_l.append(truth_mod_trial_l)
+        list_truth_mod_r.append(truth_mod_trial_r)
+
+    points_l = np.vstack(list_points_l)
+    points_r = np.vstack(list_points_r)
+
+    truth_l = np.vstack(list_truth_l)
+    truth_r = np.vstack(list_truth_r)
+
+    truth_mod_l = np.vstack(list_truth_mod_l)
+    truth_mod_r = np.vstack(list_truth_mod_r)
+
+    acc_stance_l = pp.position_accuracy(points_l, truth_l)
+    acc_stance_r = pp.position_accuracy(points_r, truth_r)
+
+    acc_stance_mod_l = pp.position_accuracy(points_l, truth_mod_l)
+    acc_stance_mod_r = pp.position_accuracy(points_r, truth_mod_r)
+
+    data = [
+        [acc_stance_l, acc_stance_r],
+        [acc_stance_mod_l, acc_stance_mod_r]
+    ]
+
+    df_acc = pd.DataFrame(data, columns=['Left', 'Right'], index=['Truth', 'Modified'])
 
     with open(join('results', 'tables', 'accuracy_stance.txt'), 'w') as file:
-        file.write(df_acc.round(2).to_latex())
+        file.write(df_acc.round(3).to_latex())
 
 
 if __name__ == '__main__':
