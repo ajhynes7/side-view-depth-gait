@@ -219,6 +219,7 @@ def walking_pass_parameters(points_stacked):
     """
     basis, points_grouped_inlier = sa.compute_basis(points_stacked)
 
-    df_stance = pde.detect_stances(points_grouped_inlier, basis)
+    labels_grouped_l, labels_grouped_r = pde.label_stances(points_grouped_inlier, basis)
+    df_stance = pde.get_stance_dataframe(points_grouped_inlier, labels_grouped_l, labels_grouped_r)
 
     return df_stance.pipe(stances_to_gait)

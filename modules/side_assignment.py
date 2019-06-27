@@ -89,7 +89,7 @@ def compute_basis(points_stacked):
     points_grouped_inlier = points_grouped[is_inlier]
 
     points_grouped_inlier = xr.DataArray(
-        points_grouped_inlier, coords=(frames_grouped_inlier, ['x', 'y', 'z']), dims=('frames', 'cols')
+        points_grouped_inlier, coords=(frames_grouped_inlier, range(3)), dims=('frames', 'cols')
     )
 
     Basis = namedtuple('Basis', 'origin, forward, up, perp')

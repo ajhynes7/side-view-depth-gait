@@ -1,6 +1,7 @@
 """Functions related to spatial points."""
 
 import numpy as np
+from dpcontracts import require
 from numpy.linalg import norm
 from scipy.spatial.distance import cdist
 
@@ -102,6 +103,10 @@ def assign_pair(point_pair, target_pair):
     return assigned_pair
 
 
+@require(
+    "The arrays must have the same shape",
+    lambda args: len(set(x.shape for x in [args.points_1, args.points_2, args.targets_1, args.targets_2])) == 1,
+)
 def match_pairs(points_1, points_2, targets_1, targets_2):
     """Match two sets of points to two sets of targets."""
 
@@ -122,6 +127,7 @@ def match_pairs(points_1, points_2, targets_1, targets_2):
     return assigned_1, assigned_2
 
 
+@require("The arrays must have the same shape", lambda args: args.points.shape == args.targets.shape)
 def position_accuracy(points, targets, max_dist=10):
     """
     Calculate ratio of points within a distance from corresponding targets.
@@ -160,6 +166,10 @@ def position_accuracy(points, targets, max_dist=10):
     return np.mean(distances <= max_dist)
 
 
+@require(
+    "The arrays must have the same shape",
+    lambda args: len(set(x.shape for x in [args.points_1, args.points_2, args.targets_1, args.targets_2])) == 1,
+)
 def double_position_accuracy(points_1, points_2, targets_1, targets_2, max_dist=10):
     """Return ratio of both sets of points being within both targets."""
 

@@ -1,0 +1,10 @@
+\begin{tabular}{lrrrr}
+\toprule
+{} & \multicolumn{2}{l}{Truth} & \multicolumn{2}{l}{Modified} \\
+{} &     L &     R &        L &     R \\
+Trial &       &       &          &       \\
+\midrule
+0     &  0.89 &  0.88 &     0.99 &  1.00 \\
+1     &  0.77 &  0.76 &     1.00 &  0.99 \\
+\bottomrule
+\end{tabular}

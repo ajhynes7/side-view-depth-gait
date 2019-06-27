@@ -26,7 +26,7 @@ def main():
 
         points_stacked = xr.DataArray(
             np.dstack((points_a, points_b, points_head)),
-            coords=(frames, ['x', 'y', 'z'], ['points_a', 'points_b', 'points_head']),
+            coords=(frames, range(3), ['points_a', 'points_b', 'points_head']),
             dims=('frames', 'cols', 'layers'),
         )
 

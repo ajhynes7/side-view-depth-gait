@@ -3,9 +3,9 @@
 
 from scripts.results import (
     align_frames,
-    compare_gait,
     compare_lengths,
     compare_positions,
+    compare_stances,
     compare_radii,
     group_lengths,
     make_plots,
@@ -27,6 +27,7 @@ def main():
 
     compare_lengths.main()
     compare_positions.main()
+    compare_stances.main()
 
     # Foot selection accuracy with different radii
     compare_radii.main()
@@ -34,8 +35,6 @@ def main():
     # %%  Comparison with Zeno Walkway
 
     match_trials.main()
-    compare_gait.main()
-
     make_plots.main()
 
 
