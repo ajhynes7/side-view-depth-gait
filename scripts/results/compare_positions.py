@@ -1,4 +1,4 @@
-"""Compare selected and assigned positions to ground truth."""
+"""Compare selected positions to ground truth."""
 
 from os.path import join
 
