@@ -3,7 +3,7 @@
 import matplotlib
 from matplotlib import rc
 
-from scripts.results import plot_accuracy_radii, compare_gait
+from scripts.results import compare_gait, plot_accuracy_radii, plot_stride_width
 
 
 def main():
@@ -16,6 +16,8 @@ def main():
 
     plot_accuracy_radii.main()
     compare_gait.main()
+
+    plot_stride_width.main()
 
 
 if __name__ == '__main__':
