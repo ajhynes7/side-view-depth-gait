@@ -20,7 +20,7 @@ def main():
     df_regex = df_trial_names_k.index.get_level_values('trial_name').str.extract(pattern_participant)
 
     df_diff_rel = (
-        ((df_trials_k - df_trials_z).abs() / (0.5 * (df_trials_k + df_trials_z)))
+        ((df_trials_k - df_trials_z) / (0.5 * (df_trials_k + df_trials_z)))
         .dropna(axis=1)  # Drop nan columns (gait params not shared by Kinect and Zeno)
         .assign(participant=df_regex.participant)
     )
