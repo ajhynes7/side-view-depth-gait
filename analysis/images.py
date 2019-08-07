@@ -104,7 +104,7 @@ def rgb_to_label(image_rgb, rgb_vectors):
 
     Returns
     -------
-    label_image
+    label_image : ndarray
         (n_rows, n_cols) image.
         2D label image.
 

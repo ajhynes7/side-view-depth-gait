@@ -125,8 +125,8 @@ def icc(matrix, form=(1, 1)):
 
     Parameters
     ----------
-    matrix : array_like
-        (n, k) array for n subjects and k raters.
+    matrix : (N, K) array_like
+        Array for N subjects and K raters.
     form : tuple, optional
         The ICC form using Shrout and Fleiss (1979) convention.
         The default is (1, 1).

@@ -67,10 +67,10 @@ def get_population(frame_series, part_labels):
 
     Returns
     -------
-    population : ndarray
-        (n, 3) array of n positions.
-    labels : ndarray
-        (n,) array of labels for n positions.
+    population : (N, 3) ndarray
+        All position hypotheses on a frame.
+    labels : (N,) ndarray
+        Array of labels for N positions.
         The labels correspond to body part types (e.g., foot).
         They are sorted in ascending order.
 
@@ -160,10 +160,10 @@ def pop_shortest_paths(population, labels, label_adj_list, weight_func):
 
     Parameters
     ----------
-    population : ndarray
-        (n, 3) array of n positions.
-    labels : ndarray
-        (n,) array of labels for n positions.
+    population : (N, 3) ndarray
+        All position hypotheses on a frame.
+    labels : (N,) ndarray
+        Array of labels for N positions.
         The labels correspond to body part types (e.g., foot).
     label_adj_list : dict
         Adjacency list for the labels.
@@ -258,10 +258,9 @@ def get_scores(dist_matrix, paths, label_adj_list, score_func):
 
     Parameters
     ----------
-    dist_matrix : ndarray
-        (n, n) matrix for the n position hypotheses.
-    paths : ndarray
-        (n_paths, n_types) array.
+    dist_matrix : (N, N) ndarray
+        Distance matrix for the N position hypotheses.
+    paths : (N_paths, N_types) ndarray
         Each row lists the nodes on a shortest path through the body part
         types, i.e., from head to foot.
     label_adj_list : dict
@@ -274,8 +273,8 @@ def get_scores(dist_matrix, paths, label_adj_list, score_func):
 
     Returns
     -------
-    score_matrix : ndarray
-       (n, n) array of scores.
+    score_matrix : (N, N) ndarray
+       Array of scores.
 
     """
     score_matrix = np.zeros(dist_matrix.shape)
@@ -307,8 +306,8 @@ def reduce_population(population, paths):
 
     Parameters
     ----------
-    population : ndarray
-        (n, 3) array of n positions.
+    population : (N, 3) ndarray
+        All position hypotheses on a frame.
     paths : ndarray
         One row for each foot position.
         Each row is a shortest path from head to foot.
@@ -375,18 +374,18 @@ def in_spheres(within_radius, has_sphere):
 
     Parameters
     ----------
-    within_radius : ndarray
-        (n, n) boolean array.
-        Element (i, j) is true if i is within a given radius from j
-    has_sphere : ndarray
-        (n,) boolean array.
-        Element i is true if position i is the centre of a sphere.
+    within_radius : (N, N) ndarray
+        Boolean array.
+        Element (i, j) is True if i is within a given radius from j.
+    has_sphere : (N,) ndarray
+        Boolean array.
+        Element i is True if position i is the centre of a sphere.
 
     Returns
     -------
     ndarray
         Boolean array.
-        Element i is true if position i is within the combined sphere volume.
+        Element i is True if position i is within the combined sphere volume.
 
     """
     n = len(has_sphere)
@@ -401,16 +400,15 @@ def select_best_feet(dist_matrix, score_matrix, path_vectors, radii):
 
     Parameters
     ----------
-    dist_matrix : ndarray
-        (n, n) distance matrix for n position hypotheses.
-    score_matrix : ndarray
-        (n, n) score matrix.
+    dist_matrix : (N, N) ndarray
+        Distance matrix for N position hypotheses.
+    score_matrix : (N, N) ndarray
+        Score matrix.
         The scores depend on the expected and actual lengths between positions.
-    path_vectors : ndarray
-        (n_paths, n) array.
+    path_vectors : (N_paths, N) ndarray
         Each row is a boolean vector.
-        Element i is true if position i is in the path.
-    radii : list
+        Element i is True if position i is in the path.
+    radii : sequence
         List of radii for the spheres, e.g. [0, 5, 10, 15, 20].
 
     Returns
@@ -437,10 +435,10 @@ def select_best_feet(dist_matrix, score_matrix, path_vectors, radii):
             has_sphere_1 = path_vectors[a, :]
             has_sphere_2 = path_vectors[b, :]
 
-            # Element i is true if i is the centre of a sphere
+            # Element i is True if i is the centre of a sphere
             has_sphere = np.logical_or(has_sphere_1, has_sphere_2)
 
-            # Element i is true if i is inside the combined sphere volume
+            # Element i is True if i is inside the combined sphere volume
             inside_spheres = in_spheres(within_radius, has_sphere)
 
             in_spheres_col = inside_spheres.reshape(-1, 1)
@@ -470,8 +468,8 @@ def foot_to_pop(population, paths, path_dist, foot_num_1, foot_num_2):
 
     Parameters
     ----------
-    population : ndarray
-        (n, 3) array of n positions.
+    population : (N, 3) ndarray
+        All position hypotheses on a frame.
     paths : ndarray
         One row for each foot position.
         Each row is a shortest path from head to foot.
@@ -510,10 +508,10 @@ def process_frame(population, labels, label_adj_list, radii, cost_func, score_fu
 
     Parameters
     ----------
-    population : ndarray
-        (n, 3) array of n positions.
-    labels : ndarray
-        (n,) array of labels for n positions.
+    population : (N, 3) ndarray
+        All position hypotheses on a frame.
+    labels : (N,) ndarray
+        Array of labels for N positions.
         The labels correspond to body part types (e.g., foot).
     label_adj_list : dict
         Adjacency list for the labels.

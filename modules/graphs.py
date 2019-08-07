@@ -50,8 +50,8 @@ def adj_matrix_to_list(adj_matrix):
 
     Parameters
     ----------
-    adj_matrix : array_like
-        (n, n) adjacency matrix of n nodes.
+    adj_matrix : (N, N) array_like
+        Adjacency matrix of N nodes.
 
     Returns
     -------

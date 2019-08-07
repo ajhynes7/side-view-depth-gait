@@ -12,10 +12,10 @@ def dbscan_st(points, times=None, eps_spatial=0.5, eps_temporal=0.5, min_pts=5):
 
     Parameters
     ----------
-    points : array_like
-        (n, d) array of n points with dimension d.
-    times : array_like, optional
-        (n,) array of n times corresponding to the points.
+    points : (N, D) array_like
+        Array of N points with dimension D.
+    times : (N,) array_like, optional
+        Array of N times corresponding to the points.
     eps_spatial : float, optional
         Maximum distance between two points for one to be
         considered in the neighbourhood of the other.
@@ -28,8 +28,8 @@ def dbscan_st(points, times=None, eps_spatial=0.5, eps_temporal=0.5, min_pts=5):
 
     Returns
     -------
-    labels : ndarray
-        (n,) array of cluster labels.
+    labels : (N,) ndarray
+        Array of cluster labels.
 
     Examples
     --------
@@ -88,12 +88,12 @@ def grow_cluster_st(D_spatial, D_temporal, labels, set_neighbours, label_cluster
 
     Parameters
     ----------
-    D_spatial : ndarray
-        (n, n) matrix of distances between points.
-    D_temporal : ndarray
-        (n, n) matrix of distances between times.
-    labels : ndarray
-        (n,) array of cluster labels.
+    D_spatial : (N, N) ndarray
+        Matrix of distances between points.
+    D_temporal : (N, N) ndarray
+        Matrix of distances between times.
+    labels : (N,) ndarray
+        Array of cluster labels.
     set_neighbours : set
         Set of indices for neighbours of the seed point.
     label_cluster : int
@@ -166,8 +166,8 @@ def region_query(dist_matrix, eps, idx_pt):
 
     Parameters
     ----------
-    dist_matrix : ndarray
-        (n, n) distance matrix.
+    dist_matrix : (N, N) ndarray
+        Distance matrix.
     eps : float
         Maximum distance between two points for one to be
         considered in the neighbourhood of the other.
@@ -204,10 +204,10 @@ def region_query_st(D_spatial, D_temporal, eps_spatial, eps_temporal, idx_pt):
 
     Parameters
     ----------
-    D_spatial : ndarray
-        (n, n) matrix of distances between points.
-    D_temporal : ndarray
-        (n, n) matrix of distances between times.
+    D_spatial : (N, N) ndarray
+        Matrix of distances between points.
+    D_temporal : (N, N) ndarray
+        Matrix of distances between times.
     eps_spatial : float
         Maximum distance between two points for one to be
         considered in the neighbourhood of the other.

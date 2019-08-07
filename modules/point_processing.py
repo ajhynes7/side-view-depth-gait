@@ -38,9 +38,9 @@ def closest_point(points, target):
 
     Parameters
     ----------
-    points : ndarray
+    points : (N, D) array_like
         Points in space. Each row is a position vector.
-    target : ndarray
+    target : (D,) array_like
         Target position.
 
     Returns
@@ -201,10 +201,10 @@ def position_accuracy(points, targets, max_dist=10):
 
     Parameters
     ----------
-    points : ndarray
-        (n, d) array of n positions of dimension d.
-    targets : ndarray
-        (n, d) array of n target positions of dimension d.
+    points : (N, D) ndarray
+        N positions of dimension D.
+    targets : (N, D) ndarray
+        N target positions of dimension D.
     max_dist : {int, float}
         Maximum distance that a point can be from its target to be counted.
 
@@ -220,10 +220,8 @@ def position_accuracy(points, targets, max_dist=10):
 
     >>> position_accuracy(points, targets, max_dist=0)
     0.0
-
     >>> position_accuracy(points, targets, max_dist=5)
     0.75
-
     >>> position_accuracy(points, targets, max_dist=10)
     1.0
 

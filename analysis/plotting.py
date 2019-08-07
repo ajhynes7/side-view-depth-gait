@@ -11,10 +11,10 @@ def scatter_signal(signal, labels=None, **kwargs):
 
     Parameters
     ----------
-    signal : array_like
-        (n,) array.
-    labels : array_like, optional
-        (n,) array of labels.
+    signal : (N,) array_like
+        Input 1D signal.
+    labels : (N,) array_like, optional
+        Array of labels.
     kwargs : dict, optional
         Additional keywords passed to `scatter`.
 
@@ -34,10 +34,10 @@ def scatter_labels(points, labels, **kwargs):
 
     Parameters
     ----------
-    points : ndarray
-        (n, 2) array of n points with dimension 2.
-    labels : ndarray
-        (n, ) array of point labels.
+    points : (N, 2) ndarray
+        Array of N points with dimension 2.
+    labels : (N,) ndarray
+        Array of point labels.
     kwargs : dict, optional
         Additional keywords passed to `scatter`.
 
@@ -55,8 +55,8 @@ def scatter2(points, **kwargs):
 
     Parameters
     ----------
-    points : ndarray
-        (n, 2) array of n points in two dimensions.
+    points : (N, 2) ndarray
+        Array of N points in with dimension 2.
     kwargs : dict, optional
         Additional keywords passed to `scatter`.
 
@@ -109,8 +109,8 @@ def connect_two_sets(points_1, points_2, **kwargs):
 
     Parameters
     ----------
-    points_1, points_2 : array_like
-        (n, 2) array of n points.
+    points_1, points_2 : (N, 2) array_like
+        Input 2D points.
     kwargs : dict, optional
         Additional keywords passed to `plot`.
 
@@ -145,21 +145,21 @@ def plot_links(points, score_matrix, inside_spheres):
 
     Parameters
     ----------
-    points : array_like
-        (n, d) array of n points in space.
-    score_matrix : ndarray
-        (n, n) matrix of scores
-    inside_spheres : ndarray
-        (n, ) boolean array
-        Element i is true if position i is inside the combined sphere volume.
+    points : (N, D) array_like
+        Input points.
+    score_matrix : (N, N) ndarray
+        Score matrix.
+    inside_spheres : (N,) ndarray
+        Boolean array.
+        Element i is True if position i is inside the combined sphere volume.
 
     """
     for i, point_i in enumerate(points):
         for j, point_j in enumerate(points):
+
             if inside_spheres[i] and inside_spheres[j]:
                 score = score_matrix[i, j]
 
                 if score != 0:
-
                     # Plot line coloured by score
                     connect_points(point_i, point_j, c=cm.bwr(score), linestyle='-', linewidth=0.75)

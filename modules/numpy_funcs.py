@@ -96,14 +96,14 @@ def filter_labels(labels, min_elements):
     Parameters
     ----------
     labels : array_like
-        1D array of n labels.
+        1D array of N labels.
     min_elements : int
         Minimum allowed number of labels in a group.
 
     Returns
     -------
-    labels_filtered : ndarray
-        (n,) array of labels. Labels belong to small groups changed to -1.
+    labels_filtered : (N,) ndarray
+        Array of labels. Labels belong to small groups changed to -1.
 
     Examples
     --------
