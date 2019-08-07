@@ -63,7 +63,7 @@ def closest_point(points, target):
     2
 
     """
-    distances = norm(points - target, axis=1)
+    distances = norm(np.subtract(points, target), axis=1)
 
     index_closest = np.argmin(distances)
     point_closest = points[index_closest]
@@ -73,58 +73,125 @@ def closest_point(points, target):
 
 def closest_proposals(proposals, targets):
     """Return index of closest proposal to each target."""
+    """
+    Return closest proposal to each target.
+
+    Parameters
+    ---------
+    proposals : (N,) Sequence
+        Each element is a list of position proposals.
+    targets : (N, D) ndarray
+        Each row is a target position.
+
+    Returns
+    -------
+    ndarray
+        Each row i is the closest proposal to the target i.
+
+    Examples
+    --------
+    >>> proposals = [
+    ...     [[0, 1], [1, 1], [1, 5]],
+    ...     [[4, 5], [2, 3], [2, 2]],
+    ...     [[1, 9], [4, 2], [1, 5]],
+    ... ]
+
+    >>> targets = [[0, 0], [1, 1], [2, 2]]
+
+    >>> closest_proposals(proposals, targets)
+    array([[0, 1],
+           [2, 2],
+           [4, 2]])
+
+    """
+    return np.array([closest_point(points, target)[0] for points, target in zip(proposals, targets)])
 
     closest = np.zeros(targets.shape)
 
     for i, target in enumerate(targets):
+    """
+    Assign a pair of points to a pair of targets by minimizing point-target distance.
 
-        # Proposals for current target
-        target_proposals = proposals[i]
+    Parameters
+    ----------
+    pair_points : (2,) array_like
+        Pair of points.
+    pair_targets : (2,) array_like
+        Pair of target points.
 
-        close_point, _ = closest_point(target_proposals, target)
-        closest[i, :] = close_point
+    Returns
+    -------
+    pair_assigned : ndarray
+        The pair of points assigned to the pair of targets.
+        The order of the points now matches the targets.
 
-    return closest
+    Examples
+    --------
+    >>> pair_points = ([0, 0], [1, 1])
+    >>> pair_targets = ([1, 2], [0, 1])
 
+    >>> assign_pair(pair_points, pair_targets)
+    array([[1, 1],
+           [0, 0]])
 
-def assign_pair(point_pair, target_pair):
-    """Assign a pair of points to a pair of targets by minimizing point-target distance."""
-
-    dist_matrix = cdist(point_pair, target_pair)
+    """
+    dist_matrix = cdist(pair_points, pair_targets)
 
     sum_diagonal = dist_matrix.trace()
     sum_reverse = np.fliplr(dist_matrix).trace()
 
-    assigned_pair = point_pair
+    pair_assigned = np.array(pair_points)
 
     if sum_reverse < sum_diagonal:
-        assigned_pair = np.flip(point_pair, axis=0)
+        pair_assigned = np.flip(pair_points, axis=0)
 
-    return assigned_pair
+    return pair_assigned
 
 
-@require(
-    "The arrays must have the same shape",
-    lambda args: len(set(x.shape for x in [args.points_1, args.points_2, args.targets_1, args.targets_2])) == 1,
-)
-def match_pairs(points_1, points_2, targets_1, targets_2):
-    """Match two sets of points to two sets of targets."""
+    """
+    Match two sets of points to two sets of targets.
 
-    points_shape = points_1.shape
-    assigned_1 = np.zeros(points_shape)
-    assigned_2 = np.zeros(points_shape)
+    Parameters
+    ----------
+    points_1, points_2 : (N, D) ndarray
+        Positions of objects 1 and 2.
+    targets_1, targets_2 : (N, D) ndarray
+        Target positions of objects 1 and 2.
 
-    for i in range(points_shape[0]):
+    Returns
+    -------
+    assigned_1, assigned_2 : (N, D) ndarray
+        The points assigned to the closest targets.
 
-        point_pair = np.vstack((points_1[i], points_2[i]))
-        target_pair = np.vstack((targets_1[i], targets_2[i]))
+    Examples
+    --------
+    >>> points_1 = np.array([[0, 1], [6, 2], [7, 1]])
+    >>> points_2 = np.array([[5, 1], [1, 0], [2, 0]])
 
-        assigned_pair = assign_pair(point_pair, target_pair)
+    >>> targets_1 = np.array([[0, 0], [1, 0], [2, 0]])
+    >>> targets_2 = np.array([[5, 0], [6, 0], [7, 0]])
 
-        assigned_1[i, :] = assigned_pair[0]
-        assigned_2[i, :] = assigned_pair[1]
+    >>> assigned_1, assigned_2 = match_pairs(points_1, points_2, targets_1, targets_2)
 
-    return assigned_1, assigned_2
+    >>> assigned_1
+    array([[0, 1],
+           [1, 0],
+           [2, 0]])
+
+    >>> assigned_2
+    array([[5, 1],
+           [6, 2],
+           [7, 1]])
+
+    """
+    pairs_points = zip(points_1, points_2)
+    pairs_targets = zip(targets_1, targets_2)
+
+    assignments = [assign_pair(a, b) for a, b in zip(pairs_points, pairs_targets)]
+
+    assigned_1, assigned_2 = zip(*assignments)
+
+    return np.array(assigned_1), np.array(assigned_2)
 
 
 @require("The arrays must have the same shape", lambda args: args.points.shape == args.targets.shape)
@@ -171,8 +238,37 @@ def position_accuracy(points, targets, max_dist=10):
     lambda args: len(set(x.shape for x in [args.points_1, args.points_2, args.targets_1, args.targets_2])) == 1,
 )
 def double_position_accuracy(points_1, points_2, targets_1, targets_2, max_dist=10):
-    """Return ratio of both sets of points being within both targets."""
+    """
+    Return ratio of both sets of points being within both targets.
 
+    Parameters
+    ----------
+    points_1, points_2 : (N, D) ndarray
+        Input points.
+    target_1, targets_2 : (N, D) ndarray
+        Input targets.
+
+    Returns
+    -------
+    float
+        Double position accuracy.
+
+    Examples
+    --------
+    >>> points_1 = np.array([[0, 1], [1, 5], [2, 5], [3, 4]])
+    >>> points_2 = np.array([[5, 5], [6, 8], [7, 1], [8, 3]])
+
+    >>> targets_1 = np.array([[0, 0], [1, 0], [2, 0], [3, 0]])
+    >>> targets_2 = np.array([[5, 5], [6, 6], [7, 7], [8, 8]])
+
+    >>> double_position_accuracy(points_1, points_2, targets_1, targets_2, max_dist=0)
+    0.0
+    >>> double_position_accuracy(points_1, points_2, targets_1, targets_2, max_dist=5)
+    0.75
+    >>> double_position_accuracy(points_1, points_2, targets_1, targets_2, max_dist=10)
+    1.0
+
+    """
     within_dist_1 = norm(points_1 - targets_1, axis=1) <= max_dist
     within_dist_2 = norm(points_2 - targets_2, axis=1) <= max_dist
 
