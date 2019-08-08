@@ -90,7 +90,7 @@ def dag_shortest_paths(graph, order, source_nodes):
         Adjacency list.
         graph[u][v] is the weight from node u to node v.
         There must be a key for each node u in the graph.
-    order : iterable
+    order : sequence
         Topological ordering of the nodes.
         For each edge u to v, u comes before v in the ordering.
     source_nodes : set
