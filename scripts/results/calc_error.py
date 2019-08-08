@@ -29,7 +29,7 @@ def main():
     df_error_sides = pd.DataFrame.from_dict(dict_error)
 
     with open(join('results', 'tables', 'rel_error_sides.txt'), 'w') as file:
-        file.write(df_error_sides.round(2).to_latex())
+        file.write(df_error_sides.round(3).to_latex())
 
 
 if __name__ == '__main__':

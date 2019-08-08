@@ -1,8 +1,8 @@
 \begin{tabular}{lr}
 \toprule
-{} &  Head \\
+{} &   Head \\
 \midrule
-Truth    &  0.98 \\
-Modified &  1.00 \\
+Truth    &  0.981 \\
+Modified &  1.000 \\
 \bottomrule
 \end{tabular}
