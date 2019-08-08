@@ -5,14 +5,18 @@ The pose is estimated by selecting body parts from a set of hypotheses.
 
 """
 import itertools
+from typing import Sequence, Tuple
 
 import numpy as np
+import pandas as pd
+from numpy import ndarray
 from scipy.spatial.distance import cdist
 
 import modules.graphs as gr
+from modules.types import Func_ab
 
 
-def only_consecutive_labels(label_adj_list):
+def only_consecutive_labels(label_adj_list: dict) -> dict:
     """
     Return a label adjacency list with only consecutive labels.
 
@@ -40,7 +44,7 @@ def only_consecutive_labels(label_adj_list):
     {0: {1: 6}, 1: {2: 1}, 3: {4: 20}, 4: {5: 20}}
 
     """
-    consecutive_adj_list = {k: {} for k in label_adj_list}
+    consecutive_adj_list: dict = {k: {} for k in label_adj_list}
 
     for key_1 in label_adj_list:
         for key_2 in label_adj_list[key_1]:
@@ -52,7 +56,7 @@ def only_consecutive_labels(label_adj_list):
     return consecutive_adj_list
 
 
-def get_population(frame_series, part_labels):
+def get_population(frame_series: pd.Series, part_labels: Sequence) -> Tuple[ndarray, ndarray]:
     """
     Return the population of part hypotheses from one image frame.
 
@@ -112,7 +116,7 @@ def get_population(frame_series, part_labels):
     return population, labels
 
 
-def lengths_to_adj_list(label_connections, lengths):
+def lengths_to_adj_list(label_connections: ndarray, lengths: Sequence) -> dict:
     """
     Convert a sequence of lengths between body parts to an adjacency list.
 
@@ -142,7 +146,7 @@ def lengths_to_adj_list(label_connections, lengths):
 
     """
     last_part = label_connections.max()
-    label_adj_list = {i: {} for i in range(last_part + 1)}
+    label_adj_list: dict = {i: {} for i in range(last_part + 1)}
 
     n_rows = len(label_connections)
 
@@ -154,7 +158,7 @@ def lengths_to_adj_list(label_connections, lengths):
     return label_adj_list
 
 
-def pop_shortest_paths(population, labels, label_adj_list, weight_func):
+def pop_shortest_paths(population: ndarray, labels: ndarray, label_adj_list: dict, weight_func: Func_ab) -> Tuple[dict, dict]:
     """
     Calculate shortest paths on the population of body parts.
 
@@ -187,13 +191,14 @@ def pop_shortest_paths(population, labels, label_adj_list, weight_func):
 
     # Run shortest path algorithm
     head_nodes = np.where(labels == 0)[0]  # Source nodes
-    order = pop_graph.keys()  # Topological ordering of the nodes
+    order = list(pop_graph.keys())  # Topological ordering of the nodes
+
     prev, dist = gr.dag_shortest_paths(pop_graph, order, head_nodes)
 
     return prev, dist
 
 
-def paths_to_foot(prev, dist, labels):
+def paths_to_foot(prev: dict, dist: dict, labels: ndarray) -> Tuple[ndarray, ndarray]:
     """
     Retrieve the shortest path to each foot position.
 
@@ -249,7 +254,7 @@ def paths_to_foot(prev, dist, labels):
     return paths.astype(int), path_dist
 
 
-def get_scores(dist_matrix, paths, label_adj_list, score_func):
+def get_scores(dist_matrix: ndarray, paths: ndarray, label_adj_list: dict, score_func: Func_ab) -> ndarray:
     """
     Compute a score matrix from a set of body part positions.
 
@@ -300,7 +305,7 @@ def get_scores(dist_matrix, paths, label_adj_list, score_func):
     return score_matrix
 
 
-def reduce_population(population, paths):
+def reduce_population(population: ndarray, paths: ndarray) -> Tuple[ndarray, ndarray]:
     """
     Reduce the population of a frame to only the points on the shortest paths.
 
@@ -338,7 +343,7 @@ def reduce_population(population, paths):
     return pop_reduced, paths_reduced
 
 
-def get_path_vectors(paths, n_pop):
+def get_path_vectors(paths: ndarray, n_pop: int) -> ndarray:
     """
     Convert the paths to boolean vectors.
 
@@ -368,7 +373,7 @@ def get_path_vectors(paths, n_pop):
     return path_vectors
 
 
-def in_spheres(within_radius, has_sphere):
+def in_spheres(within_radius: ndarray, has_sphere: ndarray) -> ndarray:
     """
     Return a boolean vector for the positions in the combined sphere volume.
 
@@ -394,7 +399,7 @@ def in_spheres(within_radius, has_sphere):
     return np.any(tiled * within_radius, 1)
 
 
-def select_best_feet(dist_matrix, score_matrix, path_vectors, radii):
+def select_best_feet(dist_matrix: ndarray, score_matrix: ndarray, path_vectors: ndarray, radii: Sequence) -> Tuple[int, int]:
     """
     Select the best two feet from multiple hypotheses.
 
@@ -459,7 +464,7 @@ def select_best_feet(dist_matrix, score_matrix, path_vectors, radii):
     return foot_1, foot_2
 
 
-def foot_to_pop(population, paths, path_dist, foot_num_1, foot_num_2):
+def foot_to_pop(population: ndarray, paths: ndarray, path_dist: ndarray, foot_num_1: int, foot_num_2: int) -> Tuple[ndarray, ndarray]:
     """
     Return the positions on the shortest paths to the two selected feet.
 
@@ -499,7 +504,7 @@ def foot_to_pop(population, paths, path_dist, foot_num_1, foot_num_2):
     return pop_1, pop_2
 
 
-def process_frame(population, labels, label_adj_list, radii, cost_func, score_func):
+def process_frame(population: ndarray, labels: ndarray, label_adj_list: dict, radii: Sequence, cost_func: Func_ab, score_func: Func_ab):
     """
     Return chosen body part positions from an input set of position hypotheses.
 

@@ -1,12 +1,15 @@
 """Functions related to spatial points."""
 
+from typing import Sequence, Tuple
+
 import numpy as np
 from dpcontracts import require
+from numpy import ndarray
 from numpy.linalg import norm
 from scipy.spatial.distance import cdist
 
 
-def consecutive_dist(points):
+def consecutive_dist(points: Sequence) -> ndarray:
     """
     Calculate the distance between each consecutive pair of points.
 
@@ -32,7 +35,7 @@ def consecutive_dist(points):
     return norm(differences, axis=1)
 
 
-def closest_point(points, target):
+def closest_point(points: Sequence, target: Sequence) -> Tuple[ndarray, int]:
     """
     Select the closest point to a target from a set of points.
 
@@ -71,8 +74,8 @@ def closest_point(points, target):
     return point_closest, index_closest
 
 
-def closest_proposals(proposals, targets):
-    """Return index of closest proposal to each target."""
+@require("The args must have the same length.", lambda args: len(set(map(len, args))) == 1)
+def closest_proposals(proposals: Sequence, targets: Sequence) -> ndarray:
     """
     Return closest proposal to each target.
 
@@ -106,9 +109,9 @@ def closest_proposals(proposals, targets):
     """
     return np.array([closest_point(points, target)[0] for points, target in zip(proposals, targets)])
 
-    closest = np.zeros(targets.shape)
 
-    for i, target in enumerate(targets):
+@require("The args must have the same length.", lambda args: len(set(map(len, args))) == 1)
+def assign_pair(pair_points: Sequence, pair_targets: Sequence) -> ndarray:
     """
     Assign a pair of points to a pair of targets by minimizing point-target distance.
 
@@ -148,6 +151,8 @@ def closest_proposals(proposals, targets):
     return pair_assigned
 
 
+@require("The arrays must have the same shape", lambda args: len(set(x.shape for x in args)) == 1)
+def match_pairs(points_1: ndarray, points_2: ndarray, targets_1: ndarray, targets_2: ndarray) -> Tuple[ndarray, ndarray]:
     """
     Match two sets of points to two sets of targets.
 
@@ -195,7 +200,7 @@ def closest_proposals(proposals, targets):
 
 
 @require("The arrays must have the same shape", lambda args: args.points.shape == args.targets.shape)
-def position_accuracy(points, targets, max_dist=10):
+def position_accuracy(points: ndarray, targets: ndarray, max_dist: float = 10) -> float:
     """
     Calculate ratio of points within a distance from corresponding targets.
 
@@ -235,7 +240,7 @@ def position_accuracy(points, targets, max_dist=10):
     "The arrays must have the same shape",
     lambda args: len(set(x.shape for x in [args.points_1, args.points_2, args.targets_1, args.targets_2])) == 1,
 )
-def double_position_accuracy(points_1, points_2, targets_1, targets_2, max_dist=10):
+def double_position_accuracy(points_1: ndarray, points_2: ndarray, targets_1: ndarray, targets_2: ndarray, max_dist: float = 10) -> float:
     """
     Return ratio of both sets of points being within both targets.
 

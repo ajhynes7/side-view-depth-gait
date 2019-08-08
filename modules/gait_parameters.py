@@ -1,6 +1,9 @@
 """Module for calculating gait parameters from 3D body part positions."""
 
+from typing import Sequence
+
 import pandas as pd
+import xarray as xr
 from dpcontracts import require, ensure
 from skspatial.objects import Vector, Line
 
@@ -9,7 +12,7 @@ import modules.side_assignment as sa
 import modules.sliding_window as sw
 
 
-def spatial_parameters(point_a_i, point_b, point_a_f):
+def spatial_parameters(point_a_i: Sequence, point_b: Sequence, point_a_f: Sequence) -> dict:
     """
     Calculate spatial gait parameters for a stride.
 
@@ -74,7 +77,7 @@ def spatial_parameters(point_a_i, point_b, point_a_f):
     }
 
 
-def stride_parameters(foot_a_i, foot_b, foot_a_f, *, fps=30):
+def stride_parameters(foot_a_i, foot_b, foot_a_f, *, fps: float = 30) -> dict:
     """
     Calculate gait parameters from a single stride.
 
@@ -144,7 +147,7 @@ def stride_parameters(foot_a_i, foot_b, foot_a_f, *, fps=30):
     lambda args: set(args.df_stance.columns) == {'num_stride', 'position', 'frame_i', 'frame_f', 'side'},
 )
 @require("The stances must be sorted by initial frame.", lambda args: args.df_stance.frame_i.is_monotonic)
-def stances_to_gait(df_stance):
+def stances_to_gait(df_stance: pd.DataFrame) -> pd.DataFrame:
     """
     Calculate gait parameters from all instances of feet contacting the floor.
 
@@ -200,7 +203,7 @@ def stances_to_gait(df_stance):
     "The output must have the required index.",
     lambda _, result: result.index.names == ['side', 'num_stride'] if not result.empty else True,
 )
-def walking_pass_parameters(points_stacked):
+def walking_pass_parameters(points_stacked: xr.DataArray) -> pd.DataFrame:
     """
     Calculate gait parameters from a single walking pass.
 

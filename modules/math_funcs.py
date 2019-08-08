@@ -1,9 +1,11 @@
 """Math functions."""
 
+from typing import Tuple
+
 import numpy as np
 
 
-def limits(x, tolerance):
+def limits(x: np.ndarray, tolerance: float) -> Tuple[float, float]:
     """
     Return lower and upper bounds (x ± tolerance).
 
@@ -33,7 +35,7 @@ def limits(x, tolerance):
     return lower_lim, upper_lim
 
 
-def norm_ratio(a, b):
+def norm_ratio(a: float, b: float) -> float:
     """
     Return a normalized ratio between two positive inputs.
 

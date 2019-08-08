@@ -1,8 +1,10 @@
 """Module for statistical calculations."""
 
 from collections import namedtuple
+from typing import NamedTuple, Sequence, Tuple
 
 import numpy as np
+from numpy import ndarray
 
 import modules.math_funcs as mf
 
@@ -75,7 +77,7 @@ def relative_error(measured, actual):
     return (measured - actual) / actual
 
 
-def bland_altman(differences):
+def bland_altman(differences: ndarray) -> NamedTuple['BlandAltman', ['bias', 'lower_limit', 'upper_limit']]:
     """
     Calculate measures for Bland-Altman analysis.
 
@@ -119,7 +121,7 @@ def bland_altman(differences):
     return BlandAltman(bias=bias, lower_limit=lower_limit, upper_limit=upper_limit, range_=upper_limit - lower_limit)
 
 
-def icc(matrix, form=(1, 1)):
+def icc(matrix: Sequence, form: Tuple[int, int] = (1, 1)) -> float:
     """
     Return an intraclass correlation coefficient (ICC).
 

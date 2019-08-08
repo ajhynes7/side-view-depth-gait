@@ -1,9 +1,12 @@
 """Module for working with images."""
 
+from typing import Sequence
+
 import numpy as np
+from numpy import ndarray
 
 
-def image_to_real(point_image, x_res, y_res, f_xz, f_yz):
+def image_to_real(point_image: Sequence, x_res: int, y_res: int, f_xz: float, f_yz: float) -> ndarray:
     """
     Convert image coordinates to real world coordinates.
 
@@ -47,7 +50,7 @@ def image_to_real(point_image, x_res, y_res, f_xz, f_yz):
     return point_real
 
 
-def real_to_image(point_real, x_res, y_res, f_xz, f_yz):
+def real_to_image(point_real: Sequence, x_res: int, y_res: float, f_xz: float, f_yz: float) -> ndarray:
     """
     Convert real world coordinates to image coordinates.
 
@@ -91,7 +94,7 @@ def real_to_image(point_real, x_res, y_res, f_xz, f_yz):
     return point_image
 
 
-def rgb_to_label(image_rgb, rgb_vectors):
+def rgb_to_label(image_rgb: ndarray, rgb_vectors: Sequence) -> ndarray:
     """
     Convert an RGB image to a label image.
 
@@ -119,7 +122,9 @@ def rgb_to_label(image_rgb, rgb_vectors):
     return label_image
 
 
-def recalibrate_positions(positions_real_orig, x_res_orig, y_res_orig, x_res, y_res, f_xz, f_yz):
+def recalibrate_positions(
+    positions_real_orig: ndarray, x_res_orig: int, y_res_orig: int, x_res: int, y_res: int, f_xz: float, f_yz: float
+) -> ndarray:
     """
     Change real world coordinates using new camera calibration parameters.
 

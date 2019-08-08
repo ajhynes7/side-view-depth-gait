@@ -1,16 +1,20 @@
 """Module for detecting the phases of a foot during a walking pass."""
 
 from collections import namedtuple
+from typing import Tuple
 
 import numpy as np
 import pandas as pd
+import xarray as xr
+from numpy import ndarray
 from skspatial.transformation import transform_coordinates
 
 import modules.cluster as cl
 import modules.side_assignment as sa
+from modules.types import Basis
 
 
-def stance_props(points_foot, labels_stance):
+def stance_props(points_foot: xr.DataArray, labels_stance: ndarray) -> pd.DataFrame:
     """Return properties of each stance phase from one foot in a walking pass."""
 
     frames = points_foot.coords['frames'].values
@@ -37,7 +41,7 @@ def stance_props(points_foot, labels_stance):
     return pd.DataFrame(yield_props())
 
 
-def label_stances(points_foot_grouped, basis):
+def label_stances(points_foot_grouped: xr.DataArray, basis: Basis) -> Tuple[ndarray, ndarray]:
     """Label all stance phases in a walking pass."""
 
     frames_grouped = points_foot_grouped.coords['frames'].values
@@ -51,7 +55,7 @@ def label_stances(points_foot_grouped, basis):
     return labels_grouped_l, labels_grouped_r
 
 
-def get_stance_dataframe(points_foot_grouped, labels_grouped_l, labels_grouped_r):
+def get_stance_dataframe(points_foot_grouped: ndarray, labels_grouped_l: ndarray, labels_grouped_r: ndarray) -> pd.DataFrame:
     """Return DataFrame where each row is a stance phase."""
 
     df_stance_l = stance_props(points_foot_grouped, labels_grouped_l).assign(side='L')

@@ -1,10 +1,13 @@
 """Functions related to the xarray library."""
 
+from typing import Callable
+
 import numpy as np
 import xarray as xr
+from xarray import DataArray
 
 
-def unique_frames(array_xr, func):
+def unique_frames(array_xr: DataArray, func: Callable) -> DataArray:
     """
     Return a DataArray with unique frames as coordinates.
 

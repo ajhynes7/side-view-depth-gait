@@ -1,13 +1,17 @@
 """Functions for manipulating graphs."""
 
+from typing import Any, Sequence, Tuple
+
 import numpy as np
 import pandas as pd
+from numpy import ndarray
 from scipy.spatial.distance import cdist
 
 import modules.iterable_funcs as itf
+from modules.types import Func_ab
 
 
-def adj_list_to_matrix(graph):
+def adj_list_to_matrix(graph: dict) -> ndarray:
     """
     Convert an adjacency list to an adjacency matrix.
 
@@ -44,7 +48,7 @@ def adj_list_to_matrix(graph):
     return adj_matrix
 
 
-def adj_matrix_to_list(adj_matrix):
+def adj_matrix_to_list(adj_matrix: Sequence) -> dict:
     """
     Convert an adjacency matrix to an adjacency list.
 
@@ -68,7 +72,7 @@ def adj_matrix_to_list(adj_matrix):
 
     """
     n_nodes = len(adj_matrix)
-    graph = {i: {} for i in range(n_nodes)}
+    graph: dict = {i: {} for i in range(n_nodes)}
 
     for u in range(n_nodes):
         for v in range(n_nodes):
@@ -80,7 +84,7 @@ def adj_matrix_to_list(adj_matrix):
     return graph
 
 
-def dag_shortest_paths(graph, order, source_nodes):
+def dag_shortest_paths(graph: dict, order: Sequence, source_nodes: set) -> Tuple[dict, dict]:
     """
     Compute shortest path to each node on a directed acyclic graph.
 
@@ -139,7 +143,7 @@ def dag_shortest_paths(graph, order, source_nodes):
     return prev, dist
 
 
-def trace_path(prev, target_node):
+def trace_path(prev: dict, target_node: Any) -> list:
     """
     Trace back a path through a graph.
 
@@ -178,7 +182,7 @@ def trace_path(prev, target_node):
     return path[::-1]
 
 
-def labelled_nodes_to_graph(node_labels, label_adj_list):
+def labelled_nodes_to_graph(node_labels: dict, label_adj_list: dict) -> dict:
     """
     Create an adjacency list from a set of labelled nodes.
 
@@ -214,7 +218,7 @@ def labelled_nodes_to_graph(node_labels, label_adj_list):
     """
     nodes = node_labels.keys()
 
-    graph = {v: {} for v in nodes}
+    graph: dict = {v: {} for v in nodes}
 
     for u in nodes:
         label_u = node_labels[u]
@@ -229,7 +233,7 @@ def labelled_nodes_to_graph(node_labels, label_adj_list):
     return graph
 
 
-def points_to_graph(points, labels, expected_dists, weight_func):
+def points_to_graph(points: ndarray, labels: ndarray, expected_dists: dict, weight_func: Func_ab) -> dict:
     """
     Construct a weighted graph from a set of labelled points in space.
 
