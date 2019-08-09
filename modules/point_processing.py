@@ -106,9 +106,8 @@ def closest_proposals(proposals, targets):
     """
     return np.array([closest_point(points, target)[0] for points, target in zip(proposals, targets)])
 
-    closest = np.zeros(targets.shape)
 
-    for i, target in enumerate(targets):
+def assign_pair(pair_points, pair_targets):
     """
     Assign a pair of points to a pair of targets by minimizing point-target distance.
 
@@ -148,6 +147,11 @@ def closest_proposals(proposals, targets):
     return pair_assigned
 
 
+@require(
+    "The arrays must have the same shape",
+    lambda args: len(set(x.shape for x in [args.points_1, args.points_2, args.targets_1, args.targets_2])) == 1,
+)
+def match_pairs(points_1, points_2, targets_1, targets_2):
     """
     Match two sets of points to two sets of targets.
 
