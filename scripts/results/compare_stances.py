@@ -128,10 +128,7 @@ def main():
     acc_stance_mod_l = pp.position_accuracy(points_l, truth_mod_l)
     acc_stance_mod_r = pp.position_accuracy(points_r, truth_mod_r)
 
-    data = [
-        [acc_stance_l, acc_stance_r],
-        [acc_stance_mod_l, acc_stance_mod_r]
-    ]
+    data = [[acc_stance_l, acc_stance_r], [acc_stance_mod_l, acc_stance_mod_r]]
 
     df_acc = pd.DataFrame(data, columns=['Left', 'Right'], index=['Truth', 'Modified'])
 
