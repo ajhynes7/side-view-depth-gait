@@ -76,7 +76,7 @@ def closest_proposals(proposals, targets):
     Return closest proposal to each target.
 
     Parameters
-    ---------
+    ----------
     proposals : (N,) Sequence
         Each element is a list of position proposals.
     targets : (N, D) ndarray
