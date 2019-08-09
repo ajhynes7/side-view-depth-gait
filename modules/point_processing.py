@@ -72,7 +72,6 @@ def closest_point(points, target):
 
 
 def closest_proposals(proposals, targets):
-    """Return index of closest proposal to each target."""
     """
     Return closest proposal to each target.
 
