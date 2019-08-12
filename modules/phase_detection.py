@@ -54,7 +54,7 @@ def label_stances(points_foot_grouped: xr.DataArray, basis: sa.Basis) -> Tuple[n
     return labels_grouped_l, labels_grouped_r
 
 
-def get_stance_dataframe(points_foot_grouped: ndarray, labels_grouped_l: ndarray, labels_grouped_r: ndarray) -> pd.DataFrame:
+def get_stance_dataframe(points_foot_grouped: xr.DataArray, labels_grouped_l: ndarray, labels_grouped_r: ndarray) -> pd.DataFrame:
     """Return DataFrame where each row is a stance phase."""
 
     df_stance_l = stance_props(points_foot_grouped, labels_grouped_l).assign(side='L')
