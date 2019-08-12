@@ -1,7 +1,6 @@
 """Module for assigning left/right sides to the feet."""
 
-from collections import namedtuple
-from typing import Tuple
+from typing import Tuple, NamedTuple
 
 import numpy as np
 import xarray as xr
@@ -12,7 +11,14 @@ from skspatial.objects import Vector
 from statsmodels.robust import mad
 
 import modules.numpy_funcs as nf
-from modules.types import Basis
+
+
+class Basis(NamedTuple):
+    """Basis for a 3D coordinate system."""
+    origin: ndarray
+    forward: ndarray
+    up: ndarray
+    perp: ndarray
 
 
 def fit_ransac(points: ndarray) -> Tuple[LineModelND, ndarray]:
@@ -95,7 +101,6 @@ def compute_basis(points_stacked: xr.DataArray) -> Tuple[Basis, xr.DataArray]:
         points_grouped_inlier, coords=(frames_grouped_inlier, range(3)), dims=('frames', 'cols')
     )
 
-    Basis = namedtuple('Basis', 'origin, forward, up, perp')
     basis = Basis(point_origin, vector_forward, vector_up, vector_perp)
 
     return basis, points_grouped_inlier

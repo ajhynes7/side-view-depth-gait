@@ -11,7 +11,6 @@ from skspatial.transformation import transform_coordinates
 
 import modules.cluster as cl
 import modules.side_assignment as sa
-from modules.types import Basis
 
 
 def stance_props(points_foot: xr.DataArray, labels_stance: ndarray) -> pd.DataFrame:
@@ -41,7 +40,7 @@ def stance_props(points_foot: xr.DataArray, labels_stance: ndarray) -> pd.DataFr
     return pd.DataFrame(yield_props())
 
 
-def label_stances(points_foot_grouped: xr.DataArray, basis: Basis) -> Tuple[ndarray, ndarray]:
+def label_stances(points_foot_grouped: xr.DataArray, basis: sa.Basis) -> Tuple[ndarray, ndarray]:
     """Label all stance phases in a walking pass."""
 
     frames_grouped = points_foot_grouped.coords['frames'].values
