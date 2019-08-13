@@ -6,20 +6,8 @@ from os.path import join
 import numpy as np
 import pandas as pd
 
-import modules.math_funcs as mf
 import modules.pose_estimation as pe
 from modules.constants import PART_CONNECTIONS
-
-
-def cost_func(a, b):
-    """Cost function for weighting edges of graph."""
-    return (a - b) ** 2
-
-
-def score_func(a, b):
-    """Score function for scoring links between body parts."""
-    x = 1 / mf.norm_ratio(a, b)
-    return -(x - 1) ** 2 + 1
 
 
 def main():
@@ -57,7 +45,7 @@ def main():
             population, labels = tuple_frame.population, tuple_frame.labels
 
             # Select the best two shortest paths
-            pos_1, pos_2 = pe.process_frame(population, labels, label_adj_list, radii, cost_func, score_func)
+            pos_1, pos_2 = pe.process_frame(population, labels, label_adj_list, radii, pe.cost_func, pe.score_func)
 
             # Positions of the best head and two feet
             array_selected[index_row, 0] = pos_1[0, :]

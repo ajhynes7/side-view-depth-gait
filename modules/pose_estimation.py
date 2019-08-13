@@ -10,6 +10,16 @@ import numpy as np
 from scipy.spatial.distance import cdist
 
 import modules.graphs as gr
+import modules.math_funcs as mf
+def cost_func(a, b):
+    """Cost function for weighting edges of graph."""
+    return (a - b) ** 2
+
+
+def score_func(a, b):
+    """Score function for scoring links between body parts."""
+    x = 1 / mf.norm_ratio(a, b)
+    return -(x - 1) ** 2 + 1
 
 
 def only_consecutive_labels(label_adj_list):

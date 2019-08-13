@@ -15,7 +15,6 @@ import analysis.images as im
 import analysis.plotting as pl
 import modules.pose_estimation as pe
 from modules.constants import PART_CONNECTIONS
-from scripts.main.select_proposals import cost_func, score_func
 
 
 def main():
