@@ -154,14 +154,14 @@ def lengths_to_adj_list(label_connections, lengths):
     return label_adj_list
 
 
-def pop_shortest_paths(population, labels, label_adj_list, weight_func):
+def pop_shortest_paths(dist_matrix, labels, label_adj_list, weight_func):
     """
     Calculate shortest paths on the population of body parts.
 
     Parameters
     ----------
-    population : (N, 3) ndarray
-        All position hypotheses on a frame.
+    dist_matrix : (N, N) ndarray
+        Distance matrix of the points.
     labels : (N,) ndarray
         Array of labels for N positions.
         The labels correspond to body part types (e.g., foot).
@@ -183,7 +183,7 @@ def pop_shortest_paths(population, labels, label_adj_list, weight_func):
 
     """
     # Represent population as a weighted directed acyclic graph
-    pop_graph = gr.points_to_graph(population, labels, label_adj_list, weight_func)
+    pop_graph = gr.points_to_graph(dist_matrix, labels, label_adj_list, weight_func)
 
     # Run shortest path algorithm
     head_nodes = np.where(labels == 0)[0]  # Source nodes
@@ -531,24 +531,26 @@ def process_frame(population, labels, label_adj_list, radii, cost_func, score_fu
         One point for each label (i.e., each body part type).
 
     """
+    dist_matrix = cdist(population, population)
+
     # Define a graph with edges between consecutive parts
     # (e.g. knee to calf, not knee to foot)
     cons_label_adj_list = only_consecutive_labels(label_adj_list)
 
     # Run shortest path algorithm on the body graph
-    prev, dist = pop_shortest_paths(population, labels, cons_label_adj_list, cost_func)
+    prev, dist = pop_shortest_paths(dist_matrix, labels, cons_label_adj_list, cost_func)
 
     # Get shortest path to each foot
     paths, path_dist = paths_to_foot(prev, dist, labels)
 
     pop_reduced, paths_reduced = reduce_population(population, paths)
 
-    dist_matrix = cdist(pop_reduced, pop_reduced)
-    score_matrix = get_scores(dist_matrix, paths_reduced, label_adj_list, score_func)
+    dist_matrix_reduced = cdist(pop_reduced, pop_reduced)
+    score_matrix = get_scores(dist_matrix_reduced, paths_reduced, label_adj_list, score_func)
 
     path_vectors = get_path_vectors(paths_reduced, pop_reduced.shape[0])
 
-    foot_1, foot_2 = select_best_feet(dist_matrix, score_matrix, path_vectors, radii)
+    foot_1, foot_2 = select_best_feet(dist_matrix_reduced, score_matrix, path_vectors, radii)
 
     pop_1, pop_2 = foot_to_pop(population, paths, path_dist, foot_1, foot_2)
 
