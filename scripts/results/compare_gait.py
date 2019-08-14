@@ -148,7 +148,7 @@ def main():
     for file_name, df in dict_dfs.items():
 
         with open(join('results', 'tables', file_name + '.txt'), 'w') as file:
-            file.write(df.round(3).to_latex())
+            file.write(df.round(2).to_latex())
 
 
 if __name__ == '__main__':

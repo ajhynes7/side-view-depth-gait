@@ -89,7 +89,7 @@ def main():
     for file_name, df in dict_frames.items():
 
         with open(join(table_dir, file_name + '.txt'), 'w') as file:
-            file.write(df.round(3).to_latex())
+            file.write(df.round(2).to_latex())
 
 
 if __name__ == '__main__':
