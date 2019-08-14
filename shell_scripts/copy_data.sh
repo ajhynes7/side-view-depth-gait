@@ -1,5 +1,5 @@
 #!/bin/bash
 
-cp figures/* ../gait_journal/images/
+cp figures/* ~/bitbucket_repos/gait_journal/images/
 
-cp results/plots/* ../gait_journal/images/
+cp results/plots/* ~/bitbucket_repos/gait_journal/images/
