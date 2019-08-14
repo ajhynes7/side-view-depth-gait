@@ -7,7 +7,6 @@ import pandas as pd
 
 import modules.pose_estimation as pe
 from modules.constants import PART_CONNECTIONS
-from scripts.main.select_proposals import cost_func, score_func
 
 
 def main():
@@ -48,7 +47,7 @@ def main():
                 population, labels = tuple_frame.population, tuple_frame.labels
 
                 # Select the best two shortest paths
-                pos_1, pos_2 = pe.process_frame(population, labels, label_adj_list, radii, cost_func, score_func)
+                pos_1, pos_2 = pe.process_frame(population, labels, label_adj_list, radii, pe.cost_func, pe.score_func)
 
                 # Positions of the best head and two feet
                 array_selected[index_row, 0] = pos_1[0, :]
