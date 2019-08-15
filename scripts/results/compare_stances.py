@@ -133,7 +133,7 @@ def main():
     df_acc = pd.DataFrame(data, columns=['Left', 'Right'], index=['Truth', 'Modified'])
 
     with open(join('results', 'tables', 'accuracy_stance.txt'), 'w') as file:
-        file.write(df_acc.round(3).to_latex())
+        file.write(df_acc.round(2).to_latex())
 
 
 if __name__ == '__main__':

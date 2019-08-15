@@ -2,9 +2,9 @@
 
 import numpy as np
 import pytest
+from scipy.spatial.distance import cdist
 
 import modules.pose_estimation as pe
-from scripts.main.select_proposals import cost_func
 
 
 @pytest.fixture
@@ -32,8 +32,10 @@ def test_pop_shortest_paths(sample_population):
 
     population, labels, label_adj_list = sample_population
 
+    dist_matrix = cdist(population, population)
+
     prev, dist = pe.pop_shortest_paths(
-        population, labels, label_adj_list, cost_func
+        dist_matrix, labels, label_adj_list, pe.cost_func
     )
 
     assert prev == {0: np.nan, 1: np.nan, 2: 0, 3: 0, 4: 2, 5: 2}

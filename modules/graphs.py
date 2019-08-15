@@ -2,7 +2,6 @@
 
 import numpy as np
 import pandas as pd
-from scipy.spatial.distance import cdist
 
 import modules.iterable_funcs as itf
 
@@ -229,14 +228,14 @@ def labelled_nodes_to_graph(node_labels, label_adj_list):
     return graph
 
 
-def points_to_graph(points, labels, expected_dists, weight_func):
+def points_to_graph(dist_matrix, labels, expected_dists, weight_func):
     """
     Construct a weighted graph from a set of labelled points in space.
 
     Parameters
     ----------
-    points : ndarray
-        List of points in space.
+    dist_matrix : ndarray
+        Distance matrix of the points.
     labels : array_like
         Label of each point.
     expected_dists : dict
@@ -253,12 +252,15 @@ def points_to_graph(points, labels, expected_dists, weight_func):
 
     Examples
     --------
+    >>> from scipy.spatial.distance import cdist
+
     >>> points = np.array([[0, 3], [0, 10], [2, 3]])
     >>> labels = [0, 1, 1]
     >>> expected_dists = {0: {1: 5}, 1: {}}
     >>> weight_func = lambda a, b: abs(a - b)
 
-    >>> points_to_graph(points, labels, expected_dists, weight_func)
+    >>> dist_matrix = cdist(points, points)
+    >>> points_to_graph(dist_matrix, labels, expected_dists, weight_func)
     {0: {1: 2.0, 2: 3.0}, 1: {}, 2: {}}
 
     """
@@ -267,9 +269,6 @@ def points_to_graph(points, labels, expected_dists, weight_func):
     # Expected distances between points
     adj_list_expected = labelled_nodes_to_graph(label_dict, expected_dists)
     dist_matrix_expected = adj_list_to_matrix(adj_list_expected)
-
-    # Measured distances between all points
-    dist_matrix = cdist(points, points)
 
     # Adjacency matrix defined by a weight function
     adj_matrix = weight_func(dist_matrix, dist_matrix_expected)

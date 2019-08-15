@@ -2,12 +2,12 @@
 \toprule
 {} &  ICC\_21 &  ICC\_31 \\
 \midrule
-absolute\_step\_length &   0.983 &   0.987 \\
-stance\_percentage    &   0.865 &   0.863 \\
-step\_length          &   0.986 &   0.987 \\
-stride\_length        &   0.994 &   0.996 \\
-stride\_time          &   0.714 &   0.953 \\
-stride\_velocity      &   0.764 &   0.944 \\
-stride\_width         &   0.625 &   0.886 \\
+absolute\_step\_length &    0.98 &    0.99 \\
+stance\_percentage    &    0.87 &    0.87 \\
+step\_length          &    0.98 &    0.99 \\
+stride\_length        &    0.99 &    1.00 \\
+stride\_time          &    0.72 &    0.96 \\
+stride\_velocity      &    0.77 &    0.94 \\
+stride\_width         &    0.63 &    0.88 \\
 \bottomrule
 \end{tabular}

@@ -67,7 +67,7 @@ def main():
     save_path = join('results', 'tables', 'length_comparison.txt')
     with open(save_path, 'w') as file:
 
-        file.write(df_length_comparison.round(3).to_latex())
+        file.write(df_length_comparison.round(2).to_latex())
 
 
 if __name__ == '__main__':

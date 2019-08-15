@@ -1,14 +1,14 @@
 \begin{tabular}{lrrrr}
 \toprule
 {} & \multicolumn{2}{l}{ICC\_21} & \multicolumn{2}{l}{ICC\_31} \\
-{} &      L &      R &      L &      R \\
+{} &      L &     R &      L &     R \\
 \midrule
-absolute\_step\_length &  0.910 &  0.981 &  0.969 &  0.986 \\
-stance\_percentage    &  0.831 &  0.872 &  0.828 &  0.870 \\
-step\_length          &  0.932 &  0.973 &  0.975 &  0.985 \\
-stride\_length        &  0.988 &  0.989 &  0.988 &  0.992 \\
-stride\_time          &  0.711 &  0.723 &  0.953 &  0.957 \\
-stride\_velocity      &  0.752 &  0.768 &  0.929 &  0.948 \\
-stride\_width         &  0.604 &  0.627 &  0.834 &  0.911 \\
+absolute\_step\_length &   0.91 &  0.98 &   0.97 &  0.99 \\
+stance\_percentage    &   0.84 &  0.83 &   0.84 &  0.83 \\
+step\_length          &   0.93 &  0.97 &   0.97 &  0.98 \\
+stride\_length        &   0.99 &  0.99 &   0.99 &  0.99 \\
+stride\_time          &   0.72 &  0.73 &   0.96 &  0.96 \\
+stride\_velocity      &   0.75 &  0.77 &   0.93 &  0.95 \\
+stride\_width         &   0.61 &  0.62 &   0.84 &  0.90 \\
 \bottomrule
 \end{tabular}

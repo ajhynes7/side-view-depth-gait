@@ -15,7 +15,6 @@ import analysis.images as im
 import analysis.plotting as pl
 import modules.pose_estimation as pe
 from modules.constants import PART_CONNECTIONS
-from scripts.main.select_proposals import cost_func, score_func
 
 
 def main():
@@ -93,7 +92,8 @@ def main():
     cons_label_adj_list = pe.only_consecutive_labels(label_adj_list)
 
     # Run shortest path algorithm on the body graph
-    prev, dist = pe.pop_shortest_paths(population, labels, cons_label_adj_list, cost_func)
+    dist_matrix = cdist(population, population)
+    prev, dist = pe.pop_shortest_paths(dist_matrix, labels, cons_label_adj_list, pe.cost_func)
 
     # Get shortest path to each foot
     paths, _ = pe.paths_to_foot(prev, dist, labels)
@@ -115,8 +115,8 @@ def main():
     n_pop_reduced = pop_reduced.shape[0]
     path_vectors = pe.get_path_vectors(paths_reduced, n_pop_reduced)
 
-    dist_matrix = cdist(pop_reduced, pop_reduced)
-    score_matrix = pe.get_scores(dist_matrix, paths_reduced, label_adj_list, score_func)
+    dist_matrix_reduced = cdist(pop_reduced, pop_reduced)
+    score_matrix = pe.get_scores(dist_matrix_reduced, paths_reduced, label_adj_list, pe.score_func)
 
     n_figs = len(pairs)
 
@@ -130,7 +130,7 @@ def main():
             plt.legend(part_types, loc=legend_location, edgecolor='k')
 
         has_sphere = np.any(path_vectors[pairs[i]], 0)
-        within_radius = dist_matrix < r
+        within_radius = dist_matrix_reduced < r
 
         inside_spheres = pe.in_spheres(within_radius, has_sphere)
         pl.plot_links(pop_reduced, score_matrix, inside_spheres)
