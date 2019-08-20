@@ -1,12 +1,21 @@
 """Module for statistical calculations."""
 
-from collections import namedtuple
-from typing import NamedTuple, Sequence, Tuple
+from typing import NamedTuple, Tuple
 
 import numpy as np
 from numpy import ndarray
 
 import modules.math_funcs as mf
+from modules.typing import array_like
+
+
+class BlandAltman(NamedTuple):
+    """Container for Bland-Altman results."""
+
+    bias: float
+    lower_limit: float
+    upper_limit: float
+    range_: float
 
 
 def relative_difference(x, y):
@@ -77,7 +86,7 @@ def relative_error(measured, actual):
     return (measured - actual) / actual
 
 
-def bland_altman(differences: ndarray) -> NamedTuple['BlandAltman', ['bias', 'lower_limit', 'upper_limit']]:
+def bland_altman(differences: ndarray) -> BlandAltman:
     """
     Calculate measures for Bland-Altman analysis.
 
@@ -113,10 +122,6 @@ def bland_altman(differences: ndarray) -> NamedTuple['BlandAltman', ['bias', 'lo
     bias, standard_dev = differences.mean(), differences.std()
 
     lower_limit, upper_limit = mf.limits(bias, 1.96 * standard_dev)
-
-    params = 'bias lower_limit upper_limit range_'
-
-    BlandAltman = namedtuple('BlandAltman', params)
 
     return BlandAltman(bias=bias, lower_limit=lower_limit, upper_limit=upper_limit, range_=upper_limit - lower_limit)
 
