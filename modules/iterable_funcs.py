@@ -5,12 +5,12 @@ from typing import Iterable, Iterator, Sequence
 
 def pairwise(seq: Sequence) -> Iterator:
     """
-    Return a zip object that contains consecutive pairs of a sequence.
+    Return a zip object that contains consecutive pairs of a array_like.
 
     Parameters
     ----------
-    seq : sequence
-        Any sequence type (e.g. list, tuple, range, string).
+    seq : array_like
+        Any array_like type (e.g. list, tuple, range, string).
 
     Returns
     -------
@@ -35,7 +35,7 @@ def iterable_to_dict(it: Iterable) -> dict:
     Parameters
     ----------
     it : iterable
-        Any iterable (e.g. set, dict, generator, sequence type).
+        Any iterable (e.g. set, dict, generator, array_like type).
 
     Returns
     -------

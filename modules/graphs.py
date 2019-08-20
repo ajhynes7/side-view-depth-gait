@@ -1,14 +1,15 @@
 """Functions for manipulating graphs."""
 
-from typing import Any, Sequence, Tuple
+from typing import Any, Tuple
 
 import numpy as np
 import pandas as pd
 from numpy import ndarray
 from scipy.spatial.distance import cdist
+from modules.typing import array_like
 
 import modules.iterable_funcs as itf
-from modules.types import Func_ab
+from modules.typing import func_ab
 
 
 def adj_list_to_matrix(graph: dict) -> ndarray:
@@ -48,7 +49,7 @@ def adj_list_to_matrix(graph: dict) -> ndarray:
     return adj_matrix
 
 
-def adj_matrix_to_list(adj_matrix: Sequence) -> dict:
+def adj_matrix_to_list(adj_matrix: array_like) -> dict:
     """
     Convert an adjacency matrix to an adjacency list.
 
@@ -84,7 +85,7 @@ def adj_matrix_to_list(adj_matrix: Sequence) -> dict:
     return graph
 
 
-def dag_shortest_paths(graph: dict, order: Sequence, source_nodes: set) -> Tuple[dict, dict]:
+def dag_shortest_paths(graph: dict, order: array_like, source_nodes: set) -> Tuple[dict, dict]:
     """
     Compute shortest path to each node on a directed acyclic graph.
 
@@ -93,8 +94,8 @@ def dag_shortest_paths(graph: dict, order: Sequence, source_nodes: set) -> Tuple
     graph : dict
         Adjacency list.
         graph[u][v] is the weight from node u to node v.
-        There must be a key for each node u in the graph.
-    order : sequence
+        Therarray_likee a key for each node u in the graph.
+    order : array_like
         Topological ordering of the nodes.
         For each edge u to v, u comes before v in the ordering.
     source_nodes : set
@@ -233,7 +234,7 @@ def labelled_nodes_to_graph(node_labels: dict, label_adj_list: dict) -> dict:
     return graph
 
 
-def points_to_graph(points: ndarray, labels: ndarray, expected_dists: dict, weight_func: Func_ab) -> dict:
+def points_to_graph(points: ndarray, labels: ndarray, expected_dists: dict, weight_func: func_ab) -> dict:
     """
     Construct a weighted graph from a set of labelled points in space.
 

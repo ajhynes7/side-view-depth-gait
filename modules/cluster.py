@@ -1,14 +1,15 @@
 """Module for clustering points in space."""
 
 from queue import Queue
-from typing import Any, Sequence
+from typing import Any
 
 import numpy as np
 from numpy import ndarray
 from scipy.spatial.distance import cdist
+from modules.typing import array_like
 
 
-def dbscan_st(points: Sequence, times: Sequence = None, eps_spatial: float = 0.5, eps_temporal: float = 0.5, min_pts: int = 5) -> ndarray:
+def dbscan_st(points: array_like, times: array_like = None, eps_spatial: float = 0.5, eps_temporal: float = 0.5, min_pts: int = 5) -> ndarray:
     """
     Cluster points with spatiotemporal DBSCAN algorithm.
 

@@ -1,12 +1,12 @@
 """Module for working with images."""
 
-from typing import Sequence
-
 import numpy as np
 from numpy import ndarray
 
+from modules.typing import array_like
 
-def image_to_real(point_image: Sequence, x_res: int, y_res: int, f_xz: float, f_yz: float) -> ndarray:
+
+def image_to_real(point_image: array_like, x_res: int, y_res: int, f_xz: float, f_yz: float) -> ndarray:
     """
     Convert image coordinates to real world coordinates.
 
@@ -50,7 +50,7 @@ def image_to_real(point_image: Sequence, x_res: int, y_res: int, f_xz: float, f_
     return point_real
 
 
-def real_to_image(point_real: Sequence, x_res: int, y_res: float, f_xz: float, f_yz: float) -> ndarray:
+def real_to_image(point_real: array_like, x_res: int, y_res: float, f_xz: float, f_yz: float) -> ndarray:
     """
     Convert real world coordinates to image coordinates.
 
@@ -94,7 +94,7 @@ def real_to_image(point_real: Sequence, x_res: int, y_res: float, f_xz: float, f
     return point_image
 
 
-def rgb_to_label(image_rgb: ndarray, rgb_vectors: Sequence) -> ndarray:
+def rgb_to_label(image_rgb: ndarray, rgb_vectors: array_like) -> ndarray:
     """
     Convert an RGB image to a label image.
 

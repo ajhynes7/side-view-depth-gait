@@ -1,15 +1,16 @@
 """Functions related to spatial points."""
 
-from typing import Sequence, Tuple
+from typing import Tuple
 
 import numpy as np
 from dpcontracts import require
 from numpy import ndarray
 from numpy.linalg import norm
 from scipy.spatial.distance import cdist
+from modules.typing import array_like
 
 
-def consecutive_dist(points: Sequence) -> ndarray:
+def consecutive_dist(points: array_like) -> ndarray:
     """
     Calculate the distance between each consecutive pair of points.
 
@@ -35,7 +36,7 @@ def consecutive_dist(points: Sequence) -> ndarray:
     return norm(differences, axis=1)
 
 
-def closest_point(points: Sequence, target: Sequence) -> Tuple[ndarray, int]:
+def closest_point(points: array_like, target: array_like) -> Tuple[ndarray, int]:
     """
     Select the closest point to a target from a set of points.
 
@@ -75,13 +76,13 @@ def closest_point(points: Sequence, target: Sequence) -> Tuple[ndarray, int]:
 
 
 @require("The args must have the same length.", lambda args: len(set(map(len, args))) == 1)
-def closest_proposals(proposals: Sequence, targets: Sequence) -> ndarray:
+def closest_proposals(proposals: array_like, targets: array_like) -> ndarray:
     """
     Return closest proposal to each target.
 
     Parameters
     ---------
-    proposals : (N,) Sequence
+    proposals : (N,) array_like
         Each element is a list of position proposals.
     targets : (N, D) ndarray
         Each row is a target position.
@@ -111,7 +112,7 @@ def closest_proposals(proposals: Sequence, targets: Sequence) -> ndarray:
 
 
 @require("The args must have the same length.", lambda args: len(set(map(len, args))) == 1)
-def assign_pair(pair_points: Sequence, pair_targets: Sequence) -> ndarray:
+def assign_pair(pair_points: array_like, pair_targets: array_like) -> ndarray:
     """
     Assign a pair of points to a pair of targets by minimizing point-target distance.
 
