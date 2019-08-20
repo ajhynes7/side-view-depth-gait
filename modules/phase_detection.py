@@ -45,8 +45,9 @@ def label_stances(points_foot_grouped: xr.DataArray, basis: sa.Basis) -> Tuple[n
 
     frames_grouped = points_foot_grouped.coords['frames'].values
 
-    signal_grouped = transform_coordinates(points_foot_grouped, basis.origin, [basis.forward])
-    values_side_grouped = transform_coordinates(points_foot_grouped, basis.origin, [basis.perp])
+    array_points = points_foot_grouped.values
+    signal_grouped = transform_coordinates(array_points, basis.origin, [basis.forward])
+    values_side_grouped = transform_coordinates(array_points, basis.origin, [basis.perp])
 
     labels_grouped = cl.dbscan_st(signal_grouped, times=frames_grouped, eps_spatial=5, eps_temporal=10, min_pts=7)
     labels_grouped_l, labels_grouped_r = sa.assign_sides_grouped(frames_grouped, values_side_grouped, labels_grouped)

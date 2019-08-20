@@ -78,9 +78,9 @@ def compute_basis(points_stacked: xr.DataArray) -> Tuple[Basis, xr.DataArray]:
     """
     frames = points_stacked.coords['frames'].values
 
-    points_head = points_stacked.sel(layers='points_head')
-    points_a = points_stacked.sel(layers='points_a')
-    points_b = points_stacked.sel(layers='points_b')
+    points_head = points_stacked.sel(layers='points_head').values
+    points_a = points_stacked.sel(layers='points_a').values
+    points_b = points_stacked.sel(layers='points_b').values
 
     points_foot_mean = (points_a + points_b) / 2
 
