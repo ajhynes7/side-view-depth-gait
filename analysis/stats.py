@@ -126,7 +126,7 @@ def bland_altman(differences: ndarray) -> BlandAltman:
     return BlandAltman(bias=bias, lower_limit=lower_limit, upper_limit=upper_limit, range_=upper_limit - lower_limit)
 
 
-def icc(matrix: Sequence, form: Tuple[int, int] = (1, 1)) -> float:
+def icc(matrix: array_like, form: Tuple[int, int] = (1, 1)) -> float:
     """
     Return an intraclass correlation coefficient (ICC).
 

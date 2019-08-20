@@ -9,7 +9,9 @@ from scipy.spatial.distance import cdist
 from modules.typing import array_like
 
 
-def dbscan_st(points: array_like, times: array_like = None, eps_spatial: float = 0.5, eps_temporal: float = 0.5, min_pts: int = 5) -> ndarray:
+def dbscan_st(
+    points: array_like, times: array_like = None, eps_spatial: float = 0.5, eps_temporal: float = 0.5, min_pts: int = 5
+) -> ndarray:
     """
     Cluster points with spatiotemporal DBSCAN algorithm.
 
@@ -85,8 +87,16 @@ def dbscan_st(points: array_like, times: array_like = None, eps_spatial: float =
     return labels
 
 
-def grow_cluster_st(D_spatial: ndarray, D_temporal: ndarray, labels: ndarray, set_neighbours: set,
-        label_cluster: int, eps_spatial: float, eps_temporal: float, min_pts: int) -> None:
+def grow_cluster_st(
+    D_spatial: ndarray,
+    D_temporal: ndarray,
+    labels: ndarray,
+    set_neighbours: set,
+    label_cluster: int,
+    eps_spatial: float,
+    eps_temporal: float,
+    min_pts: int,
+) -> None:
     """
     Grow a cluster starting from a seed point.
 
@@ -200,7 +210,9 @@ def region_query(dist_matrix: ndarray, eps: float, idx_pt: int) -> set:
     return set(np.nonzero(dist_matrix[idx_pt] <= eps)[0])
 
 
-def region_query_st(D_spatial: ndarray, D_temporal: ndarray, eps_spatial: float, eps_temporal: float, idx_pt: int) -> set:
+def region_query_st(
+    D_spatial: ndarray, D_temporal: ndarray, eps_spatial: float, eps_temporal: float, idx_pt: int
+) -> set:
     """
     Perform spatiotemporal region query for DBSCAN.
 

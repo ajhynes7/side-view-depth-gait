@@ -15,6 +15,7 @@ import modules.numpy_funcs as nf
 
 class Basis(NamedTuple):
     """Basis for a 3D coordinate system."""
+
     origin: ndarray
     forward: ndarray
     up: ndarray
@@ -98,7 +99,7 @@ def compute_basis(points_stacked: xr.DataArray) -> Tuple[Basis, xr.DataArray]:
     points_grouped_inlier = points_grouped[is_inlier]
 
     points_grouped_inlier = xr.DataArray(
-            points_grouped_inlier, coords={'frames': frames_grouped_inlier, 'cols': range(3)},
+        points_grouped_inlier, coords=[('frames', frames_grouped_inlier), ('cols', range(3))]
     )
 
     basis = Basis(point_origin, vector_forward, vector_up, vector_perp)
@@ -106,7 +107,9 @@ def compute_basis(points_stacked: xr.DataArray) -> Tuple[Basis, xr.DataArray]:
     return basis, points_grouped_inlier
 
 
-def assign_sides_grouped(frames_grouped: ndarray, values_side_grouped: ndarray, labels_grouped: ndarray) -> Tuple[ndarray, ndarray]:
+def assign_sides_grouped(
+    frames_grouped: ndarray, values_side_grouped: ndarray, labels_grouped: ndarray
+) -> Tuple[ndarray, ndarray]:
     """
     Assign left/right sides to clusters representing stance phases.
 

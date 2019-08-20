@@ -153,7 +153,9 @@ def lengths_to_adj_list(label_connections: ndarray, lengths: array_like) -> dict
     return label_adj_list
 
 
-def pop_shortest_paths(population: ndarray, labels: ndarray, label_adj_list: dict, weight_func: func_ab) -> Tuple[dict, dict]:
+def pop_shortest_paths(
+    population: ndarray, labels: ndarray, label_adj_list: dict, weight_func: func_ab
+) -> Tuple[dict, dict]:
     """
     Calculate shortest paths on the population of body parts.
 
@@ -394,7 +396,9 @@ def in_spheres(within_radius: ndarray, has_sphere: ndarray) -> ndarray:
     return np.any(tiled * within_radius, 1)
 
 
-def select_best_feet(dist_matrix: ndarray, score_matrix: ndarray, path_vectors: ndarray, radii: array_like) -> Tuple[int, int]:
+def select_best_feet(
+    dist_matrix: ndarray, score_matrix: ndarray, path_vectors: ndarray, radii: array_like
+) -> Tuple[int, int]:
     """
     Select the best two feet from multiple hypotheses.
 
@@ -459,7 +463,9 @@ def select_best_feet(dist_matrix: ndarray, score_matrix: ndarray, path_vectors: 
     return foot_1, foot_2
 
 
-def foot_to_pop(population: ndarray, paths: ndarray, path_dist: ndarray, foot_num_1: int, foot_num_2: int) -> Tuple[ndarray, ndarray]:
+def foot_to_pop(
+    population: ndarray, paths: ndarray, path_dist: ndarray, foot_num_1: int, foot_num_2: int
+) -> Tuple[ndarray, ndarray]:
     """
     Return the positions on the shortest paths to the two selected feet.
 
@@ -499,7 +505,14 @@ def foot_to_pop(population: ndarray, paths: ndarray, path_dist: ndarray, foot_nu
     return pop_1, pop_2
 
 
-def process_frame(population: ndarray, labels: ndarray, label_adj_list: dict, radii: array_like, cost_func: func_ab, score_func: func_ab):
+def process_frame(
+    population: ndarray,
+    labels: ndarray,
+    label_adj_list: dict,
+    radii: array_like,
+    cost_func: func_ab,
+    score_func: func_ab,
+):
     """
     Return chosen body part positions from an input set of position hypotheses.
 

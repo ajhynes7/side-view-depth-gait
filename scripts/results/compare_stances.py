@@ -19,11 +19,7 @@ def match_frames(list_passes_x, df_truth_trial_x):
     points_trial_x = xr.concat(list_passes_x, dim='frames')
 
     truth_trial_x = xr.DataArray(
-        np.stack(df_truth_trial_x),
-        coords={
-            'frames': df_truth_trial_x.index.values,
-            'cols': range(3),
-        }
+        np.stack(df_truth_trial_x), coords={'frames': df_truth_trial_x.index.values, 'cols': range(3)}
     )
 
     # Take frames common to ground truth and selected stance positions.
@@ -78,11 +74,7 @@ def main():
 
             points_stacked = xr.DataArray(
                 np.dstack((points_a, points_b, points_head)),
-                coords={
-                    'frames': frames,
-                    'cols': range(3),
-                    'layers': ['points_a', 'points_b', 'points_head'],
-                }
+                coords={'frames': frames, 'cols': range(3), 'layers': ['points_a', 'points_b', 'points_head']},
             )
 
             basis, points_grouped_inlier = sa.compute_basis(points_stacked)
@@ -135,10 +127,7 @@ def main():
     acc_stance_mod_l = pp.position_accuracy(points_l, truth_mod_l)
     acc_stance_mod_r = pp.position_accuracy(points_r, truth_mod_r)
 
-    data = [
-        [acc_stance_l, acc_stance_r],
-        [acc_stance_mod_l, acc_stance_mod_r]
-    ]
+    data = [[acc_stance_l, acc_stance_r], [acc_stance_mod_l, acc_stance_mod_r]]
 
     df_acc = pd.DataFrame(data, columns=['Left', 'Right'], index=['Truth', 'Modified'])
 

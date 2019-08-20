@@ -25,17 +25,16 @@ def main():
         .assign(participant=df_regex.participant)
     )
 
-    df_sw = pd.DataFrame({
-        'rel_diff': df_diff_rel.stride_width.values,
-        'zeno': df_trials_z.stride_width.values,
-        'participant': df_regex.participant,
-    })
+    df_sw = pd.DataFrame(
+        {
+            'rel_diff': df_diff_rel.stride_width.values,
+            'zeno': df_trials_z.stride_width.values,
+            'participant': df_regex.participant,
+        }
+    )
 
-    df_sw.participant = (
-        pd.Categorical(df_sw.participant, ordered=True)
-        .rename_categories({
-            '004': 'Participant 1', '005': 'Participant 2', '006': 'Participant 3', '007': 'Participant 4'
-        })
+    df_sw.participant = pd.Categorical(df_sw.participant, ordered=True).rename_categories(
+        {'004': 'Participant 1', '005': 'Participant 2', '006': 'Participant 3', '007': 'Participant 4'}
     )
 
     participants_unique = df_sw.participant.unique().sort_values()

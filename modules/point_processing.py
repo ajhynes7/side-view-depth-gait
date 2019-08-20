@@ -153,7 +153,9 @@ def assign_pair(pair_points: array_like, pair_targets: array_like) -> ndarray:
 
 
 @require("The arrays must have the same shape", lambda args: len(set(x.shape for x in args)) == 1)
-def match_pairs(points_1: ndarray, points_2: ndarray, targets_1: ndarray, targets_2: ndarray) -> Tuple[ndarray, ndarray]:
+def match_pairs(
+    points_1: ndarray, points_2: ndarray, targets_1: ndarray, targets_2: ndarray
+) -> Tuple[ndarray, ndarray]:
     """
     Match two sets of points to two sets of targets.
 
@@ -241,7 +243,9 @@ def position_accuracy(points: ndarray, targets: ndarray, max_dist: float = 10) -
     "The arrays must have the same shape",
     lambda args: len(set(x.shape for x in [args.points_1, args.points_2, args.targets_1, args.targets_2])) == 1,
 )
-def double_position_accuracy(points_1: ndarray, points_2: ndarray, targets_1: ndarray, targets_2: ndarray, max_dist: float = 10) -> float:
+def double_position_accuracy(
+    points_1: ndarray, points_2: ndarray, targets_1: ndarray, targets_2: ndarray, max_dist: float = 10
+) -> float:
     """
     Return ratio of both sets of points being within both targets.
 
