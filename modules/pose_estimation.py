@@ -61,11 +61,11 @@ def get_population(list_frame_points: array_like, part_labels: array_like) -> Tu
 
     Parameters
     ----------
-    frame_series : Series
-        Index of the series is body parts.
-        Values of the series are part hypotheses.
+    list_frame_points : Sequence
+        Sequence of points on a frame.
+        Each element is an array of points for a body part.
     part_labels : array_like
-        Label for each body part in the series.
+        Corresponding label for each body part.
         e.g. L_FOOT and R_FOOT both have the label 5.
 
     Returns
@@ -79,14 +79,10 @@ def get_population(list_frame_points: array_like, part_labels: array_like) -> Tu
 
     Examples
     --------
-    >>> import pandas as pd
-    >>> head_points = np.array([-45, 66, 238]).reshape(-1, 3)
-    >>> foot_points = np.array([[-26., -57, 249], [-74, -58, 260]])
+    >>> head_points = [[-45, 66, 238]])
+    >>> foot_points = [[-26., -57, 249], [-74, -58, 260]]
 
-    >>> frame_series = pd.Series({'L_FOOT': foot_points, 'HEAD': head_points})
-    >>> part_labels = [5, 0]
-
-    >>> population, labels = get_population(frame_series, part_labels)
+    >>> population, labels = get_population([foot_points, head_points], [5, 0])
 
     >>> population
     array([[-45.,  66., 238.],
