@@ -14,7 +14,7 @@ from scipy.spatial.distance import cdist
 import analysis.images as im
 import analysis.plotting as pl
 import modules.pose_estimation as pe
-from modules.constants import PART_CONNECTIONS
+from modules.constants import PART_CONNECTIONS, TYPE_CONNECTIONS
 
 
 def main():
@@ -85,15 +85,11 @@ def main():
 
     # Expected lengths for all part connections,
     # including non-adjacent (e.g., knee to foot)
-    label_adj_list = pe.lengths_to_adj_list(PART_CONNECTIONS, lengths)
-
-    # Define a graph with edges between consecutive parts
-    # (e.g. knee to calf, not knee to foot)
-    cons_label_adj_list = pe.only_consecutive_labels(label_adj_list)
+    label_adj_list_types = pe.lengths_to_adj_list(TYPE_CONNECTIONS, lengths)
 
     # Run shortest path algorithm on the body graph
     dist_matrix = cdist(population, population)
-    prev, dist = pe.pop_shortest_paths(dist_matrix, labels, cons_label_adj_list, pe.cost_func)
+    prev, dist = pe.pop_shortest_paths(dist_matrix, labels, label_adj_list_types, pe.cost_func)
 
     # Get shortest path to each foot
     paths, _ = pe.paths_to_foot(prev, dist, labels)
@@ -115,8 +111,10 @@ def main():
     n_pop_reduced = pop_reduced.shape[0]
     path_vectors = pe.get_path_vectors(paths_reduced, n_pop_reduced)
 
+    label_adj_list_parts = pe.lengths_to_adj_list(lengths, PART_CONNECTIONS)
+
     dist_matrix_reduced = cdist(pop_reduced, pop_reduced)
-    score_matrix = pe.get_scores(dist_matrix_reduced, paths_reduced, label_adj_list, pe.score_func)
+    score_matrix = pe.get_scores(dist_matrix_reduced, paths_reduced, label_adj_list_parts, pe.score_func)
 
     n_figs = len(pairs)
 

@@ -11,7 +11,7 @@ from scipy.spatial.distance import cdist
 
 import modules.graphs as gr
 import modules.math_funcs as mf
-from modules.constants import PART_CONNECTIONS, PART_TYPES
+from modules.constants import PART_CONNECTIONS, PART_TYPES, TYPE_CONNECTIONS
 
 
 def cost_func(a, b):
@@ -99,46 +99,6 @@ def estimate_lengths(df_hypo_trial, **kwargs):
             break
 
     return lengths_estimated
-
-
-def only_consecutive_labels(label_adj_list):
-    """
-    Return a label adjacency list with only consecutive labels.
-
-    For example, if the original adjacency list includes 2->3, 3->4, and 2->4,
-    the returned adjacency list will only have 2->3 and 3->4.
-
-    Parameters
-    ----------
-    label_adj_list : dict
-        Adjacency list for the labels.
-        label_adj_list[A][B] is the expected distance between
-        a point with label A and a point with label B.
-
-    Returns
-    -------
-    consecutive_adj_list : dict
-        Adjacency list for consecutive labels only.
-        Every key in original label_adj_list is included.
-
-    Examples
-    --------
-    >>> label_adj_list = {0: {1: 6}, 1: {2: 1, 3: 3}, 3: {4: 20}, 4: {5: 20}}
-
-    >>> only_consecutive_labels(label_adj_list)
-    {0: {1: 6}, 1: {2: 1}, 3: {4: 20}, 4: {5: 20}}
-
-    """
-    consecutive_adj_list = {k: {} for k in label_adj_list}
-
-    for key_1 in label_adj_list:
-        for key_2 in label_adj_list[key_1]:
-
-            if key_2 - key_1 == 1:
-
-                consecutive_adj_list[key_1] = {key_2: label_adj_list[key_1][key_2]}
-
-    return consecutive_adj_list
 
 
 def get_population(frame_series, part_labels):
@@ -588,7 +548,7 @@ def foot_to_pop(population, paths, path_dist, foot_num_1, foot_num_2):
     return pop_1, pop_2
 
 
-def process_frame(population, labels, label_adj_list, radii, cost_func, score_func):
+def process_frame(population, labels, lengths, radii, cost_func, score_func):
     """
     Return chosen body part positions from an input set of position hypotheses.
 
@@ -602,10 +562,8 @@ def process_frame(population, labels, label_adj_list, radii, cost_func, score_fu
     labels : (N,) ndarray
         Array of labels for N positions.
         The labels correspond to body part types (e.g., foot).
-    label_adj_list : dict
-        Adjacency list for the labels.
-        label_adj_list[A][B] is the expected distance between
-        a point with label A and a point with label B.
+    lengths : (N_lengths,) ndarray
+        Lengths between adjacent body parts.
     radii : array_like
         List of radii used to select the best feet.
     cost_func : function
@@ -622,12 +580,11 @@ def process_frame(population, labels, label_adj_list, radii, cost_func, score_fu
     """
     dist_matrix = cdist(population, population)
 
-    # Define a graph with edges between consecutive parts
-    # (e.g. knee to calf, not knee to foot)
-    cons_label_adj_list = only_consecutive_labels(label_adj_list)
+    label_adj_list_types = lengths_to_adj_list(TYPE_CONNECTIONS, lengths)
+    label_adj_list_parts = lengths_to_adj_list(PART_CONNECTIONS, lengths)
 
     # Run shortest path algorithm on the body graph
-    prev, dist = pop_shortest_paths(dist_matrix, labels, cons_label_adj_list, cost_func)
+    prev, dist = pop_shortest_paths(dist_matrix, labels, label_adj_list_types, cost_func)
 
     # Get shortest path to each foot
     paths, path_dist = paths_to_foot(prev, dist, labels)
@@ -635,7 +592,7 @@ def process_frame(population, labels, label_adj_list, radii, cost_func, score_fu
     pop_reduced, paths_reduced = reduce_population(population, paths)
 
     dist_matrix_reduced = cdist(pop_reduced, pop_reduced)
-    score_matrix = get_scores(dist_matrix_reduced, paths_reduced, label_adj_list, score_func)
+    score_matrix = get_scores(dist_matrix_reduced, paths_reduced, label_adj_list_parts, score_func)
 
     path_vectors = get_path_vectors(paths_reduced, pop_reduced.shape[0])
 
