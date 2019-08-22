@@ -25,61 +25,77 @@ def score_func(a, b):
     return -(x - 1) ** 2 + 1
 
 
-def estimate_lengths(df_hypo_trial, n_frames, **kwargs):
+def measure_min_path(population, labels, label_adj_list):
+    """
+    Run shortest paths on each frame in the sample
+    and measure lengths along the minimum shortest path.
+
+    """
+    dist_matrix = cdist(population, population)
+    prev, dist = pop_shortest_paths(dist_matrix, labels, label_adj_list, cost_func)
+
+    # Get shortest path to each foot
+    paths, path_dist = paths_to_foot(prev, dist, labels)
+    path_minimum = paths[np.argmin(path_dist)]
+
+    lengths_measured = dist_matrix[path_minimum[:-1], path_minimum[1:]]
+
+    return lengths_measured
+
+
+def estimate_lengths(df_hypo_trial, **kwargs):
     """
     Estimate the lengths between adjacent body parts in a walking trial.
 
     Parameters
     ----------
-    df_hypo_trial: DataFrame
-        DataFrame of position hypotheses for a walking trial.
-    n_frames: int
-        Number of frames used to estimate lengths.
-    kwargs : dict, optional
-        Keyword arguments passed to `np.allclose`
+    df_hypo_trial : DataFrame
+        Dataframe of position hypotheses for a walking trial.
+        Columns include 'population' and 'labels'.
+    kwargs: dict, optional
+        Keyword arguments passed to `np.allclose`.
 
     Returns
     -------
-    lengths_estimated : (N_lengths,) ndarray
-        Estimated lengths between adjacent body parts for the walking trial.
+    lengths_estimated: ndarray
+        Array of estimated lengths.
+        These are the expected lengths for the walking trial.
 
     """
-    df_hypo_sample = df_hypo_trial.iloc[:n_frames]
+    n_frames = df_hypo_trial.shape[0]
+    n_lengths = len(PART_TYPES) - 1
 
-    n_lengths = len(PART_TYPES) - 1  # Number of adjacent lengths between parts.
+    matrix_lengths_measured = np.full((n_frames, n_lengths), np.nan)
+
     lengths_estimated = np.zeros(n_lengths)
+    lengths_prev = np.full(n_lengths, np.inf)
 
-    while True:
+    # Use a for loop so algorithm will terminate if convergence does not occur.
+    for _ in range(20):
 
-        lengths_previous = lengths_estimated
+        label_adj_list_types = lengths_to_adj_list(TYPE_CONNECTIONS, lengths_estimated)
 
-        label_adj_list = lengths_to_adj_list(PART_CONNECTIONS, lengths_estimated)
+        medians_prev = np.full(n_lengths, np.inf)  # Initiate medians.
+        lengths_prev = np.copy(lengths_estimated)  # Record previous lengths.
 
-        # Define a graph with edges between consecutive parts
-        # (e.g. knee to calf, not knee to foot)
-        cons_label_adj_list = only_consecutive_labels(label_adj_list)
-
-        matrix_lengths = np.zeros((n_frames, n_lengths))
-
-        for i, tuple_frame in enumerate(df_hypo_sample.itertuples()):
+        for i, tuple_frame in enumerate(df_hypo_trial.itertuples()):
 
             population, labels = tuple_frame.population, tuple_frame.labels
-            dist_matrix = cdist(population, population)
 
-            # Run shortest path algorithm on the body graph
-            prev, dist = pop_shortest_paths(dist_matrix, labels, cons_label_adj_list, cost_func)
+            lengths_measured = measure_min_path(population, labels, label_adj_list_types)
 
-            # Get shortest path to each foot
-            paths, path_dist = paths_to_foot(prev, dist, labels)
+            matrix_lengths_measured[i] = lengths_measured
+            matrix_lengths_so_far = matrix_lengths_measured[:i + 1]
 
-            path_minimum = paths[np.argmin(path_dist)]
+            medians = np.median(matrix_lengths_so_far, axis=0)
 
-            lengths_measured = dist_matrix[path_minimum[:-1], path_minimum[1:]]
-            matrix_lengths[i] = lengths_measured
+            if np.allclose(medians, medians_prev, **kwargs):
+                lengths_estimated = np.copy(medians)
+                break
 
-        lengths_estimated = np.median(matrix_lengths, axis=0)
+            medians_prev = np.copy(medians)
 
-        if np.allclose(lengths_previous, lengths_estimated, **kwargs):
+        if np.allclose(lengths_estimated, lengths_prev, **kwargs):
             break
 
     return lengths_estimated
