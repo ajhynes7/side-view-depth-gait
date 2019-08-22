@@ -71,7 +71,7 @@ def estimate_lengths(df_hypo_trial, **kwargs):
     lengths_prev = np.full(n_lengths, np.inf)
 
     # Use a for loop so algorithm will terminate if convergence does not occur.
-    for _ in range(20):
+    for _ in range(10):
 
         label_adj_list_types = lengths_to_adj_list(TYPE_CONNECTIONS, lengths_estimated)
 
