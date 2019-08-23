@@ -79,7 +79,7 @@ def get_population(list_frame_points: array_like, part_labels: array_like) -> Tu
 
     Examples
     --------
-    >>> head_points = [[-45, 66, 238]])
+    >>> head_points = [[-45, 66, 238]]
     >>> foot_points = [[-26., -57, 249], [-74, -58, 260]]
 
     >>> population, labels = get_population([foot_points, head_points], [5, 0])
