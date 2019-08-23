@@ -27,8 +27,25 @@ def score_func(a, b):
 
 def measure_min_path(population, labels, label_adj_list):
     """
-    Run shortest paths on each frame in the sample
-    and measure lengths along the minimum shortest path.
+    Measure lengths along the minimum shortest path.
+
+    Parameters
+    ----------
+    population : (N, 3) ndarray
+        All position hypotheses on a frame.
+    labels : (N,) ndarray
+        Array of labels for N positions.
+        The labels correspond to body part types (e.g., foot).
+        They are sorted in ascending order.
+    label_adj_list : dict
+        Adjacency list for the labels.
+        label_adj_list[A][B] is the expected distance between
+        a point with label A and a point with label B.
+
+    Returns
+    -------
+    lengths_measured : (N_lengths,) ndarray
+        Lengths on the minimum shortest path.
 
     """
     dist_matrix = cdist(population, population)
