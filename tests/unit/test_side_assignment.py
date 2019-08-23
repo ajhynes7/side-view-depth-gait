@@ -43,6 +43,7 @@ def test_compute_basis():
             'cols': range(3),
             'layers': ['points_a', 'points_b', 'points_head'],
         },
+        dims=('frames', 'cols', 'layers'),
     )
 
     basis, points_inlier = sa.compute_basis(points_stacked)

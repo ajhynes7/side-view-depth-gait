@@ -19,7 +19,9 @@ def match_frames(list_passes_x, df_truth_trial_x):
     points_trial_x = xr.concat(list_passes_x, dim='frames')
 
     truth_trial_x = xr.DataArray(
-        np.stack(df_truth_trial_x), coords={'frames': df_truth_trial_x.index.values, 'cols': range(3)}
+        np.stack(df_truth_trial_x),
+        coords={'frames': df_truth_trial_x.index.values, 'cols': range(3)},
+        dims=('frames', 'cols'),
     )
 
     # Take frames common to ground truth and selected stance positions.

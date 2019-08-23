@@ -99,7 +99,7 @@ def compute_basis(points_stacked: xr.DataArray) -> Tuple[Basis, xr.DataArray]:
     points_grouped_inlier = points_grouped[is_inlier]
 
     points_grouped_inlier = xr.DataArray(
-        points_grouped_inlier, coords=[('frames', frames_grouped_inlier), ('cols', range(3))]
+        points_grouped_inlier, coords={'frames': frames_grouped_inlier, 'cols': range(3)}, dims=('frames', 'cols')
     )
 
     basis = Basis(point_origin, vector_forward, vector_up, vector_perp)

@@ -29,6 +29,7 @@ def main():
         points_stacked = xr.DataArray(
             np.dstack((points_a, points_b, points_head)),
             coords={'frames': frames, 'cols': range(3), 'layers': ['points_a', 'points_b', 'points_head']},
+            dims=('frames', 'cols', 'layers'),
         )
 
         df_gait_pass = gp.walking_pass_parameters(points_stacked)
