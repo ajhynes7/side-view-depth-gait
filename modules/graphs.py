@@ -6,10 +6,9 @@ import numpy as np
 import pandas as pd
 from numpy import ndarray
 from scipy.spatial.distance import cdist
-from modules.typing import array_like
 
 import modules.iterable_funcs as itf
-from modules.typing import func_ab
+from modules.typing import array_like, func_ab
 
 
 def adj_list_to_matrix(graph: dict) -> ndarray:

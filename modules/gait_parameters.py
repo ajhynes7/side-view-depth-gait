@@ -4,11 +4,11 @@ import pandas as pd
 import xarray as xr
 from dpcontracts import require, ensure
 from skspatial.objects import Vector, Line
-from modules.typing import array_like
 
 import modules.phase_detection as pde
 import modules.side_assignment as sa
 import modules.sliding_window as sw
+from modules.typing import array_like
 
 
 def spatial_parameters(point_a_i: array_like, point_b: array_like, point_a_f: array_like) -> dict:

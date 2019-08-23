@@ -7,6 +7,7 @@ from dpcontracts import require
 from numpy import ndarray
 from numpy.linalg import norm
 from scipy.spatial.distance import cdist
+
 from modules.typing import array_like
 
 
