@@ -102,7 +102,7 @@ def estimate_lengths(df_hypo_trial, **kwargs):
             lengths_measured = measure_min_path(population, labels, label_adj_list_types)
 
             matrix_lengths_measured[i] = lengths_measured
-            matrix_lengths_so_far = matrix_lengths_measured[:i + 1]
+            matrix_lengths_so_far = matrix_lengths_measured[: i + 1]
 
             medians = np.median(matrix_lengths_so_far, axis=0)
 
