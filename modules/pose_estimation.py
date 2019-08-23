@@ -11,7 +11,7 @@ from scipy.spatial.distance import cdist
 
 import modules.graphs as gr
 import modules.math_funcs as mf
-from modules.constants import PART_CONNECTIONS, PART_TYPES
+from modules.constants import PART_CONNECTIONS, PART_TYPES, TYPE_CONNECTIONS
 
 
 def cost_func(a, b):
@@ -25,75 +25,18 @@ def score_func(a, b):
     return -(x - 1) ** 2 + 1
 
 
-def estimate_lengths(df_hypo_trial, n_frames, **kwargs):
+def measure_min_path(population, labels, label_adj_list):
     """
-    Estimate the lengths between adjacent body parts in a walking trial.
+    Measure lengths along the minimum shortest path.
 
     Parameters
     ----------
-    df_hypo_trial: DataFrame
-        DataFrame of position hypotheses for a walking trial.
-    n_frames: int
-        Number of frames used to estimate lengths.
-    kwargs : dict, optional
-        Keyword arguments passed to `np.allclose`
-
-    Returns
-    -------
-    lengths_estimated : (N_lengths,) ndarray
-        Estimated lengths between adjacent body parts for the walking trial.
-
-    """
-    df_hypo_sample = df_hypo_trial.iloc[:n_frames]
-
-    n_lengths = len(PART_TYPES) - 1  # Number of adjacent lengths between parts.
-    lengths_estimated = np.zeros(n_lengths)
-
-    while True:
-
-        lengths_previous = lengths_estimated
-
-        label_adj_list = lengths_to_adj_list(PART_CONNECTIONS, lengths_estimated)
-
-        # Define a graph with edges between consecutive parts
-        # (e.g. knee to calf, not knee to foot)
-        cons_label_adj_list = only_consecutive_labels(label_adj_list)
-
-        matrix_lengths = np.zeros((n_frames, n_lengths))
-
-        for i, tuple_frame in enumerate(df_hypo_sample.itertuples()):
-
-            population, labels = tuple_frame.population, tuple_frame.labels
-            dist_matrix = cdist(population, population)
-
-            # Run shortest path algorithm on the body graph
-            prev, dist = pop_shortest_paths(dist_matrix, labels, cons_label_adj_list, cost_func)
-
-            # Get shortest path to each foot
-            paths, path_dist = paths_to_foot(prev, dist, labels)
-
-            path_minimum = paths[np.argmin(path_dist)]
-
-            lengths_measured = dist_matrix[path_minimum[:-1], path_minimum[1:]]
-            matrix_lengths[i] = lengths_measured
-
-        lengths_estimated = np.median(matrix_lengths, axis=0)
-
-        if np.allclose(lengths_previous, lengths_estimated, **kwargs):
-            break
-
-    return lengths_estimated
-
-
-def only_consecutive_labels(label_adj_list):
-    """
-    Return a label adjacency list with only consecutive labels.
-
-    For example, if the original adjacency list includes 2->3, 3->4, and 2->4,
-    the returned adjacency list will only have 2->3 and 3->4.
-
-    Parameters
-    ----------
+    population : (N, 3) ndarray
+        All position hypotheses on a frame.
+    labels : (N,) ndarray
+        Array of labels for N positions.
+        The labels correspond to body part types (e.g., foot).
+        They are sorted in ascending order.
     label_adj_list : dict
         Adjacency list for the labels.
         label_adj_list[A][B] is the expected distance between
@@ -101,28 +44,78 @@ def only_consecutive_labels(label_adj_list):
 
     Returns
     -------
-    consecutive_adj_list : dict
-        Adjacency list for consecutive labels only.
-        Every key in original label_adj_list is included.
-
-    Examples
-    --------
-    >>> label_adj_list = {0: {1: 6}, 1: {2: 1, 3: 3}, 3: {4: 20}, 4: {5: 20}}
-
-    >>> only_consecutive_labels(label_adj_list)
-    {0: {1: 6}, 1: {2: 1}, 3: {4: 20}, 4: {5: 20}}
+    lengths_measured : (N_lengths,) ndarray
+        Lengths on the minimum shortest path.
 
     """
-    consecutive_adj_list = {k: {} for k in label_adj_list}
+    dist_matrix = cdist(population, population)
+    prev, dist = pop_shortest_paths(dist_matrix, labels, label_adj_list, cost_func)
 
-    for key_1 in label_adj_list:
-        for key_2 in label_adj_list[key_1]:
+    # Get shortest path to each foot
+    paths, path_dist = paths_to_foot(prev, dist, labels)
+    path_minimum = paths[np.argmin(path_dist)]
 
-            if key_2 - key_1 == 1:
+    lengths_measured = dist_matrix[path_minimum[:-1], path_minimum[1:]]
 
-                consecutive_adj_list[key_1] = {key_2: label_adj_list[key_1][key_2]}
+    return lengths_measured
 
-    return consecutive_adj_list
+
+def estimate_lengths(df_hypo_trial, **kwargs):
+    """
+    Estimate the lengths between adjacent body parts in a walking trial.
+
+    Parameters
+    ----------
+    df_hypo_trial : DataFrame
+        Dataframe of position hypotheses for a walking trial.
+        Columns include 'population' and 'labels'.
+    kwargs: dict, optional
+        Keyword arguments passed to `np.allclose`.
+
+    Returns
+    -------
+    lengths_estimated: ndarray
+        Array of estimated lengths.
+        These are the expected lengths for the walking trial.
+
+    """
+    n_frames = df_hypo_trial.shape[0]
+    n_lengths = len(PART_TYPES) - 1
+
+    matrix_lengths_measured = np.full((n_frames, n_lengths), np.nan)
+
+    lengths_estimated = np.zeros(n_lengths)
+    lengths_prev = np.full(n_lengths, np.inf)
+
+    # Use a for loop so algorithm will terminate if convergence does not occur.
+    for _ in range(10):
+
+        label_adj_list_types = lengths_to_adj_list(TYPE_CONNECTIONS, lengths_estimated)
+
+        medians_prev = np.full(n_lengths, np.inf)  # Initiate medians.
+        lengths_prev = np.copy(lengths_estimated)  # Record previous lengths.
+
+        for i, tuple_frame in enumerate(df_hypo_trial.itertuples()):
+
+            population, labels = tuple_frame.population, tuple_frame.labels
+
+            lengths_measured = measure_min_path(population, labels, label_adj_list_types)
+
+            matrix_lengths_measured[i] = lengths_measured
+            matrix_lengths_so_far = matrix_lengths_measured[: i + 1]
+
+            medians = np.median(matrix_lengths_so_far, axis=0)
+
+            if np.allclose(medians, medians_prev, **kwargs):
+                lengths_estimated = np.copy(medians)
+                break
+
+            medians_prev = np.copy(medians)
+
+        if np.allclose(lengths_estimated, lengths_prev, **kwargs):
+            break
+
+    return lengths_estimated
 
 
 def get_population(frame_series, part_labels):
@@ -572,7 +565,7 @@ def foot_to_pop(population, paths, path_dist, foot_num_1, foot_num_2):
     return pop_1, pop_2
 
 
-def process_frame(population, labels, label_adj_list, radii, cost_func, score_func):
+def process_frame(population, labels, lengths, radii, cost_func, score_func):
     """
     Return chosen body part positions from an input set of position hypotheses.
 
@@ -586,10 +579,8 @@ def process_frame(population, labels, label_adj_list, radii, cost_func, score_fu
     labels : (N,) ndarray
         Array of labels for N positions.
         The labels correspond to body part types (e.g., foot).
-    label_adj_list : dict
-        Adjacency list for the labels.
-        label_adj_list[A][B] is the expected distance between
-        a point with label A and a point with label B.
+    lengths : (N_lengths,) ndarray
+        Lengths between adjacent body parts.
     radii : array_like
         List of radii used to select the best feet.
     cost_func : function
@@ -606,12 +597,11 @@ def process_frame(population, labels, label_adj_list, radii, cost_func, score_fu
     """
     dist_matrix = cdist(population, population)
 
-    # Define a graph with edges between consecutive parts
-    # (e.g. knee to calf, not knee to foot)
-    cons_label_adj_list = only_consecutive_labels(label_adj_list)
+    label_adj_list_types = lengths_to_adj_list(TYPE_CONNECTIONS, lengths)
+    label_adj_list_parts = lengths_to_adj_list(PART_CONNECTIONS, lengths)
 
     # Run shortest path algorithm on the body graph
-    prev, dist = pop_shortest_paths(dist_matrix, labels, cons_label_adj_list, cost_func)
+    prev, dist = pop_shortest_paths(dist_matrix, labels, label_adj_list_types, cost_func)
 
     # Get shortest path to each foot
     paths, path_dist = paths_to_foot(prev, dist, labels)
@@ -619,7 +609,7 @@ def process_frame(population, labels, label_adj_list, radii, cost_func, score_fu
     pop_reduced, paths_reduced = reduce_population(population, paths)
 
     dist_matrix_reduced = cdist(pop_reduced, pop_reduced)
-    score_matrix = get_scores(dist_matrix_reduced, paths_reduced, label_adj_list, score_func)
+    score_matrix = get_scores(dist_matrix_reduced, paths_reduced, label_adj_list_parts, score_func)
 
     path_vectors = get_path_vectors(paths_reduced, pop_reduced.shape[0])
 

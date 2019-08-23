@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 
 import modules.pose_estimation as pe
-from modules.constants import PART_CONNECTIONS
 
 
 def main():
@@ -36,16 +35,12 @@ def main():
 
         lengths = df_length.loc[trial_name]  # Read estimated lengths for trial
 
-        # Expected lengths for all part connections,
-        # including non-adjacent (e.g., knee to foot)
-        label_adj_list = pe.lengths_to_adj_list(PART_CONNECTIONS, lengths)
-
         for tuple_frame in df_trial.itertuples():
 
             population, labels = tuple_frame.population, tuple_frame.labels
 
             # Select the best two shortest paths
-            pos_1, pos_2 = pe.process_frame(population, labels, label_adj_list, radii, pe.cost_func, pe.score_func)
+            pos_1, pos_2 = pe.process_frame(population, labels, lengths, radii, pe.cost_func, pe.score_func)
 
             # Positions of the best head and two feet
             array_selected[index_row, 0] = pos_1[0, :]

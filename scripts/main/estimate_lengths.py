@@ -13,8 +13,6 @@ def main():
     df_hypo = pd.read_pickle(join('data', 'kinect', 'df_hypo.pkl'))
     trials_to_run = df_hypo.index.get_level_values(0).unique()
 
-    n_frames = 120
-
     t = time.time()
 
     # %% Calculate lengths for each walking trial
@@ -25,7 +23,7 @@ def main():
 
         print(trial_name)
 
-        lengths_estimated = pe.estimate_lengths(df_hypo_trial, n_frames, atol=0.1)
+        lengths_estimated = pe.estimate_lengths(df_hypo_trial, atol=0.1)
 
         list_lengths.append(lengths_estimated)
 
