@@ -82,7 +82,7 @@ def closest_proposals(proposals: array_like, targets: array_like) -> ndarray:
     Return closest proposal to each target.
 
     Parameters
-    ---------
+    ----------
     proposals : (N,) array_like
         Each element is a list of position proposals.
     targets : (N, D) ndarray
