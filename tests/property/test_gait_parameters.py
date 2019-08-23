@@ -2,12 +2,12 @@
 
 import numpy as np
 from hypothesis import assume, given
-from skspatial.tests.property.strategies import consistent_dim, st_point
+from skspatial.tests.property.strategies import consistent_dim, points
 
 import modules.gait_parameters as gp
 
 
-@given(consistent_dim(3 * [st_point]))
+@given(consistent_dim(3 * [points]))
 def test_pythagorean(points):
     """
     Test that the Pythagorean theorem holds for step length, stride width, and absolute step length.
