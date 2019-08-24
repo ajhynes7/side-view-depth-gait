@@ -18,7 +18,7 @@ class BlandAltman(NamedTuple):
     range_: float
 
 
-def relative_difference(x, y):
+def relative_difference(x: ndarray, y: ndarray) -> ndarray:
     """
     Relative difference between values x and y.
 
@@ -52,7 +52,7 @@ def relative_difference(x, y):
     return difference / mean_
 
 
-def relative_error(measured, actual):
+def relative_error(measured: ndarray, actual: ndarray) -> ndarray:
     """
     Return the relative errors between measured and actual values.
 

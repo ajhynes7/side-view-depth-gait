@@ -1,6 +1,6 @@
 """Functions related to iterables."""
 
-from typing import Iterable, Iterator, Sequence
+from typing import Any, Dict, Iterable, Iterator, Sequence
 
 
 def pairwise(seq: Sequence) -> Iterator:
@@ -28,7 +28,7 @@ def pairwise(seq: Sequence) -> Iterator:
     return zip(seq[:-1], seq[1:])
 
 
-def iterable_to_dict(it: Iterable) -> dict:
+def iterable_to_dict(it: Iterable) -> Dict[int, Any]:
     """
     Convert an iterable to a dictionary.
 

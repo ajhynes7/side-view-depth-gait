@@ -128,10 +128,10 @@ def plot_spheres(points, r, ax):
     ----------
     points : array_like
         Points in space.
-    r : int
+    r : float
         Radius of spheres.
-    ax : AxesSubplot
-        Axis for plotting.
+    ax : Axes
+        Axes for plotting.
 
     """
     for point in points:

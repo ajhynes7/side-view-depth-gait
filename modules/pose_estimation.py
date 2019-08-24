@@ -5,30 +5,31 @@ The pose is estimated by selecting body parts from a set of hypotheses.
 
 """
 import itertools
-from typing import Tuple
+from typing import Mapping, Sequence, Tuple
 
 import numpy as np
+import pandas as pd
 from numpy import ndarray
 from scipy.spatial.distance import cdist
 
 import modules.graphs as gr
 import modules.math_funcs as mf
 from modules.constants import PART_CONNECTIONS, PART_TYPES, TYPE_CONNECTIONS
-from modules.typing import array_like, func_ab
+from modules.typing import adj_list, array_like, func_ab
 
 
-def cost_func(a, b):
+def cost_func(a: float, b: float) -> float:
     """Cost function for weighting edges of graph."""
     return (a - b) ** 2
 
 
-def score_func(a, b):
+def score_func(a: float, b: float) -> float:
     """Score function for scoring links between body parts."""
     x = 1 / mf.norm_ratio(a, b)
     return -(x - 1) ** 2 + 1
 
 
-def measure_min_path(population, labels, label_adj_list):
+def measure_min_path(population: ndarray, labels: ndarray, label_adj_list: adj_list) -> ndarray:
     """
     Measure lengths along the minimum shortest path.
 
@@ -63,7 +64,7 @@ def measure_min_path(population, labels, label_adj_list):
     return lengths_measured
 
 
-def estimate_lengths(df_hypo_trial, **kwargs):
+def estimate_lengths(df_hypo_trial: pd.DataFrame, **kwargs: float) -> ndarray:
     """
     Estimate the lengths between adjacent body parts in a walking trial.
 
@@ -72,7 +73,7 @@ def estimate_lengths(df_hypo_trial, **kwargs):
     df_hypo_trial : DataFrame
         Dataframe of position hypotheses for a walking trial.
         Columns include 'population' and 'labels'.
-    kwargs: dict, optional
+    kwargs : dict, optional
         Keyword arguments passed to `np.allclose`.
 
     Returns
@@ -121,7 +122,7 @@ def estimate_lengths(df_hypo_trial, **kwargs):
     return lengths_estimated
 
 
-def get_population(list_frame_points, part_labels):
+def get_population(list_frame_points: Sequence, part_labels: array_like) -> Tuple[ndarray, ndarray]:
     """
     Return the population of part hypotheses from one image frame.
 
@@ -177,7 +178,7 @@ def get_population(list_frame_points, part_labels):
     return population, labels
 
 
-def lengths_to_adj_list(label_connections: ndarray, lengths: array_like) -> dict:
+def lengths_to_adj_list(label_connections: ndarray, lengths: array_like) -> adj_list:
     """
     Convert a array_like of lengths between body parts to an adjacency list.
 
@@ -219,7 +220,9 @@ def lengths_to_adj_list(label_connections: ndarray, lengths: array_like) -> dict
     return label_adj_list
 
 
-def pop_shortest_paths(dist_matrix, labels, label_adj_list, weight_func):
+def pop_shortest_paths(
+    dist_matrix: ndarray, labels: ndarray, label_adj_list: adj_list, weight_func: func_ab
+) -> Tuple[Mapping[int, int], Mapping[int, float]]:
     """
     Calculate shortest paths on the population of body parts.
 
@@ -259,7 +262,7 @@ def pop_shortest_paths(dist_matrix, labels, label_adj_list, weight_func):
     return prev, dist
 
 
-def paths_to_foot(prev: dict, dist: dict, labels: ndarray) -> Tuple[ndarray, ndarray]:
+def paths_to_foot(prev: Mapping[int, int], dist: Mapping[int, float], labels: ndarray) -> Tuple[ndarray, ndarray]:
     """
     Retrieve the shortest path to each foot position.
 
@@ -315,7 +318,7 @@ def paths_to_foot(prev: dict, dist: dict, labels: ndarray) -> Tuple[ndarray, nda
     return paths.astype(int), path_dist
 
 
-def get_scores(dist_matrix: ndarray, paths: ndarray, label_adj_list: dict, score_func: func_ab) -> ndarray:
+def get_scores(dist_matrix: ndarray, paths: ndarray, label_adj_list: adj_list, score_func: func_ab) -> ndarray:
     """
     Compute a score matrix from a set of body part positions.
 
@@ -569,7 +572,9 @@ def foot_to_pop(
     return pop_1, pop_2
 
 
-def process_frame(population, labels, lengths, radii, cost_func, score_func):
+def process_frame(
+    population: ndarray, labels: ndarray, lengths: ndarray, radii: array_like, cost_func: func_ab, score_func: func_ab
+) -> Tuple[ndarray, ndarray]:
     """
     Return chosen body part positions from an input set of position hypotheses.
 

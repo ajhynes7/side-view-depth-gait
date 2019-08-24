@@ -1,7 +1,6 @@
 """Module for detecting the phases of a foot during a walking pass."""
 
-from collections import namedtuple
-from typing import Tuple
+from typing import Iterator, NamedTuple, Tuple
 
 import numpy as np
 import pandas as pd
@@ -13,6 +12,14 @@ import modules.cluster as cl
 import modules.side_assignment as sa
 
 
+class Stance(NamedTuple):
+    """Container for a Stance phase."""
+
+    frame_i: int
+    frame_f: int
+    position: ndarray
+
+
 def stance_props(points_foot: xr.DataArray, labels_stance: ndarray) -> pd.DataFrame:
     """Return properties of each stance phase from one foot in a walking pass."""
 
@@ -20,9 +27,7 @@ def stance_props(points_foot: xr.DataArray, labels_stance: ndarray) -> pd.DataFr
 
     labels_unique = np.unique(labels_stance[labels_stance != -1])
 
-    Stance = namedtuple('Stance', ['frame_i', 'frame_f', 'position'])
-
-    def yield_props():
+    def yield_props() -> Iterator[Stance]:
 
         for label in labels_unique:
 

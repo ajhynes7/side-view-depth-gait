@@ -1,5 +1,7 @@
 """Functions related to NumPy arrays or operations."""
 
+from typing import Iterator
+
 import numpy as np
 from numpy import ndarray
 
@@ -82,7 +84,7 @@ def label_by_split(indices_split: array_like, n_elements: int) -> ndarray:
 
     """
 
-    def yield_label_sections():
+    def yield_label_sections() -> Iterator[ndarray]:
 
         list_sections = np.split(np.zeros(n_elements), indices_split)
 

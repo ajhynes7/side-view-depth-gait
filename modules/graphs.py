@@ -1,16 +1,16 @@
 """Functions for manipulating graphs."""
 
-from typing import Any, Tuple
+from typing import Any, Dict, Mapping, Tuple
 
 import numpy as np
 import pandas as pd
 from numpy import ndarray
 
 import modules.iterable_funcs as itf
-from modules.typing import array_like, func_ab
+from modules.typing import adj_list, array_like, func_ab
 
 
-def adj_list_to_matrix(graph: dict) -> ndarray:
+def adj_list_to_matrix(graph: adj_list) -> ndarray:
     """
     Convert an adjacency list to an adjacency matrix.
 
@@ -47,7 +47,7 @@ def adj_list_to_matrix(graph: dict) -> ndarray:
     return adj_matrix
 
 
-def adj_matrix_to_list(adj_matrix: array_like) -> dict:
+def adj_matrix_to_list(adj_matrix: array_like) -> adj_list:
     """
     Convert an adjacency matrix to an adjacency list.
 
@@ -83,7 +83,9 @@ def adj_matrix_to_list(adj_matrix: array_like) -> dict:
     return graph
 
 
-def dag_shortest_paths(graph: dict, order: array_like, source_nodes: set) -> Tuple[dict, dict]:
+def dag_shortest_paths(
+    graph: adj_list, order: array_like, source_nodes: set
+) -> Tuple[Dict[int, int], Dict[int, float]]:
     """
     Compute shortest path to each node on a directed acyclic graph.
 
@@ -142,7 +144,7 @@ def dag_shortest_paths(graph: dict, order: array_like, source_nodes: set) -> Tup
     return prev, dist
 
 
-def trace_path(prev: dict, target_node: Any) -> list:
+def trace_path(prev: Mapping, target_node: Any) -> list:
     """
     Trace back a path through a graph.
 
@@ -181,7 +183,7 @@ def trace_path(prev: dict, target_node: Any) -> list:
     return path[::-1]
 
 
-def labelled_nodes_to_graph(node_labels: dict, label_adj_list: dict) -> dict:
+def labelled_nodes_to_graph(node_labels: Mapping[int, int], label_adj_list: adj_list) -> adj_list:
     """
     Create an adjacency list from a set of labelled nodes.
 
@@ -232,7 +234,7 @@ def labelled_nodes_to_graph(node_labels: dict, label_adj_list: dict) -> dict:
     return graph
 
 
-def points_to_graph(dist_matrix, labels, expected_dists, weight_func: func_ab):
+def points_to_graph(dist_matrix: ndarray, labels: ndarray, label_adj_list: adj_list, weight_func: func_ab) -> adj_list:
     """
     Construct a weighted graph from a set of labelled points in space.
 
@@ -242,10 +244,10 @@ def points_to_graph(dist_matrix, labels, expected_dists, weight_func: func_ab):
         Distance matrix of the points.
     labels : array_like
         Label of each point.
-    expected_dists : dict
-        The expected distance between pairs of labels.
-        expected_dists[A][B] is the expected distance from a
-        point with label A to a point with label B.
+    label_adj_list : dict
+        Adjacency list for the labels.
+        label_adj_list[A][B] is the expected distance between
+        a point with label A and a point with label B.
     weight_func : function
         Cost function that takes two arrays as input.
 
@@ -271,7 +273,7 @@ def points_to_graph(dist_matrix, labels, expected_dists, weight_func: func_ab):
     label_dict = itf.iterable_to_dict(labels)
 
     # Expected distances between points
-    adj_list_expected = labelled_nodes_to_graph(label_dict, expected_dists)
+    adj_list_expected = labelled_nodes_to_graph(label_dict, label_adj_list)
     dist_matrix_expected = adj_list_to_matrix(adj_list_expected)
 
     # Adjacency matrix defined by a weight function

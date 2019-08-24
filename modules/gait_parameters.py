@@ -1,5 +1,8 @@
 """Module for calculating gait parameters from 3D body part positions."""
 
+from typing import Any, Dict, Iterator
+
+import numpy as np
 import pandas as pd
 import xarray as xr
 from dpcontracts import require, ensure
@@ -8,10 +11,11 @@ from skspatial.objects import Vector, Line
 import modules.phase_detection as pde
 import modules.side_assignment as sa
 import modules.sliding_window as sw
+from modules.phase_detection import Stance
 from modules.typing import array_like
 
 
-def spatial_parameters(point_a_i: array_like, point_b: array_like, point_a_f: array_like) -> dict:
+def spatial_parameters(point_a_i: array_like, point_b: array_like, point_a_f: array_like) -> Dict[str, np.float64]:
     """
     Calculate spatial gait parameters for a stride.
 
@@ -76,7 +80,7 @@ def spatial_parameters(point_a_i: array_like, point_b: array_like, point_a_f: ar
     }
 
 
-def stride_parameters(foot_a_i, foot_b, foot_a_f, *, fps: float = 30) -> dict:
+def stride_parameters(foot_a_i: Stance, foot_b: Stance, foot_a_f: Stance, *, fps: float = 30) -> Dict[str, np.float64]:
     """
     Calculate gait parameters from a single stride.
 
@@ -164,7 +168,7 @@ def stances_to_gait(df_stance: pd.DataFrame) -> pd.DataFrame:
 
     """
 
-    def yield_parameters():
+    def yield_parameters() -> Iterator[Dict[str, Any]]:
         """Inner function to yield parameters for each stride."""
         tuples_stance = df_stance.itertuples(index=False)
 

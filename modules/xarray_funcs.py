@@ -1,6 +1,6 @@
 """Functions related to the xarray library."""
 
-from typing import Callable
+from typing import Callable, Iterator
 
 import numpy as np
 import xarray as xr
@@ -45,7 +45,7 @@ def unique_frames(array_xr: DataArray, func: Callable) -> DataArray:
     """
     frames_unique = np.unique(array_xr.frames.values)
 
-    def yield_rows():
+    def yield_rows() -> Iterator[DataArray]:
 
         for frame in frames_unique:
             rows = array_xr.loc[frame]

@@ -1,18 +1,23 @@
 
-from typing import Callable
+from typing import Callable, Iterable, Iterator, Tuple
 
 from modules.typing import array_like
 
 
 class DataFrame:
 
-    def __init__(self, array: array_like): ...
+    def __init__(self, data: Iterable): ...
 
     def assign(self, **kwargs) -> 'DataFrame': ...
 
     def empty(self) -> bool: ...
 
     def pipe(self, func: Callable, *args, **kwargs): ...
+
+    def itertuples(self, index: bool = True, name: str = 'Pandas') -> Iterator: ...
+
+    @property
+    def shape(self) -> Tuple[int, ...]: ...
 
 
 class Series:
