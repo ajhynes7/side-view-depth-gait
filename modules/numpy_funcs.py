@@ -1,9 +1,12 @@
 """Functions related to NumPy arrays or operations."""
 
 import numpy as np
+from numpy import ndarray
+
+from modules.typing import array_like
 
 
-def interweave_rows(array_a, array_b):
+def interweave_rows(array_a: array_like, array_b: array_like) -> ndarray:
     """
     Interweave the rows of two arrays.
 
@@ -42,7 +45,7 @@ def interweave_rows(array_a, array_b):
     return array_c
 
 
-def label_by_split(indices_split, n_elements):
+def label_by_split(indices_split: array_like, n_elements: int) -> ndarray:
     """
     Return an array of labels from split indices.
 
@@ -89,7 +92,7 @@ def label_by_split(indices_split, n_elements):
     return np.concatenate([*yield_label_sections()]).astype(int)
 
 
-def filter_labels(labels, min_elements):
+def filter_labels(labels: array_like, min_elements: int) -> ndarray:
     """
     Return an array of labels with small groups marked as noise.
 

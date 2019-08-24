@@ -38,7 +38,11 @@ def test_compute_basis():
 
     points_stacked = xr.DataArray(
         np.dstack((points_a, points_b, points_head)),
-        coords=(frames, range(3), ['points_a', 'points_b', 'points_head']),
+        coords={
+            'frames': frames,
+            'cols': range(3),
+            'layers': ['points_a', 'points_b', 'points_head'],
+        },
         dims=('frames', 'cols', 'layers'),
     )
 

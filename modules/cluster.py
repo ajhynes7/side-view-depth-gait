@@ -1,12 +1,18 @@
 """Module for clustering points in space."""
 
 from queue import Queue
+from typing import Any
 
 import numpy as np
+from numpy import ndarray
 from scipy.spatial.distance import cdist
 
+from modules.typing import array_like
 
-def dbscan_st(points, times=None, eps_spatial=0.5, eps_temporal=0.5, min_pts=5):
+
+def dbscan_st(
+    points: array_like, times: array_like = None, eps_spatial: float = 0.5, eps_temporal: float = 0.5, min_pts: int = 5
+) -> ndarray:
     """
     Cluster points with spatiotemporal DBSCAN algorithm.
 
@@ -82,7 +88,16 @@ def dbscan_st(points, times=None, eps_spatial=0.5, eps_temporal=0.5, min_pts=5):
     return labels
 
 
-def grow_cluster_st(D_spatial, D_temporal, labels, set_neighbours, label_cluster, eps_spatial, eps_temporal, min_pts):
+def grow_cluster_st(
+    D_spatial: ndarray,
+    D_temporal: ndarray,
+    labels: ndarray,
+    set_neighbours: set,
+    label_cluster: int,
+    eps_spatial: float,
+    eps_temporal: float,
+    min_pts: int,
+) -> None:
     """
     Grow a cluster starting from a seed point.
 
@@ -129,7 +144,7 @@ def grow_cluster_st(D_spatial, D_temporal, labels, set_neighbours, label_cluster
 
     """
     # Initialize a queue with the current neighbourhood.
-    queue_search = Queue()
+    queue_search: Any = Queue()
 
     for i in set_neighbours:
         queue_search.put(i)
@@ -160,7 +175,7 @@ def grow_cluster_st(D_spatial, D_temporal, labels, set_neighbours, label_cluster
                     queue_search.put(i)
 
 
-def region_query(dist_matrix, eps, idx_pt):
+def region_query(dist_matrix: ndarray, eps: float, idx_pt: int) -> set:
     """
     Find which points are within a distance `eps` of the point with index `idx_pt`.
 
@@ -196,7 +211,9 @@ def region_query(dist_matrix, eps, idx_pt):
     return set(np.nonzero(dist_matrix[idx_pt] <= eps)[0])
 
 
-def region_query_st(D_spatial, D_temporal, eps_spatial, eps_temporal, idx_pt):
+def region_query_st(
+    D_spatial: ndarray, D_temporal: ndarray, eps_spatial: float, eps_temporal: float, idx_pt: int
+) -> set:
     """
     Perform spatiotemporal region query for DBSCAN.
 

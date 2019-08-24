@@ -1,10 +1,11 @@
 """Module for assigning left/right sides to the feet."""
 
-from collections import namedtuple
+from typing import Tuple, NamedTuple
 
 import numpy as np
 import xarray as xr
 from dpcontracts import require, ensure
+from numpy import ndarray
 from skimage.measure import LineModelND, ransac
 from skspatial.objects import Vector
 from statsmodels.robust import mad
@@ -12,7 +13,16 @@ from statsmodels.robust import mad
 import modules.numpy_funcs as nf
 
 
-def fit_ransac(points):
+class Basis(NamedTuple):
+    """Basis for a 3D coordinate system."""
+
+    origin: ndarray
+    forward: ndarray
+    up: ndarray
+    perp: ndarray
+
+
+def fit_ransac(points: ndarray) -> Tuple[LineModelND, ndarray]:
     """
     Fit a line to the foot points with RANSAC.
 
@@ -47,7 +57,7 @@ def fit_ransac(points):
     "The perpendicular vector must be to the right of the forward vector.",
     lambda _, result: Vector(result[0].forward[[0, 2]]).side_vector(result[0].perp[[0, 2]]) == 1,
 )
-def compute_basis(points_stacked):
+def compute_basis(points_stacked: xr.DataArray) -> Tuple[Basis, xr.DataArray]:
     """
     Return origin and basis vectors of new coordinate system found with RANSAC.
 
@@ -68,9 +78,9 @@ def compute_basis(points_stacked):
     """
     frames = points_stacked.coords['frames'].values
 
-    points_head = points_stacked.sel(layers='points_head')
-    points_a = points_stacked.sel(layers='points_a')
-    points_b = points_stacked.sel(layers='points_b')
+    points_head = points_stacked.sel(layers='points_head').values
+    points_a = points_stacked.sel(layers='points_a').values
+    points_b = points_stacked.sel(layers='points_b').values
 
     points_foot_mean = (points_a + points_b) / 2
 
@@ -89,16 +99,17 @@ def compute_basis(points_stacked):
     points_grouped_inlier = points_grouped[is_inlier]
 
     points_grouped_inlier = xr.DataArray(
-        points_grouped_inlier, coords=(frames_grouped_inlier, range(3)), dims=('frames', 'cols')
+        points_grouped_inlier, coords={'frames': frames_grouped_inlier, 'cols': range(3)}, dims=('frames', 'cols')
     )
 
-    Basis = namedtuple('Basis', 'origin, forward, up, perp')
     basis = Basis(point_origin, vector_forward, vector_up, vector_perp)
 
     return basis, points_grouped_inlier
 
 
-def assign_sides_grouped(frames_grouped, values_side_grouped, labels_grouped):
+def assign_sides_grouped(
+    frames_grouped: ndarray, values_side_grouped: ndarray, labels_grouped: ndarray
+) -> Tuple[ndarray, ndarray]:
     """
     Assign left/right sides to clusters representing stance phases.
 

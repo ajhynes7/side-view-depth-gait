@@ -1,7 +1,9 @@
 """Functions related to iterables."""
 
+from typing import Iterable, Iterator, Sequence
 
-def pairwise(seq):
+
+def pairwise(seq: Sequence) -> Iterator:
     """
     Return a zip object that contains consecutive pairs of a sequence.
 
@@ -26,7 +28,7 @@ def pairwise(seq):
     return zip(seq[:-1], seq[1:])
 
 
-def iterable_to_dict(it):
+def iterable_to_dict(it: Iterable) -> dict:
     """
     Convert an iterable to a dictionary.
 

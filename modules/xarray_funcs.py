@@ -1,10 +1,13 @@
 """Functions related to the xarray library."""
 
+from typing import Callable
+
 import numpy as np
 import xarray as xr
+from xarray import DataArray
 
 
-def unique_frames(array_xr, func):
+def unique_frames(array_xr: DataArray, func: Callable) -> DataArray:
     """
     Return a DataArray with unique frames as coordinates.
 
@@ -26,7 +29,7 @@ def unique_frames(array_xr, func):
     --------
     >>> array_xr = xr.DataArray(
     ...     [[1, 2], [3, 4], [5, 6]],
-    ...     coords=([1, 1, 2], range(2)),
+    ...     coords={'frames': [1, 1, 2], 'cols': range(2)},
     ...     dims=('frames', 'cols'),
     ... )
 
@@ -51,4 +54,6 @@ def unique_frames(array_xr, func):
 
     array_xr_unique = np.stack([*yield_rows()])
 
-    return xr.DataArray(array_xr_unique, coords=(frames_unique, array_xr.coords['cols']), dims=('frames', 'cols'))
+    return xr.DataArray(
+        array_xr_unique, coords={'frames': frames_unique, 'cols': array_xr.coords['cols']}, dims=('frames', 'cols')
+    )
