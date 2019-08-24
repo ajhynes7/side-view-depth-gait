@@ -14,6 +14,7 @@ from scipy.spatial.distance import cdist
 import modules.graphs as gr
 import modules.math_funcs as mf
 from modules.constants import PART_CONNECTIONS, PART_TYPES, TYPE_CONNECTIONS
+from modules.typing import array_like, func_ab
 
 
 def cost_func(a, b):
@@ -120,7 +121,7 @@ def estimate_lengths(df_hypo_trial, **kwargs):
     return lengths_estimated
 
 
-def get_population(frame_series, part_labels):
+def get_population(list_frame_points, part_labels):
     """
     Return the population of part hypotheses from one image frame.
 

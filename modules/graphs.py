@@ -4,6 +4,7 @@ from typing import Any, Tuple
 
 import numpy as np
 import pandas as pd
+from numpy import ndarray
 
 import modules.iterable_funcs as itf
 from modules.typing import array_like, func_ab
@@ -231,7 +232,7 @@ def labelled_nodes_to_graph(node_labels: dict, label_adj_list: dict) -> dict:
     return graph
 
 
-def points_to_graph(dist_matrix, labels, expected_dists, weight_func):
+def points_to_graph(dist_matrix, labels, expected_dists, weight_func: func_ab):
     """
     Construct a weighted graph from a set of labelled points in space.
 
