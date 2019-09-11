@@ -77,6 +77,7 @@ def main():
             points_stacked = xr.DataArray(
                 np.dstack((points_a, points_b, points_head)),
                 coords={'frames': frames, 'cols': range(3), 'layers': ['points_a', 'points_b', 'points_head']},
+                dims=['frames', 'cols', 'layers'],
             )
 
             basis, points_grouped_inlier = sa.compute_basis(points_stacked)

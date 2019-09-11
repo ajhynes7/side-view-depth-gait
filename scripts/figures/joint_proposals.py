@@ -14,7 +14,7 @@ from scipy.spatial.distance import cdist
 import analysis.images as im
 import analysis.plotting as pl
 import modules.pose_estimation as pe
-from modules.constants import PART_CONNECTIONS, TYPE_CONNECTIONS
+from modules.constants import TYPE_CONNECTIONS, PART_CONNECTIONS
 
 
 def main():
@@ -83,8 +83,6 @@ def main():
     df_lengths = pd.read_csv(join(kinect_dir, 'kinect_lengths.csv'), index_col=0)
     lengths = df_lengths.loc[trial_name]
 
-    # Expected lengths for all part connections,
-    # including non-adjacent (e.g., knee to foot)
     label_adj_list_types = pe.lengths_to_adj_list(TYPE_CONNECTIONS, lengths)
 
     # Run shortest path algorithm on the body graph
@@ -111,7 +109,7 @@ def main():
     n_pop_reduced = pop_reduced.shape[0]
     path_vectors = pe.get_path_vectors(paths_reduced, n_pop_reduced)
 
-    label_adj_list_parts = pe.lengths_to_adj_list(lengths, PART_CONNECTIONS)
+    label_adj_list_parts = pe.lengths_to_adj_list(PART_CONNECTIONS, lengths)
 
     dist_matrix_reduced = cdist(pop_reduced, pop_reduced)
     score_matrix = pe.get_scores(dist_matrix_reduced, paths_reduced, label_adj_list_parts, pe.score_func)
