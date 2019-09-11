@@ -107,19 +107,19 @@ def rgb_to_label(image_rgb: ndarray, rgb_vectors: array_like) -> ndarray:
 
     Returns
     -------
-    label_image : ndarray
+    image_label : ndarray
         (n_rows, n_cols) image.
         2D label image.
 
     """
-    label_image = np.zeros(image_rgb.shape[:-1])
+    image_label = np.zeros(image_rgb.shape[:-1], dtype=int)
 
     for i, rgb_vector in enumerate(rgb_vectors):
 
         mask = np.all(image_rgb == rgb_vector, axis=-1)
-        label_image[mask] = i + 1
+        image_label[mask] = i + 1
 
-    return label_image
+    return image_label
 
 
 def recalibrate_positions(
