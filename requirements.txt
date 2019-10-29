@@ -12,7 +12,7 @@ numpy==1.16.1
 opencv-python==4.0.0.21
 pandas==0.24.1
 patsy==0.5.1
-Pillow==6.0.0
+Pillow==6.2.0
 pluggy==0.8.1
 py==1.7.0
 pyparsing==2.3.1
