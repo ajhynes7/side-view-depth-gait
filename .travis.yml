@@ -4,7 +4,12 @@ python:
     - 3.7
 install: pip install tox-travis
 script:
+    - tox -e doctest
     - tox -e test_unit
+    - tox -e test_prop
+    - tox -e lint_code,
+    - tox -e lint_docs,
+    - tox -e check_types,
 branches:
     only:
         - master
