@@ -3,7 +3,7 @@
 Gait Analysis with a Side-View Depth Sensor
 ---
 
-![build](https://travis-ci.org/ajhynes7/depth-gait-analysis)
+[![build](https://travis-ci.org/ajhynes7/depth-gait-analysis.svg)](https://travis-ci.org/ajhynes7/depth-gait-analysis)
 
 
 This repository contains the code for the journal article *Gait Analysis with a Side-View Depth Sensor using Human Joint Proposals*, which is currently under review.
