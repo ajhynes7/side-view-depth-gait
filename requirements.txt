@@ -2,6 +2,7 @@ dpcontracts
 pandas
 pytest
 scikit-image
+scikit-learn
 scikit-spatial
 scipy
 statsmodels
