@@ -1,7 +1,5 @@
 
----
-Gait Analysis with a Side-View Depth Sensor
----
+# Gait Analysis with a Side-View Depth Sensor
 
 [![build](https://travis-ci.org/ajhynes7/depth-gait-analysis.svg)](https://travis-ci.org/ajhynes7/depth-gait-analysis)
 
@@ -9,9 +7,9 @@ Gait Analysis with a Side-View Depth Sensor
 This repository contains the code for the journal article *Gait Analysis with a Side-View Depth Sensor using Human Joint Proposals*, which is currently under review.
 
 
-# Setup
+## Setup
 
-## Creating a virtual environment
+### Creating a virtual environment
 
 First, install `virtualenv`.
 
