@@ -57,7 +57,7 @@ $ python -m scripts.main.label_passes
 
 Calculate gait parameters from the selected head and foot positions:
 ```bash
-$ python -m scripts.main.label_passes
+$ python -m scripts.main.calc_gait_params
 ```
 
 For convenience, all of these scripts can be run at once:
