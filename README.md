@@ -68,6 +68,8 @@ $ python -m scripts.main.run_all_main
 
 ### Results
 
+Note that some scripts for the results and figures make use of LaTeX for formatting. You can either install LaTeX or edit the code so it is not needed.
+
 Run all of the results:
 ```bash
 $ python -m scripts.results.run_all_results
