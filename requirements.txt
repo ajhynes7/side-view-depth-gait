@@ -1,4 +1,5 @@
 dpcontracts
+opencv-python
 pandas
 pytest
 scikit-image
