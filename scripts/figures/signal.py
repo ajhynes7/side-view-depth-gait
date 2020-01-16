@@ -33,8 +33,8 @@ def main():
 
     basis, points_foot_grouped = sa.compute_basis(points_stacked)
 
-    signal_grouped = transform_coordinates(points_foot_grouped, basis.origin, [basis.forward])
-    values_side_grouped = transform_coordinates(points_foot_grouped, basis.origin, [basis.perp])
+    signal_grouped = transform_coordinates(points_foot_grouped.values, basis.origin, [basis.forward])
+    values_side_grouped = transform_coordinates(points_foot_grouped.values, basis.origin, [basis.perp])
 
     frames_grouped = points_foot_grouped.coords['frames'].values
 
