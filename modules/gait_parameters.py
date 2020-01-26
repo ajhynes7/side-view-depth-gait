@@ -34,8 +34,8 @@ def spatial_parameters(point_a_i: array_like, point_b: array_like, point_a_f: ar
     Returns
     -------
     dict
-        Dictionary consisting of absolute step length, step length,
-        stride length, and stride width.
+        Dictionary consisting of stride length, absolute step length, step length,
+        and stride width.
 
     Examples
     --------
@@ -51,15 +51,15 @@ def spatial_parameters(point_a_i: array_like, point_b: array_like, point_a_f: ar
 
     >>> values = list(spatial_parameters(point_l_1, point_r_1, point_l_2).values())
     >>> np.round(values, 1)
-    array([ 61. ,  60.1, 127.2,  10.6])
+    array([127.2,  61. ,  60.1,  10.6])
 
     >>> values = list(spatial_parameters(point_r_1, point_l_2, point_r_2).values())
     >>> np.round(values, 1)
-    array([ 59.1,  57.9, 117.7,  11.8])
+    array([117.7,  59.1,  57.9,  11.8])
 
     >>> values = list(spatial_parameters(point_l_2, point_r_2, point_l_3).values())
     >>> np.round(values, 1)
-    array([ 61.3,  60.7, 119.3,   8. ])
+    array([119.3,  61.3,  60.7,   8. ])
 
     """
     line_a = Line.from_points(point_a_i, point_a_f)
@@ -68,15 +68,15 @@ def spatial_parameters(point_a_i: array_like, point_b: array_like, point_a_f: ar
 
     stride_length = line_a.direction.norm()
 
-    step_length = Vector.from_points(point_b_proj, point_a_f).norm()
     absolute_step_length = Vector.from_points(point_b, point_a_f).norm()
+    step_length = Vector.from_points(point_b_proj, point_a_f).norm()
 
     stride_width = Vector.from_points(point_b_proj, point_b).norm()
 
     return {
         'stride_length': stride_length,
-        'step_length': step_length,
         'absolute_step_length': absolute_step_length,
+        'step_length': step_length,
         'stride_width': stride_width,
     }
 

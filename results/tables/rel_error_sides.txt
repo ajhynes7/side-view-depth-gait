@@ -3,9 +3,9 @@
 {} &       L &       R \\
 \midrule
 stride\_length        &    9.73 &   11.48 \\
-step\_length          &   26.38 &   12.31 \\
-absolute\_step\_length &   26.46 &   10.49 \\
-stride\_width         &  311.43 &  317.23 \\
+absolute\_step\_length &   24.48 &   10.49 \\
+step\_length          &   24.32 &   12.31 \\
+stride\_width         &  294.37 &  317.04 \\
 stride\_time          &   38.12 &   35.23 \\
 stride\_velocity      &   60.87 &   51.85 \\
 stance\_percentage    &    9.85 &    7.40 \\
