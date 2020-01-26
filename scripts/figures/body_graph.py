@@ -25,6 +25,7 @@ def main():
 
     points_per_set = [2, 3, 5, 2, 4, 5]
     part_types = ['Head', 'Hip', 'Thigh', 'Knee', 'Calf', 'Foot']
+    gray = '0.8'
 
     fig = plt.figure()
 
@@ -34,19 +35,21 @@ def main():
 
         points = np.vstack([points_a, points_b])
 
-        pl.scatter2(points, c='k', s=50)
-        pl.connect_two_sets(points_a, points_b, c='k')
+        pl.scatter2(points, c=gray, s=50)
+        pl.connect_two_sets(points_a, points_b, c=gray)
 
-    # Highlight path in red
+    # Emphasize shortest path
+
     prev_path_point = np.array([])
+
     for row_points in point_sets:
 
         path_point = row_points[np.random.randint(row_points.shape[0])]
 
-        pl.scatter2(path_point, c='r', s=100, zorder=3)
+        pl.scatter2(path_point, c='k', s=100, zorder=3)
 
         if prev_path_point.size > 0:
-            pl.connect_points(prev_path_point, path_point, c='r', zorder=3)
+            pl.connect_points(prev_path_point, path_point, c='k', zorder=3)
 
         prev_path_point = path_point
 
