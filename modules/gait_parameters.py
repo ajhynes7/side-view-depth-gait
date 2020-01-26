@@ -68,14 +68,15 @@ def spatial_parameters(point_a_i: array_like, point_b: array_like, point_a_f: ar
 
     stride_length = line_a.direction.norm()
 
-    absolute_step_length = Vector.from_points(point_b, point_a_f).norm()
     step_length = Vector.from_points(point_b_proj, point_a_f).norm()
+    absolute_step_length = Vector.from_points(point_b, point_a_f).norm()
+
     stride_width = Vector.from_points(point_b_proj, point_b).norm()
 
     return {
-        'absolute_step_length': absolute_step_length,
-        'step_length': step_length,
         'stride_length': stride_length,
+        'step_length': step_length,
+        'absolute_step_length': absolute_step_length,
         'stride_width': stride_width,
     }
 
@@ -133,13 +134,14 @@ def stride_parameters(foot_a_i: Stance, foot_b: Stance, foot_a_f: Stance, *, fps
     stride_time = (foot_a_f.frame_i - foot_a_i.frame_i) / fps
     stance_time = (foot_a_i.frame_f - foot_a_i.frame_i) / fps
 
-    stance_percentage = (stance_time / stride_time) * 100
     stride_velocity = dict_spatial['stride_length'] / stride_time
+
+    stance_percentage = (stance_time / stride_time) * 100
 
     dict_temporal = {
         'stride_time': stride_time,
-        'stance_percentage': stance_percentage,
         'stride_velocity': stride_velocity,
+        'stance_percentage': stance_percentage,
     }
 
     return {**dict_spatial, **dict_temporal}

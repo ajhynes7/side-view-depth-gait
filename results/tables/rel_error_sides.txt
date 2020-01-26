@@ -2,12 +2,12 @@
 \toprule
 {} &       L &       R \\
 \midrule
-absolute\_step\_length &   26.15 &    9.99 \\
-stance\_percentage    &   10.15 &    8.13 \\
-step\_length          &   26.05 &   11.16 \\
-stride\_length        &    9.78 &   11.36 \\
-stride\_time          &   37.60 &   35.50 \\
-stride\_velocity      &   59.34 &   51.87 \\
-stride\_width         &  314.00 &  318.85 \\
+stride\_length        &    9.73 &   11.48 \\
+step\_length          &   26.38 &   12.31 \\
+absolute\_step\_length &   26.46 &   10.49 \\
+stride\_width         &  311.43 &  317.23 \\
+stride\_time          &   38.12 &   35.23 \\
+stride\_velocity      &   60.87 &   51.85 \\
+stance\_percentage    &    9.85 &    7.40 \\
 \bottomrule
 \end{tabular}
