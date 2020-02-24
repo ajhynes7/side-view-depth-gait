@@ -15,8 +15,6 @@ def main():
     df_matched_k = pd.read_pickle(join('data', 'kinect', 'df_matched.pkl'))
     df_matched_z = pd.read_pickle(join('data', 'zeno', 'df_matched.pkl'))
 
-    gait_params = df_matched_k.columns
-
     df_trials_k = df_matched_k.groupby('trial_id').median()
     df_trials_z = df_matched_z.groupby('trial_id').median()
 
@@ -27,7 +25,7 @@ def main():
 
     for fps in list_fps:
 
-        measures_k = df_trials_k[param]  * fps / 30
+        measures_k = df_trials_k[param] * fps / 30
         measures_z = df_trials_z[param]
 
         measures = np.column_stack((measures_k, measures_z))
