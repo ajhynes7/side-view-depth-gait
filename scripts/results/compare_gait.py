@@ -9,6 +9,24 @@ import pandas as pd
 import analysis.stats as st
 
 
+def get_units(param_gait: str):
+    """Return the appropriate units for the gait parameter."""
+
+    if param_gait == 'stance_percentage':
+        units = r'\%'
+
+    elif param_gait == 'stride_time':
+        units = 's'
+
+    elif param_gait == 'stride_velocity':
+        units = 'cm/s'
+
+    else:
+        units = 'cm'
+
+    return units
+
+
 def main():
 
     dir_plots = join('results', 'plots')
@@ -73,11 +91,13 @@ def main():
         ax_1.spines['right'].set_visible(False)
         ax_1.spines['top'].set_visible(False)
 
-        plt.xlabel('Mean of two measurements [cm]', fontsize=30)
-        plt.ylabel(r'Relative difference [\%]', fontsize=30)
+        units = get_units(param)
+
+        plt.xlabel(f"Mean of two measurements [{units}]", fontsize=30)
+        plt.ylabel(r"Relative difference [\%]", fontsize=30)
         plt.tight_layout()
 
-        fig_1.savefig(join(dir_plots, 'bland_{}.png'.format(param)))
+        fig_1.savefig(join(dir_plots, f'bland_{param}.png'))
 
         # %% Direct comparison plots
 
@@ -96,11 +116,11 @@ def main():
 
         ax_2.tick_params(labelsize=25)
 
-        plt.xlabel("Zeno Walkway [cm]", fontsize=30)
-        plt.ylabel("Kinect [cm]", fontsize=30)
+        plt.xlabel(f"Zeno Walkway [{units}]", fontsize=30)
+        plt.ylabel(f"Kinect [{units}]", fontsize=30)
         plt.tight_layout()
 
-        fig_2.savefig(join(dir_plots, 'compare_{}.png'.format(param)))
+        fig_2.savefig(join(dir_plots, f'compare_{param}.png'))
 
     df_icc = pd.DataFrame.from_dict(dict_icc, orient='index')
     df_bland = pd.DataFrame.from_dict(dict_bland, orient='index')
