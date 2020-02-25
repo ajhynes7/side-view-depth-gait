@@ -1,5 +1,5 @@
 
-# Gait Analysis with a Side-View Depth Sensor
+# Towards Gait Analysis with a Side-View Depth Sensor
 
 [![build](https://travis-ci.org/ajhynes7/depth-gait-analysis.svg)](https://travis-ci.org/ajhynes7/depth-gait-analysis)
 
