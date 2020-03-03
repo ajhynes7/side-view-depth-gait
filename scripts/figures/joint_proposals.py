@@ -10,11 +10,41 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.spatial.distance import cdist
+from matplotlib.cm import get_cmap
+from cycler import cycler
 
 import analysis.images as im
 import analysis.plotting as pl
 import modules.pose_estimation as pe
 from modules.constants import TYPE_CONNECTIONS, PART_CONNECTIONS
+
+
+def scatter_parts(points, labels, name_cmap: str = 'Set1', **kwargs):
+    """
+    Plot scatter points of body parts with different colours and shape depending on the label.
+
+    Parameters
+    ----------
+    points : (N, 2) ndarray
+        Array of N points with dimension 2.
+    labels : (N,) ndarray
+        Array of point labels.
+    name_cmap: str
+        Name of the colormap.
+
+    """
+
+    labels_unique = np.unique(labels)
+
+    cmap = get_cmap(name_cmap)
+
+    cycler_ = cycler(color=cmap.colors[:6]) + cycler(marker=['o', '^', 's', '*', 'P', 'X'])
+
+    for label, dict_format in zip(labels_unique, cycler_):
+
+        points_label = points[labels == label]
+
+        plt.scatter(points_label[:, 0], points_label[:, 1], **dict_format, **kwargs)
 
 
 def main():
@@ -59,7 +89,7 @@ def main():
     fig, ax = plt.subplots()
 
     ax.imshow(depth_image, cmap='gray')
-    pl.scatter_labels(points_image[:, :2], labels, edgecolors='k', s=75)
+    scatter_parts(points_image[:, :2], labels, edgecolors='k', s=100)
     plt.legend(part_types, framealpha=1, loc='upper left', fontsize=12)
 
     ax.set_yticks([])
@@ -72,7 +102,7 @@ def main():
     legend_location = [0.2, 0.6]
 
     fig = plt.figure()
-    pl.scatter_labels(population, labels, edgecolor='k', s=75)
+    scatter_parts(population, labels, edgecolor='k', s=100)
     plt.axis('equal')
     plt.axis('off')
     plt.legend(part_types, loc=legend_location, edgecolor='k')
@@ -96,7 +126,7 @@ def main():
     labels_reduced = labels[np.unique(paths)]
 
     fig = plt.figure()
-    pl.scatter_labels(pop_reduced, labels_reduced, edgecolor='k', s=75)
+    scatter_parts(pop_reduced, labels_reduced, edgecolor='k', s=100)
     plt.axis('equal')
     plt.axis('off')
     fig.savefig(join('figures', 'joint_proposals_reduced.pdf'), dpi=1200)
@@ -119,7 +149,7 @@ def main():
     for i in range(n_figs):
         fig, ax = plt.subplots()
 
-        pl.scatter_labels(pop_reduced, labels_reduced, s=75, edgecolor='k', zorder=5)
+        scatter_parts(pop_reduced, labels_reduced, s=100, edgecolor='k', zorder=5)
 
         if i == 0:
             # Add legend to first figures

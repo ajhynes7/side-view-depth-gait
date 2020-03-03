@@ -60,8 +60,8 @@ def main():
     fig = plt.figure()
 
     radii = df_radii.index.get_level_values(0).unique()
-    plt.plot(radii, truth_accs, '-o', c='b')
-    plt.plot(radii, truth_mod_accs, '-o', c='r')
+    plt.plot(radii, truth_accs, '-o', c='k')
+    plt.plot(radii, truth_mod_accs, '--o', c='k')
 
     plt.xlabel('Radius [cm]')
     plt.ylabel(r'Accuracy [\%]')
