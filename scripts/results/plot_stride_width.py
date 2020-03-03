@@ -3,7 +3,9 @@
 from os.path import join
 
 import matplotlib.pyplot as plt
+from matplotlib.cm import get_cmap
 import pandas as pd
+from cycler import cycler
 
 
 def main():
@@ -41,14 +43,18 @@ def main():
 
     fig = plt.figure()
 
-    for participant in participants_unique:
+    cmap = get_cmap('tab10')
+
+    cycler_ = cycler(color=cmap.colors[:4]) + cycler(marker=['o', '^', 's', 'X'])
+
+    for participant, dict_format in zip(participants_unique, cycler_):
 
         is_participant = df_sw.participant == participant
 
         x = df_sw.zeno[is_participant]
         y = df_sw.rel_diff[is_participant] * 100
 
-        plt.scatter(x, y, label=participant, s=100, edgecolor='k')
+        plt.scatter(x, y, label=participant, **dict_format, s=100, edgecolor='k')
 
     plt.legend()
 

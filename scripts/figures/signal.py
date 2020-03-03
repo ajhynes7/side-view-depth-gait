@@ -7,6 +7,8 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 from skspatial.transformation import transform_coordinates
+from matplotlib.cm import get_cmap
+from cycler import cycler
 
 import modules.cluster as cl
 import modules.side_assignment as sa
@@ -47,14 +49,25 @@ def main():
 
     fig_1 = plt.figure()
 
-    plt.scatter(
-        frames_grouped[~is_noise],
-        signal_grouped[~is_noise],
-        c=labels_grouped[~is_noise],
-        cmap='Set1',
-        edgecolor='k',
-        s=75,
-    )
+    cmap = get_cmap('Set1')
+
+    cycler_ = cycler(color=cmap.colors[:6]) + cycler(marker=['o', '^', 's', '*', 'P', 'X'])
+
+    labels_good = labels_grouped[~is_noise]
+    frames_good = frames_grouped[~is_noise]
+    signal_good = signal_grouped[~is_noise]
+    values_good = values_side_grouped[~is_noise]
+
+    labels_unique = np.unique(labels_good)
+
+    for label, dict_format in zip(labels_unique, cycler_):
+
+        is_label = labels_good == label
+
+        plt.scatter(
+            frames_good[is_label], signal_good[is_label], edgecolor='k', s=75, **dict_format,
+        )
+
     plt.scatter(frames_grouped[is_noise], signal_grouped[is_noise], c='k', s=20)
 
     plt.xlabel('Frame')
@@ -66,14 +79,14 @@ def main():
 
     fig_2 = plt.figure()
 
-    plt.scatter(
-        frames_grouped[~is_noise],
-        values_side_grouped[~is_noise],
-        c=labels_grouped[~is_noise],
-        cmap='Set1',
-        edgecolor='k',
-        s=75,
-    )
+    for label, dict_format in zip(labels_unique, cycler_):
+
+        is_label = labels_good == label
+
+        plt.scatter(
+            frames_good[is_label], values_good[is_label], edgecolor='k', s=75, **dict_format,
+        )
+
     plt.scatter(frames_grouped[is_noise], values_side_grouped[is_noise], c='k', s=20)
 
     plt.xlabel('Frame')
@@ -90,8 +103,24 @@ def main():
     is_cluster_l = labels_grouped_l != -1
     is_cluster_r = labels_grouped_r != -1
 
-    plt.scatter(frames_grouped[is_cluster_l], signal_grouped[is_cluster_l], c='b', edgecolor='k', s=75, label='Left')
-    plt.scatter(frames_grouped[is_cluster_r], signal_grouped[is_cluster_r], c='r', edgecolor='k', s=75, label='Right')
+    plt.scatter(
+        frames_grouped[is_cluster_l],
+        signal_grouped[is_cluster_l],
+        c='b',
+        edgecolor='k',
+        marker='o',
+        s=75,
+        label='Left',
+    )
+    plt.scatter(
+        frames_grouped[is_cluster_r],
+        signal_grouped[is_cluster_r],
+        c='r',
+        edgecolor='k',
+        marker='^',
+        s=75,
+        label='Right',
+    )
 
     plt.xlabel('Frame')
     plt.ylabel(r'Signal $\Phi$')
