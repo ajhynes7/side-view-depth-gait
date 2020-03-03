@@ -6,9 +6,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import xarray as xr
-from skspatial.transformation import transform_coordinates
-from matplotlib.cm import get_cmap
 from cycler import cycler
+from matplotlib.cm import get_cmap
+from skspatial.transformation import transform_coordinates
 
 import modules.cluster as cl
 import modules.side_assignment as sa

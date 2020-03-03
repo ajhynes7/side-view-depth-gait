@@ -3,9 +3,9 @@
 from os.path import join
 
 import matplotlib.pyplot as plt
-from matplotlib.cm import get_cmap
 import pandas as pd
 from cycler import cycler
+from matplotlib.cm import get_cmap
 
 
 def main():

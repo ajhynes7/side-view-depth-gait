@@ -9,9 +9,9 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy.spatial.distance import cdist
-from matplotlib.cm import get_cmap
 from cycler import cycler
+from matplotlib.cm import get_cmap
+from scipy.spatial.distance import cdist
 
 import analysis.images as im
 import analysis.plotting as pl
