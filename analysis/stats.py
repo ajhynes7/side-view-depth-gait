@@ -1,12 +1,10 @@
 """Module for statistical calculations."""
 
-from typing import NamedTuple, Tuple
+from typing import NamedTuple
 
-import numpy as np
 from numpy import ndarray
 
 import modules.math_funcs as mf
-from modules.typing import array_like
 
 
 class BlandAltman(NamedTuple):
@@ -124,81 +122,3 @@ def bland_altman(differences: ndarray) -> BlandAltman:
     lower_limit, upper_limit = mf.limits(bias, 1.96 * standard_dev)
 
     return BlandAltman(bias=bias, lower_limit=lower_limit, upper_limit=upper_limit, range_=upper_limit - lower_limit)
-
-
-def icc(matrix: array_like, form: Tuple[int, int] = (1, 1)) -> float:
-    """
-    Return an intraclass correlation coefficient (ICC).
-
-    Parameters
-    ----------
-    matrix : (N, K) array_like
-        Array for N subjects and K raters.
-    form : tuple, optional
-        The ICC form using Shrout and Fleiss (1979) convention.
-        The default is (1, 1).
-
-    Returns
-    -------
-    float
-        ICC of the specified form.
-
-    References
-    ----------
-    Shrout and Fleiss (1979)
-    Koo and Li (2016)
-
-    Examples
-    --------
-    >>> matrix = [[7, 9], [10, 13], [8, 4]]
-
-    >>> icc(matrix).round(4)
-    0.5246
-    >>> icc(matrix, form=(2, 1)).round(4)
-    0.463
-    >>> icc(matrix, form=(3, 1)).round(4)
-    0.3676
-
-    >>> matrix = [[60, 61], [60, 65], [58, 62], [10, 10]]
-
-    >>> icc(matrix).round(4)
-    0.992
-    >>> icc(matrix, form=(2, 1)).round(4)
-    0.992
-    >>> icc(matrix, form=(3, 1)).round(4)
-    0.9957
-
-    """
-    matrix = np.array(matrix)
-
-    # Number of subjects (n) and number of raters (k)
-    n, k = matrix.shape
-
-    # Total sum of squares
-    ss_total = matrix.var(ddof=1) * (n * k - 1)
-
-    # Mean square for rows
-    ms_r = matrix.mean(axis=1).var(ddof=1) * k
-
-    # Mean square for residual sources of variance
-    ms_w = matrix.var(axis=1, ddof=1).sum() / n
-
-    # Mean square for columns
-    ms_c = matrix.mean(axis=0).var(ddof=1) * n
-
-    # Mean square for error
-    ms_e = (ss_total - ms_r * (n - 1) - ms_c * (k - 1)) / ((n - 1) * (k - 1))
-
-    if form == (1, 1):
-        num = ms_r - ms_w
-        denom = ms_r + (k - 1) * ms_w
-
-    elif form == (2, 1):
-        num = ms_r - ms_e
-        denom = ms_r + (k - 1) * ms_e + k / n * (ms_c - ms_e)
-
-    elif form == (3, 1):
-        num = ms_r - ms_e
-        denom = ms_r + (k - 1) * ms_e
-
-    return num / denom
