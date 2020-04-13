@@ -93,6 +93,42 @@ def icc(X: array_like, form: int = 1) -> np.float:
     Intraclass correlation–A discussion and demonstration of basic features.
     PloS one, 14(7).
 
+    Examples
+    --------
+    >>> from analysis.icc import icc
+
+    >>> X = [[1, 1], [2, 2], [3, 3], [4, 4], [5, 5]]
+    >>> icc(X).round(4)
+    1.0
+    >>> icc(X, form=2).round(4)
+    1.0
+    >>> icc(X, form=3).round(4)
+    1.0
+
+    >>> X = [[1, 2], [2, 3], [3, 4], [4, 5], [5, 6]]
+    >>> icc(X).round(4)
+    0.8182
+    >>> icc(X, form=2).round(4)
+    0.8333
+    >>> icc(X, form=3).round(4)
+    1.0
+
+    >>> X = [[7, 9], [10, 13], [8, 4]]
+    >>> icc(X).round(4)
+    0.5246
+    >>> icc(X, form=2).round(4)
+    0.463
+    >>> icc(X, form=3).round(4)
+    0.3676
+
+    >>> X = [[60, 61], [60, 65], [58, 62], [10, 10]]
+    >>> icc(X).round(4)
+    0.992
+    >>> icc(X, form=2).round(4)
+    0.992
+    >>> icc(X, form=3).round(4)
+    0.9957
+
     """
     X = np.array(X)
     n, k = X.shape
