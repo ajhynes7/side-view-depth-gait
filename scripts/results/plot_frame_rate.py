@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-import analysis.stats as st
+from analysis.icc import icc
 
 
 def main():
@@ -30,7 +30,7 @@ def main():
 
         measures = np.column_stack((measures_k, measures_z))
 
-        icc_21 = st.icc(measures, form=(2, 1))
+        icc_21 = icc(measures, form=2)
 
         list_icc_21.append(icc_21)
 

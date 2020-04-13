@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 
 import analysis.stats as st
+from analysis.icc import icc
 
 
 def get_units(param_gait: str):
@@ -55,8 +56,8 @@ def main():
 
         measures = np.column_stack((measures_k, measures_z))
 
-        icc_21 = st.icc(measures, form=(2, 1))
-        icc_31 = st.icc(measures, form=(3, 1))
+        icc_21 = icc(measures, form=2)
+        icc_31 = icc(measures, form=3)
 
         means = measures.mean(axis=1)
         differences = st.relative_difference(measures_k, measures_z)
@@ -148,8 +149,8 @@ def main():
 
             measures = np.column_stack((measures_k, measures_z))
 
-            icc_21 = st.icc(measures, form=(2, 1))
-            icc_31 = st.icc(measures, form=(3, 1))
+            icc_21 = icc(measures, form=2)
+            icc_31 = icc(measures, form=3)
 
             differences = st.relative_difference(measures_k, measures_z)
             bland_alt = st.bland_altman(differences)
