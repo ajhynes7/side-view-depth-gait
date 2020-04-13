@@ -9,6 +9,7 @@ from modules.typing import array_like
 
 @dataclass
 class AnovaSquares:
+    """Dataclass for Sum of Squares and Mean Squares from ANOVA."""
 
     BS: float  # Between subjects
     BM: float  # Between measurements
@@ -19,22 +20,27 @@ class AnovaSquares:
     T: float  # Total
     E: float  # Error
 
-    # Implement iteration for easier unit testing.
     def __iter__(self):
+        """Implement iteration for easier unit testing."""
         return iter(astuple(self))
 
 
 @dataclass
 class SumSquares(AnovaSquares):
+    """Sum of Squares from ANOVA for calculating ICCs."""
+
     pass
 
 
 @dataclass
 class MeanSquares(AnovaSquares):
+    """Mean squares from ANOVA for calculating ICCs."""
+
     pass
 
 
 def anova_sum_squares(X: array_like) -> SumSquares:
+    """Return sum of Squares from ANOVA for calculating ICCs."""
 
     X = np.array(X)
     n, k = X.shape
@@ -63,6 +69,7 @@ def anova_sum_squares(X: array_like) -> SumSquares:
 
 
 def anova_mean_squares(ss: SumSquares, n: int, k: int):
+    """Return mean squares from ANOVA for calculating ICCs."""
 
     BS = ss.BS / (n - 1)  # Mean square between subjects
     BM = ss.BM / (k - 1)  # Mean square between measurements
