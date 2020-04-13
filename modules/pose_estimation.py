@@ -26,7 +26,7 @@ def cost_func(a: float, b: float) -> float:
 def score_func(a: float, b: float) -> float:
     """Score function for scoring links between body parts."""
     x = 1 / mf.norm_ratio(a, b)
-    return -(x - 1) ** 2 + 1
+    return -((x - 1) ** 2) + 1
 
 
 def measure_min_path(population: ndarray, labels: ndarray, label_adj_list: adj_list) -> ndarray:
