@@ -34,6 +34,8 @@ def relative_difference(x: ndarray, y: ndarray) -> ndarray:
 
     Examples
     --------
+    >>> import numpy as np
+
     >>> x = np.array([3, 3, 100])
     >>> y = np.array([1, 2, 110])
 
@@ -71,6 +73,8 @@ def relative_error(measured: ndarray, actual: ndarray) -> ndarray:
 
     Examples
     --------
+    >>> import numpy as np
+
     >>> relative_error(2, 5)
     -0.6
 
@@ -102,6 +106,8 @@ def bland_altman(differences: ndarray) -> BlandAltman:
 
     Examples
     --------
+    >>> import numpy as np
+
     >>> measures_1 = np.array([1, 2, 3])
     >>> measures_2 = np.array([2, 2, 3])
     >>> differences = relative_difference(measures_1, measures_2)
