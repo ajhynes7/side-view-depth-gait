@@ -50,18 +50,13 @@ def anova_sum_squares(X: array_like) -> SumSquares:
 
     x_bar = X.mean()
 
-    BS, BM, WS, WM, T = 0, 0, 0, 0, 0
+    BS = k * np.sum((S - x_bar) ** 2)
+    BM = n * np.sum((M - x_bar) ** 2)
 
-    for i in range(n):
-        for j in range(k):
+    WS = np.sum((X - S.reshape(-1, 1)) ** 2)
+    WM = np.sum((X - M) ** 2)
 
-            BS += (S[i] - x_bar) ** 2
-            BM += (M[j] - x_bar) ** 2
-
-            WS += (X[i, j] - S[i]) ** 2
-            WM += (X[i, j] - M[j]) ** 2
-
-            T += (X[i, j] - x_bar) ** 2
+    T = np.sum((X - x_bar) ** 2)
 
     E = T - BS - BM  # Sum of squares, error
 
