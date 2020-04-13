@@ -1,5 +1,7 @@
 """Run all scripts to generate figures."""
 
+import os
+
 import matplotlib
 from matplotlib import rc
 
@@ -7,6 +9,11 @@ from scripts.figures import body_graph, joint_proposals, signal, truth_positions
 
 
 def main():
+
+    dir_figures = 'figures'
+
+    if not os.path.exists(dir_figures):
+        os.makedirs(dir_figures)
 
     matplotlib.rcParams.update({"pgf.texsystem": "pdflatex"})
 

@@ -1,5 +1,6 @@
 """Compare the gait parameters of the Kinect and Zeno Walkway."""
 
+import os
 from os.path import join
 
 import matplotlib.pyplot as plt
@@ -30,6 +31,9 @@ def get_units(param_gait: str):
 def main():
 
     dir_plots = join('results', 'plots')
+
+    if not os.path.exists(dir_plots):
+        os.makedirs(dir_plots)
 
     # Gait parameters from all trials with matching IDs.
     df_matched_k = pd.read_pickle(join('data', 'kinect', 'df_matched.pkl'))
