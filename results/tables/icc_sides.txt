@@ -5,10 +5,10 @@
 \midrule
 absolute\_step\_length &   0.91 &  0.98 &   0.97 &  0.99 \\
 stance\_percentage    &   0.85 &  0.86 &   0.84 &  0.86 \\
-step\_length          &   0.93 &  0.97 &   0.97 &  0.99 \\
+step\_length          &   0.93 &  0.97 &   0.97 &  0.98 \\
 stride\_length        &   0.99 &  0.99 &   0.99 &  0.99 \\
-stride\_time          &   0.72 &  0.73 &   0.95 &  0.96 \\
+stride\_time          &   0.72 &  0.73 &   0.96 &  0.96 \\
 stride\_velocity      &   0.75 &  0.77 &   0.92 &  0.95 \\
-stride\_width         &   0.61 &  0.63 &   0.84 &  0.90 \\
+stride\_width         &   0.60 &  0.63 &   0.84 &  0.91 \\
 \bottomrule
 \end{tabular}
