@@ -1,173 +1,81 @@
-"""Compare the gait parameters of the Kinect and Zeno Walkway."""
-
-import os
 from os.path import join
+from typing import Tuple, Optional
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
 import analysis.stats as st
 from analysis.icc import icc
+from modules.typing import array_like
 
 
-def get_units(param_gait: str):
-    """Return the appropriate units for the gait parameter."""
-
-    if param_gait == 'stance_percentage':
-        units = r'\%'
-
-    elif param_gait == 'stride_time':
-        units = 's'
-
-    elif param_gait == 'stride_velocity':
-        units = 'cm/s'
-
-    else:
-        units = 'cm'
-
-    return units
-
-
-def main():
-
-    dir_plots = join('results', 'plots')
-
-    if not os.path.exists(dir_plots):
-        os.makedirs(dir_plots)
-
-    # Gait parameters from all trials with matching IDs.
-    df_matched_k = pd.read_pickle(join('data', 'kinect', 'df_matched.pkl'))
-    df_matched_z = pd.read_pickle(join('data', 'zeno', 'df_matched.pkl'))
-
-    gait_params = df_matched_k.columns
-
-    # %% Calculate results per trial.
+def calc_trial_results(
+    df_matched_k: pd.DataFrame, df_matched_z: pd.DataFrame, vector_filter: Optional[array_like] = None
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """Calculate ICC and Bland-Altman results."""
 
     df_trials_k = df_matched_k.groupby('trial_id').median()
     df_trials_z = df_matched_z.groupby('trial_id').median()
 
+    if vector_filter is None:
+        vector_filter = np.ones(df_trials_k.shape[0])
+
+    assert vector_filter.ndim == 1
+    assert df_trials_k.shape[0] == df_trials_z.shape[0] == vector_filter.size
+
     dict_icc, dict_bland = {}, {}
+
+    gait_params = df_matched_k.columns
 
     for param in gait_params:
 
-        measures_k = df_trials_k[param]
-        measures_z = df_trials_z[param]
+        measures_k = df_trials_k[param][vector_filter]
+        measures_z = df_trials_z[param][vector_filter]
 
         measures = np.column_stack((measures_k, measures_z))
 
         icc_21 = icc(measures, form=2)
         icc_31 = icc(measures, form=3)
 
-        means = measures.mean(axis=1)
         differences = st.relative_difference(measures_k, measures_z)
         bland_alt = st.bland_altman(differences)
 
         dict_icc[param] = {'ICC_21': icc_21, 'ICC_31': icc_31}
         dict_bland[param] = bland_alt._asdict()
 
-        # %% Bland-Altman plot
-
-        fig_1, ax_1 = plt.subplots()
-
-        ax_1.scatter(means, differences, c='k', s=20)
-
-        # Horizontal lines for bias and limits of agreement
-        ax_1.axhline(y=bland_alt.bias, color='k', linestyle='-')
-        ax_1.axhline(y=bland_alt.lower_limit, color='k', linestyle=':')
-        ax_1.axhline(y=bland_alt.upper_limit, color='k', linestyle=':')
-
-        # Enlarge y range
-        y_lims = np.array(ax_1.get_ylim())
-        y_range = y_lims[1] - y_lims[0]
-        ax_1.set_ylim(y_lims + 0.5 * y_range * np.array([-1, 1]))
-
-        # Reduce number of ticks on the axes, so that figure can be small
-        ax_1.locator_params(nbins=5)
-
-        ax_1.tick_params(labelsize=25)  # Increase font of tick labels
-
-        # Format y labels as percentages.
-        # This line needs to be after the others,
-        # or else the y-axis may be incorrect.
-        ax_1.set_yticklabels([f'{(x * 100):.0f}' for x in ax_1.get_yticks()])
-
-        # Remove right and top borders
-        ax_1.spines['right'].set_visible(False)
-        ax_1.spines['top'].set_visible(False)
-
-        units = get_units(param)
-
-        plt.xlabel(f"Mean of two measurements [{units}]", fontsize=30)
-        plt.ylabel(r"Relative difference [\%]", fontsize=30)
-        plt.tight_layout()
-
-        fig_1.savefig(join(dir_plots, f'bland_{param}.png'))
-
-        # %% Direct comparison plots
-
-        fig_2, ax_2 = plt.subplots()
-
-        ax_2.scatter(measures_z, measures_k, c='k', s=20)
-
-        lims = [np.min([ax_2.get_xlim(), ax_2.get_ylim()]), np.max([ax_2.get_xlim(), ax_2.get_ylim()])]
-
-        # Plot equality line
-        ax_2.plot(lims, lims, 'k-')
-
-        # Remove right and top borders
-        ax_2.spines['right'].set_visible(False)
-        ax_2.spines['top'].set_visible(False)
-
-        ax_2.tick_params(labelsize=25)
-
-        plt.xlabel(f"Zeno Walkway [{units}]", fontsize=30)
-        plt.ylabel(f"Kinect [{units}]", fontsize=30)
-        plt.tight_layout()
-
-        fig_2.savefig(join(dir_plots, f'compare_{param}.png'))
-
     df_icc = pd.DataFrame.from_dict(dict_icc, orient='index')
     df_bland = pd.DataFrame.from_dict(dict_bland, orient='index')
 
-    # %% Calculate results for left and right sides.
+    return df_icc, df_bland
 
-    df_sides_k = df_matched_k.groupby(['trial_id', 'side']).median()
-    df_sides_z = df_matched_z.groupby(['trial_id', 'side']).median()
 
-    dict_icc_sides, dict_bland_sides = {}, {}
+def main():
 
-    for side in ['L', 'R']:
+    # Gait parameters from all trials with matching IDs.
+    df_matched_k = pd.read_pickle(join('data', 'kinect', 'df_matched.pkl'))
+    df_matched_z = pd.read_pickle(join('data', 'zeno', 'df_matched.pkl'))
 
-        df_side_k = df_sides_k[df_sides_k.index.get_level_values('side') == side]
-        df_side_z = df_sides_z[df_sides_z.index.get_level_values('side') == side]
+    df_trial_types = pd.read_csv(join('data', 'matching', 'trial_types.csv'))
+    df_matched_types = df_trial_types.set_index("trial_name").loc[df_matched_k.reset_index().trial_name.unique()]
+    trials_kinect_normal_walking = df_matched_types.loc[df_matched_types.type == "A"].index.values
 
-        for param in gait_params:
+    trials_kinect = df_matched_k.reset_index().trial_name.unique()
+    is_normal_walking = np.in1d(trials_kinect, trials_kinect_normal_walking)
 
-            measures_k = df_side_k[param]
-            measures_z = df_side_z[param]
+    # Results from combining normal and dual-task walking
+    df_icc, df_bland = calc_trial_results(df_matched_k, df_matched_z)
 
-            measures = np.column_stack((measures_k, measures_z))
+    df_icc_normal, df_bland_normal = calc_trial_results(df_matched_k, df_matched_z, is_normal_walking)
+    df_icc_dual_task, df_bland_dual_task = calc_trial_results(df_matched_k, df_matched_z, ~is_normal_walking)
 
-            icc_21 = icc(measures, form=2)
-            icc_31 = icc(measures, form=3)
-
-            differences = st.relative_difference(measures_k, measures_z)
-            bland_alt = st.bland_altman(differences)
-
-            dict_icc_sides[(param, side)] = {'ICC_21': icc_21, 'ICC_31': icc_31}
-            dict_bland_sides[(param, side)] = bland_alt._asdict()
-
-    df_icc_sides = pd.DataFrame.from_dict(dict_icc_sides, orient='index').unstack()
-    df_bland_sides = pd.DataFrame.from_dict(dict_bland_sides, orient='index').unstack()
-
-    # %% Save results as LaTeX tables.
+    df_icc_split = df_icc_normal.join(df_icc_dual_task, lsuffix='_normal', rsuffix='_dual_task')
+    df_bland_split = df_bland_normal.join(df_bland_dual_task, lsuffix='_normal', rsuffix='_dual_task')
 
     dict_dfs = {
         'icc': df_icc,
         'bland_altman': df_bland,
-        'icc_sides': df_icc_sides,
-        'bland_altman_sides': df_bland_sides,
+        'icc_split': df_icc_split,
+        'bland_altman_split': df_bland_split,
     }
 
     for file_name, df in dict_dfs.items():
