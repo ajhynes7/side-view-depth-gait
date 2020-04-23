@@ -37,7 +37,7 @@ def main():
     truth_mod_l = pp.closest_proposals(proposals_foot, truth_l)
     truth_mod_r = pp.closest_proposals(proposals_foot, truth_r)
 
-    truth_accs, truth_mod_accs = [], []
+    truth_mod_accs = []
 
     for radius, df_radius in df_radii.groupby(level=0):
 
@@ -51,8 +51,6 @@ def main():
         # Match selected positions with truth
         matched_l, matched_r = pp.match_pairs(selected_l, selected_r, truth_l, truth_r)
 
-        truth_accs.append(pp.double_position_accuracy(matched_l, matched_r, truth_l, truth_r) * 100)
-
         truth_mod_accs.append(pp.double_position_accuracy(matched_l, matched_r, truth_mod_l, truth_mod_r) * 100)
 
     # %% Create plot of accuracy vs radii
@@ -60,13 +58,10 @@ def main():
     fig = plt.figure()
 
     radii = df_radii.index.get_level_values(0).unique()
-    plt.plot(radii, truth_accs, '-o', c='k')
-    plt.plot(radii, truth_mod_accs, '--o', c='k')
+    plt.plot(radii, truth_mod_accs, '-o', c='k')
 
     plt.xlabel('Radius [cm]')
     plt.ylabel(r'Accuracy [\%]')
-
-    plt.legend(['Truth', 'Modified'])
 
     fig.savefig(join('results', 'plots', 'accuracy_radii.pdf'), dpi=1200)
 
