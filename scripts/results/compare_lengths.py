@@ -64,10 +64,10 @@ def main():
         lambda row: st.relative_error(row['Estimated'], row['Ground Truth']), axis=1
     )
 
-    save_path = join('results', 'tables', 'length_comparison.txt')
+    save_path = join('results', 'tables', 'length_comparison.csv')
     with open(save_path, 'w') as file:
 
-        file.write(df_length_comparison.round(2).to_latex())
+        file.write(df_length_comparison.round(2).to_csv())
 
 
 if __name__ == '__main__':

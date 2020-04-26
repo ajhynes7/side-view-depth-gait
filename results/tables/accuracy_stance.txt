@@ -1,8 +1,0 @@
-\begin{tabular}{lrr}
-\toprule
-{} &  Left &  Right \\
-\midrule
-Truth    &  0.82 &   0.81 \\
-Modified &  1.00 &   1.00 \\
-\bottomrule
-\end{tabular}

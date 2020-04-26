@@ -26,8 +26,8 @@ def main():
 
     df_grouped = df_expanded.groupby('participant').agg(['mean', 'std'])
 
-    with open(join('results', 'tables', 'lengths.txt'), 'w') as file:
-        file.write(np.round(df_grouped, 2).to_latex())
+    with open(join('results', 'tables', 'lengths.csv'), 'w') as file:
+        file.write(np.round(df_grouped, 2).to_csv())
 
 
 if __name__ == '__main__':

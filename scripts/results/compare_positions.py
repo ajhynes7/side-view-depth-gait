@@ -88,8 +88,8 @@ def main():
 
     for file_name, df in dict_frames.items():
 
-        with open(join(table_dir, file_name + '.txt'), 'w') as file:
-            file.write(df.round(2).to_latex())
+        with open(join(table_dir, file_name + '.csv'), 'w') as file:
+            file.write(df.round(2).to_csv())
 
 
 if __name__ == '__main__':

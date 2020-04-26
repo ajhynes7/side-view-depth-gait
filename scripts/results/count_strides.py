@@ -16,8 +16,8 @@ def main():
 
     df_stats = pd.concat([stats_per_trial, stats_per_pass], axis=1).set_axis(["Per trial", "Per pass"], axis=1)
 
-    with open(join('results', 'tables', 'stride_counts.tsv'), 'w') as file:
-        file.write(df_stats.to_csv(sep='\t'))
+    with open(join('results', 'tables', 'stride_counts.csv'), 'w') as file:
+        file.write(df_stats.to_csv())
 
 
 if __name__ == '__main__':
