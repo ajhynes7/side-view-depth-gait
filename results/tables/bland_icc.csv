@@ -1,0 +1,23 @@
+,,Bland Altman,Bland Altman,Bland Altman,Bland Altman,Bland Altman Relative [%],Bland Altman Relative [%],Bland Altman Relative [%],Bland Altman Relative [%],ICC,ICC
+,,bias,lower_limit,upper_limit,range_,bias,lower_limit,upper_limit,range_,ICC_21,ICC_31
+Grouped,absolute_step_length,0.81,-1.74,3.36,5.1,1.32,-2.89,5.52,8.4,0.98,0.99
+Grouped,stance_percentage,0.06,-4.43,4.55,8.99,-0.09,-6.72,6.54,13.26,0.87,0.87
+Grouped,step_length,0.38,-2.33,3.1,5.43,0.56,-4.15,5.27,9.41,0.99,0.99
+Grouped,stride_length,1.2,-1.42,3.82,5.23,0.98,-1.14,3.1,4.24,0.99,1.0
+Grouped,stride_time,-0.21,-0.37,-0.06,0.3,-18.68,-30.92,-6.44,24.48,0.72,0.96
+Grouped,stride_velocity,22.31,0.47,44.14,43.66,19.99,7.15,32.83,25.68,0.77,0.94
+Grouped,stride_width,2.88,-0.13,5.88,6.01,42.36,-27.63,112.36,140.0,0.62,0.88
+Normal pace,absolute_step_length,1.36,-1.84,4.57,6.41,2.25,-2.59,7.09,9.68,0.97,0.98
+Normal pace,stance_percentage,-0.47,-5.51,4.57,10.08,-0.91,-8.36,6.54,14.9,0.83,0.83
+Normal pace,step_length,0.96,-2.15,4.07,6.22,1.58,-3.03,6.19,9.22,0.98,0.98
+Normal pace,stride_length,1.36,-0.79,3.5,4.29,1.09,-0.61,2.8,3.41,1.0,1.0
+Normal pace,stride_time,-0.2,-0.34,-0.06,0.28,-18.49,-30.86,-6.12,24.74,0.59,0.92
+Normal pace,stride_velocity,24.64,1.76,47.51,45.75,20.65,7.13,34.18,27.06,0.72,0.93
+Normal pace,stride_width,2.73,-0.59,6.06,6.65,39.14,-32.42,110.71,143.13,0.66,0.87
+Dual task,absolute_step_length,0.59,-1.54,2.72,4.26,0.94,-2.8,4.67,7.47,0.99,0.99
+Dual task,stance_percentage,0.28,-3.97,4.53,8.5,0.24,-6.02,6.5,12.52,0.89,0.89
+Dual task,step_length,0.15,-2.29,2.58,4.87,0.15,-4.41,4.7,9.12,0.99,0.99
+Dual task,stride_length,1.14,-1.67,3.94,5.61,0.93,-1.35,3.21,4.56,0.99,1.0
+Dual task,stride_time,-0.22,-0.38,-0.06,0.31,-18.76,-31.11,-6.41,24.7,0.75,0.96
+Dual task,stride_velocity,21.36,-0.08,42.8,42.87,19.73,7.02,32.43,25.41,0.78,0.94
+Dual task,stride_width,2.93,0.03,5.84,5.81,43.67,-26.52,113.86,140.38,0.61,0.89
