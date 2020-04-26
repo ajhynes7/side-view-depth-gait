@@ -18,7 +18,7 @@ def calc_trial_results(
     df_trials_z = df_matched_z.groupby('trial_id').median()
 
     if vector_filter is None:
-        vector_filter = np.ones(df_trials_k.shape[0])
+        vector_filter = np.full(df_trials_k.shape[0], True)
 
     assert vector_filter.ndim == 1
     assert df_trials_k.shape[0] == df_trials_z.shape[0] == vector_filter.size
