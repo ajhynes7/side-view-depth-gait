@@ -11,9 +11,9 @@ class BlandAltman(NamedTuple):
     """Container for Bland-Altman results."""
 
     bias: float
+    tolerance: float
     lower_limit: float
     upper_limit: float
-    range_: float
 
 
 def relative_difference(x: ndarray, y: ndarray) -> ndarray:
@@ -116,6 +116,9 @@ def bland_altman(differences: ndarray) -> BlandAltman:
     >>> np.round(results.bias, 2)
     -0.22
 
+    >>> np.round(results.tolerance, 2)
+    0.62
+
     >>> np.round(results.lower_limit, 2)
     -0.84
 
@@ -125,6 +128,13 @@ def bland_altman(differences: ndarray) -> BlandAltman:
     """
     bias, standard_dev = differences.mean(), differences.std()
 
-    lower_limit, upper_limit = mf.limits(bias, 1.96 * standard_dev)
+    tolerance = 1.96 * standard_dev
 
-    return BlandAltman(bias=bias, lower_limit=lower_limit, upper_limit=upper_limit, range_=upper_limit - lower_limit)
+    lower_limit, upper_limit = mf.limits(bias, tolerance)
+
+    return BlandAltman(
+        bias=bias,
+        tolerance=tolerance,
+        lower_limit=lower_limit,
+        upper_limit=upper_limit,
+    )
