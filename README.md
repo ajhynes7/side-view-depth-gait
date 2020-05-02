@@ -1,3 +1,4 @@
+# Spatiotemporal gait measurement with a side-view depth sensor using human joint proposals.
 
 [![build](https://travis-ci.org/ajhynes7/depth-gait-analysis.svg)](https://travis-ci.org/ajhynes7/depth-gait-analysis)
 
