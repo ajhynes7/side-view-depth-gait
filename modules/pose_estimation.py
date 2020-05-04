@@ -5,7 +5,7 @@ The pose is estimated by selecting body parts from a set of hypotheses.
 
 """
 import itertools
-from typing import Mapping, Sequence, Tuple
+from typing import Mapping, Sequence, Tuple, cast
 
 import numpy as np
 import pandas as pd
@@ -64,7 +64,7 @@ def measure_min_path(population: ndarray, labels: ndarray, label_adj_list: adj_l
     return lengths_measured
 
 
-def estimate_lengths(df_hypo_trial: pd.DataFrame, **kwargs: float) -> ndarray:
+def estimate_lengths(df_hypo_trial: pd.DataFrame, **kwargs) -> ndarray:
     """
     Estimate the lengths between adjacent body parts in a walking trial.
 
@@ -508,6 +508,9 @@ def select_best_feet(
 
             # Element i is True if i is the centre of a sphere
             has_sphere = np.logical_or(has_sphere_1, has_sphere_2)
+
+            # For type checker: cast Union[generic, ndarray] to ndarray.
+            has_sphere = cast(ndarray, has_sphere)
 
             # Element i is True if i is inside the combined sphere volume
             inside_spheres = in_spheres(within_radius, has_sphere)
