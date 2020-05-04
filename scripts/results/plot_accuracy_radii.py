@@ -55,13 +55,15 @@ def main():
 
     # %% Create plot of accuracy vs radii
 
-    fig = plt.figure()
+    fig, ax = plt.subplots()
 
     radii = df_radii.index.get_level_values(0).unique()
-    plt.plot(radii, truth_mod_accs, '-o', c='k')
+    ax.plot(radii, truth_mod_accs, '-o', c='k')
 
-    plt.xlabel('Radius [cm]')
-    plt.ylabel(r'Accuracy [\%]')
+    ax.set_aspect(0.1)
+
+    ax.set_xlabel('Radius [cm]')
+    ax.set_ylabel(r'Accuracy [\%]')
 
     fig.savefig(join('results', 'plots', 'accuracy_radii.pdf'), dpi=1200)
 

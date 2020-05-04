@@ -34,11 +34,14 @@ def main():
 
         list_icc_21.append(icc_21)
 
-    fig = plt.figure()
+    fig, ax = plt.subplots()
 
-    plt.scatter(list_fps, list_icc_21, c='k')
-    plt.xlabel('Camera frame rate [fps]')
-    plt.ylabel('ICC (2, 1)')
+    ax.scatter(list_fps, list_icc_21, c='k')
+
+    ax.set_aspect(0.8)
+
+    ax.set_xlabel("Camera frame rate [fps]")
+    ax.set_ylabel("$ICC_{2,1}$ of Stride Velocity")
 
     fig.savefig(join('results', 'plots', 'scatter_frame_rate.pdf'))
 
