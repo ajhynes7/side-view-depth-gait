@@ -85,7 +85,7 @@ def adj_matrix_to_list(adj_matrix: array_like) -> adj_list:
 
 def dag_shortest_paths(
     graph: adj_list, order: array_like, source_nodes: set
-) -> Tuple[Dict[int, int], Dict[int, float]]:
+) -> Tuple[dict, dict]:
     """
     Compute shortest path to each node on a directed acyclic graph.
 
