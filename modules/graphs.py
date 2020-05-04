@@ -94,7 +94,7 @@ def dag_shortest_paths(
     graph : dict
         Adjacency list.
         graph[u][v] is the weight from node u to node v.
-        Therarray_likee a key for each node u in the graph.
+        There is a key for each node u in the graph.
     order : array_like
         Topological ordering of the nodes.
         For each edge u to v, u comes before v in the ordering.
