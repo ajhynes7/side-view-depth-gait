@@ -1,6 +1,6 @@
 """Functions for manipulating graphs."""
 
-from typing import Any, Dict, Mapping, Tuple
+from typing import Any, Mapping, Tuple
 
 import numpy as np
 import pandas as pd
