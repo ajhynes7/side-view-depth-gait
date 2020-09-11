@@ -1,5 +1,8 @@
 """Make all plots of results."""
 
+import os
+from os.path import join
+
 import matplotlib
 from matplotlib import rc
 
@@ -7,6 +10,8 @@ from scripts.results import plot_accuracy_radii, plot_bland, plot_stride_width, 
 
 
 def main():
+
+    os.makedirs(join("results", "plots"), exist_ok=True)
 
     matplotlib.rcParams.update({"pgf.texsystem": "pdflatex"})
 
