@@ -1,12 +1,11 @@
-
 *.html
 *.ipynb
 *.pdf
 *.png
 *.pyc
+*.xlsx
 .*/
 .coverage*
-data/
 docs/
 htmlcov
 results/dataframes/
