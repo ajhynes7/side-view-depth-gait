@@ -1,0 +1,6 @@
+trial_type,description
+A,Normal walking
+B,Every other letter from a
+C,Count backward by 7 from 100
+D,Count forward, skipping any number with 3 or divisible by 3
+E,Every other letter from b
