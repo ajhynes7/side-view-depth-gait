@@ -16,17 +16,11 @@ Some scripts for the results and figures make use of LaTeX for formatting. You c
 
 ### Creating a virtual environment
 
-First, install `virtualenv`.
-
-```bash
-$ pip install virtualenv
-```
-
-Then create a virtual environment and activate it.
+Create a virtual environment and activate it.
 
 ```bash
 $ mkdir virtualenvs/
-$ virtualenv virtualenvs/depth_gait_env
+$ python -m venv virtualenvs/depth_gait_env
 
 $ source virtualenvs/depth_gait_env/bin/activate
 ```
