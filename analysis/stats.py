@@ -126,7 +126,9 @@ def bland_altman(differences: ndarray) -> BlandAltman:
     0.39
 
     """
-    bias, standard_dev = differences.mean(), differences.std()
+    # Wrap in float() to satisfy mypy.
+    bias = float(differences.mean())
+    standard_dev = float(differences.std())
 
     tolerance = 1.96 * standard_dev
 

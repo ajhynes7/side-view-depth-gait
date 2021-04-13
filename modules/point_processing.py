@@ -70,7 +70,9 @@ def closest_point(points: array_like, target: array_like) -> Tuple[ndarray, int]
     """
     distances = norm(np.subtract(points, target), axis=1)
 
-    index_closest = np.argmin(distances)
+    # Wrap in int() to satisfy mypy.
+    index_closest = int(np.argmin(distances))
+
     point_closest = points[index_closest]
 
     return point_closest, index_closest
@@ -237,7 +239,8 @@ def position_accuracy(points: ndarray, targets: ndarray, max_dist: float = 10) -
     """
     distances = norm(points - targets, axis=1)
 
-    return np.mean(distances <= max_dist)
+    # Wrap in float() to satisfy mypy.
+    return float(np.mean(distances <= max_dist))
 
 
 @require(
