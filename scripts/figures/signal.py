@@ -65,7 +65,11 @@ def main():
         is_label = labels_good == label
 
         plt.scatter(
-            frames_good[is_label], signal_good[is_label], edgecolor='k', s=75, **dict_format,
+            frames_good[is_label],
+            signal_good[is_label],
+            edgecolor='k',
+            s=75,
+            **dict_format,
         )
 
     plt.scatter(frames_grouped[is_noise], signal_grouped[is_noise], c='k', s=20)
@@ -84,7 +88,11 @@ def main():
         is_label = labels_good == label
 
         plt.scatter(
-            frames_good[is_label], values_good[is_label], edgecolor='k', s=75, **dict_format,
+            frames_good[is_label],
+            values_good[is_label],
+            edgecolor='k',
+            s=75,
+            **dict_format,
         )
 
     plt.scatter(frames_grouped[is_noise], values_side_grouped[is_noise], c='k', s=20)
