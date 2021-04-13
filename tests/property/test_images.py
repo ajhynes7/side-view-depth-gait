@@ -9,7 +9,9 @@ import analysis.images as im
 
 pos_floats = st.floats(min_value=0.1, max_value=1e6)
 
-point_3d = arrays('float', (3,), st.integers(min_value=-1e6, max_value=1e6))
+point_3d = arrays(
+    'float', (3,), elements=st.integers(min_value=-1e6, max_value=1e6)
+)
 
 
 @st.composite
@@ -18,7 +20,7 @@ def array_2d(draw):
     a = draw(st.integers(min_value=2, max_value=50))
     b = draw(st.integers(min_value=2, max_value=50))
 
-    return draw(arrays('float', (a, b), st.floats(allow_nan=False)))
+    return draw(arrays('float', (a, b), elements=st.floats(allow_nan=False)))
 
 
 @given(point_3d, pos_floats, pos_floats, pos_floats, pos_floats)

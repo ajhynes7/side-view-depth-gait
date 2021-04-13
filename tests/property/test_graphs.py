@@ -16,7 +16,7 @@ def square_array(draw):
     """Generate a square numpy array."""
     n = draw(st.integers(min_value=1, max_value=50))
 
-    return draw(arrays('float', (n, n), st.floats(allow_nan=False)))
+    return draw(arrays('float', (n, n), elements=st.floats(allow_nan=False)))
 
 
 @given(square_array())
