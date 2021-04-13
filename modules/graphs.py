@@ -83,9 +83,7 @@ def adj_matrix_to_list(adj_matrix: array_like) -> adj_list:
     return graph
 
 
-def dag_shortest_paths(
-    graph: adj_list, order: array_like, source_nodes: set
-) -> Tuple[dict, dict]:
+def dag_shortest_paths(graph: adj_list, order: array_like, source_nodes: set) -> Tuple[dict, dict]:
     """
     Compute shortest path to each node on a directed acyclic graph.
 
