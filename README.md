@@ -30,7 +30,7 @@ Finally, install the required Python packages into the environment.
 
 ```bash
 $ cd depth-gait-analysis/
-$ pip install -r requirements.txt
+$ pip install -r requirements/base.txt
 ```
 
 
