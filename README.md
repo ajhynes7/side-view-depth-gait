@@ -1,6 +1,6 @@
 # Spatiotemporal gait measurement with a side-view depth sensor using human joint proposals.
 
-[![build](https://github.com/ajhynes7/scikit-spatial/actions/workflows/main.yml/badge.svg)](https://github.com/ajhynes7/side-view-depth-gait/actions/workflows/main.yml)
+[![build](https://github.com/ajhynes7/side-view-depth-gait/actions/workflows/main.yml/badge.svg)](https://github.com/ajhynes7/side-view-depth-gait/actions/workflows/main.yml)
 
 
 This repository contains the code for the journal article *Spatiotemporal Gait Measurement with a Side-View Depth Sensor Using Human Joint Proposals, which is currently under review.
