@@ -1,0 +1,11 @@
+Pillow==8.2.0
+dpcontracts==0.6.0
+matplotlib==3.4.1
+numpy==1.20.2
+pandas==1.2.4
+scikit-image==0.18.1
+scikit-learn==0.24.1
+scikit-spatial==4.0.1
+scipy==1.6.2
+statsmodels==0.12.2
+xarray==0.17.0
