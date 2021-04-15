@@ -207,7 +207,7 @@ def lengths_to_adj_list(label_connections: ndarray, lengths: array_like) -> adj_
     {0: {}, 1: {2: 20}, 2: {3: 14}, 3: {4: 19, 5: 39}, 4: {5: 20}, 5: {}}
 
     """
-    last_part = label_connections.max()
+    last_part = int(label_connections.max())
     label_adj_list: dict = {i: {} for i in range(last_part + 1)}
 
     n_rows = len(label_connections)
@@ -460,7 +460,8 @@ def in_spheres(within_radius: ndarray, has_sphere: ndarray) -> ndarray:
     n = len(has_sphere)
     tiled = np.tile(has_sphere, (n, 1))
 
-    return np.any(tiled * within_radius, 1)
+    # Cast to np.ndarray to satisfy mypy.
+    return cast(np.ndarray, np.any(tiled * within_radius, 1))
 
 
 def select_best_feet(
@@ -527,7 +528,7 @@ def select_best_feet(
         # Votes go to the winners
         votes += radius_winners
 
-    winning_pair = np.argmax(votes)
+    winning_pair = int(np.argmax(votes))
     foot_1, foot_2 = pairs[winning_pair]
 
     return foot_1, foot_2
@@ -568,7 +569,9 @@ def foot_to_pop(
 
     foot_distances = path_dist[[foot_num_1, foot_num_2]]
     head_points = (pop_1[0, :], pop_2[0, :])
-    head_selected = head_points[np.argmin(foot_distances)]
+
+    # Wrap in int() to satisfy mypy.
+    head_selected = head_points[int(np.argmin(foot_distances))]
 
     pop_1[0, :], pop_2[0, :] = head_selected, head_selected
 

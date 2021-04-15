@@ -1,11 +1,11 @@
 """Math functions."""
 
-from typing import Tuple
+from typing import Tuple, Union
 
 import numpy as np
 
 
-def limits(x: np.ndarray, tolerance: float) -> Tuple[float, float]:
+def limits(x: Union[float, np.ndarray], tolerance: float) -> Tuple[float, float]:
     """
     Return lower and upper bounds (x ± tolerance).
 

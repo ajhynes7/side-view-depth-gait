@@ -1,6 +1,7 @@
 # Spatiotemporal gait measurement with a side-view depth sensor using human joint proposals.
 
-[![build](https://travis-ci.org/ajhynes7/depth-gait-analysis.svg)](https://travis-ci.org/ajhynes7/depth-gait-analysis)
+[![build](https://github.com/ajhynes7/side-view-depth-gait/actions/workflows/main.yml/badge.svg)](https://github.com/ajhynes7/side-view-depth-gait/actions/workflows/main.yml)
+
 
 This repository contains the code for the journal article *Spatiotemporal Gait Measurement with a Side-View Depth Sensor Using Human Joint Proposals, which is currently under review.
 
@@ -16,17 +17,11 @@ Some scripts for the results and figures make use of LaTeX for formatting. You c
 
 ### Creating a virtual environment
 
-First, install `virtualenv`.
-
-```bash
-$ pip install virtualenv
-```
-
-Then create a virtual environment and activate it.
+Create a virtual environment and activate it.
 
 ```bash
 $ mkdir virtualenvs/
-$ virtualenv virtualenvs/depth_gait_env
+$ python -m venv virtualenvs/depth_gait_env
 
 $ source virtualenvs/depth_gait_env/bin/activate
 ```
@@ -35,7 +30,7 @@ Finally, install the required Python packages into the environment.
 
 ```bash
 $ cd depth-gait-analysis/
-$ pip install -r requirements.txt
+$ pip install -r requirements/base.txt
 ```
 
 

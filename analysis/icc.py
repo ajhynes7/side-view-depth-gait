@@ -78,7 +78,7 @@ def anova_mean_squares(ss: SumSquares, n: int, k: int):
     return MeanSquares(BS, BM, WS, WM, T, E)
 
 
-def icc(X: array_like, form: int = 1) -> np.float:
+def icc(X: array_like, form: int = 1) -> np.float64:
     """
     Compute intraclass correlation coefficients (ICCs).
 

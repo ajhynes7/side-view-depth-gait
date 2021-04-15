@@ -60,7 +60,7 @@ def main():
 
         # Convert elements floats because they
         # are 3D coordinates
-        df_hypo_raw = df_hypo_raw.astype(np.float)
+        df_hypo_raw = df_hypo_raw.astype(np.float64)
 
         # Extract unique index values
         frames = df_hypo_raw.index.get_level_values(0).unique()
