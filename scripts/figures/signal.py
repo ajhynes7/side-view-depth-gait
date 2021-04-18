@@ -16,7 +16,9 @@ import modules.side_assignment as sa
 
 def main():
 
-    df_selected_passes = pd.read_pickle(join('data', 'kinect', 'df_selected_passes.pkl'))
+    df_selected_passes = pd.read_pickle(
+        join('data', 'kinect', 'df_selected_passes.pkl')
+    )
 
     trial_name, num_pass = '2014-12-08_P004_Post_000', 1
 
@@ -29,19 +31,31 @@ def main():
 
     points_stacked = xr.DataArray(
         np.dstack((points_a, points_b, points_head)),
-        coords={'frames': frames, 'cols': range(3), 'layers': ['points_a', 'points_b', 'points_head']},
+        coords={
+            'frames': frames,
+            'cols': range(3),
+            'layers': ['points_a', 'points_b', 'points_head'],
+        },
         dims=('frames', 'cols', 'layers'),
     )
 
     basis, points_foot_grouped = sa.compute_basis(points_stacked)
 
-    signal_grouped = transform_coordinates(points_foot_grouped.values, basis.origin, [basis.forward])
-    values_side_grouped = transform_coordinates(points_foot_grouped.values, basis.origin, [basis.perp])
+    signal_grouped = transform_coordinates(
+        points_foot_grouped.values, basis.origin, [basis.forward]
+    )
+    values_side_grouped = transform_coordinates(
+        points_foot_grouped.values, basis.origin, [basis.perp]
+    )
 
     frames_grouped = points_foot_grouped.coords['frames'].values
 
-    labels_grouped = cl.dbscan_st(signal_grouped, times=frames_grouped, eps_spatial=5, eps_temporal=10, min_pts=7)
-    labels_grouped_l, labels_grouped_r = sa.assign_sides_grouped(frames_grouped, values_side_grouped, labels_grouped)
+    labels_grouped = cl.dbscan_st(
+        signal_grouped, times=frames_grouped, eps_spatial=5, eps_temporal=10, min_pts=7
+    )
+    labels_grouped_l, labels_grouped_r = sa.assign_sides_grouped(
+        frames_grouped, values_side_grouped, labels_grouped
+    )
 
     is_noise = labels_grouped == -1
 
@@ -51,7 +65,9 @@ def main():
 
     cmap = get_cmap('Set1')
 
-    cycler_ = cycler(color=cmap.colors[:6]) + cycler(marker=['o', '^', 's', '*', 'P', 'X'])
+    cycler_ = cycler(color=cmap.colors[:6]) + cycler(
+        marker=['o', '^', 's', '*', 'P', 'X']
+    )
 
     labels_good = labels_grouped[~is_noise]
     frames_good = frames_grouped[~is_noise]

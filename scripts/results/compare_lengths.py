@@ -29,8 +29,12 @@ def main():
     df_truth_r = df_truth.loc[:, parts_r].dropna()
 
     # Measured lengths of labelled trials on each frame
-    lengths_truth_l = df_truth_l.apply(lambda row: pp.consecutive_dist(np.stack(row)), axis=1)
-    lengths_truth_r = df_truth_r.apply(lambda row: pp.consecutive_dist(np.stack(row)), axis=1)
+    lengths_truth_l = df_truth_l.apply(
+        lambda row: pp.consecutive_dist(np.stack(row)), axis=1
+    )
+    lengths_truth_r = df_truth_r.apply(
+        lambda row: pp.consecutive_dist(np.stack(row)), axis=1
+    )
 
     labelled_trial_names = df_truth.index.get_level_values(0).unique()
 
@@ -48,7 +52,10 @@ def main():
         lengths_truth = np.median(np.stack(lengths_trial), axis=0)
 
         df_compare_trial = pd.DataFrame(
-            {'Estimated': df_lengths.loc[trial_name], 'Ground Truth': pd.Series(lengths_truth)}
+            {
+                'Estimated': df_lengths.loc[trial_name],
+                'Ground Truth': pd.Series(lengths_truth),
+            }
         )
 
         dict_lengths[i + 1] = df_compare_trial

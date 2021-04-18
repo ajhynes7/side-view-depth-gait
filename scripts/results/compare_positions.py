@@ -46,7 +46,9 @@ def main():
 
     # All head and foot proposals on each frame
     proposals_head = df_hypo.apply(lambda row: row.population[row.labels == 0], axis=1)
-    proposals_foot = df_hypo.apply(lambda row: row.population[row.labels == row.labels.max()], axis=1)
+    proposals_foot = df_hypo.apply(
+        lambda row: row.population[row.labels == row.labels.max()], axis=1
+    )
 
     truth_mod_head = pp.closest_proposals(proposals_head, truth_head)
     truth_mod_l = pp.closest_proposals(proposals_foot, truth_l)
@@ -68,16 +70,23 @@ def main():
     # within a distance d from the truth
 
     acc_matched = pp.double_position_accuracy(matched_l, matched_r, truth_l, truth_r)
-    acc_matched_mod = pp.double_position_accuracy(matched_l, matched_r, truth_mod_l, truth_mod_r)
+    acc_matched_mod = pp.double_position_accuracy(
+        matched_l, matched_r, truth_mod_l, truth_mod_r
+    )
 
     # %% Organize into DataFrames
 
-    df_acc_head = pd.DataFrame(index=['Truth', 'Modified'], columns=['Head'], data=[acc_head, acc_mod_head])
+    df_acc_head = pd.DataFrame(
+        index=['Truth', 'Modified'], columns=['Head'], data=[acc_head, acc_mod_head]
+    )
 
     df_acc_matched = pd.DataFrame(
         index=['Truth', 'Modified'],
         columns=['Left', 'Right', 'Both'],
-        data=[[acc_matched_l, acc_matched_r, acc_matched], [acc_matched_mod_l, acc_matched_mod_r, acc_matched_mod]],
+        data=[
+            [acc_matched_l, acc_matched_r, acc_matched],
+            [acc_matched_mod_l, acc_matched_mod_r, acc_matched_mod],
+        ],
     )
 
     # %% Save DataFrames as LaTeX tables

@@ -9,7 +9,9 @@ import pandas as pd
 
 def extract_measurements(df_raw):
     """Extract gait parameter measurements from the raw Zeno data."""
-    row_param_names = df_raw.apply(lambda row: row.str.contains('Stride Length').any(), axis=1).idxmax()
+    row_param_names = df_raw.apply(
+        lambda row: row.str.contains('Stride Length').any(), axis=1
+    ).idxmax()
     row_data_begins = (df_raw.iloc[:, 0] == 1).idxmax()
 
     df_trial = df_raw.iloc[row_data_begins:]
@@ -45,9 +47,13 @@ def parse_walking_info(df_trial):
             yield num_pass, side, num_stride
 
     series_info = df_trial.iloc[:, 0]
-    df_parsed = pd.DataFrame(yield_parsed(series_info), columns=['num_pass', 'side', 'num_stride'])
+    df_parsed = pd.DataFrame(
+        yield_parsed(series_info), columns=['num_pass', 'side', 'num_stride']
+    )
 
-    return pd.concat((df_parsed, df_trial), axis=1).set_index(df_parsed.columns.to_list())
+    return pd.concat((df_parsed, df_trial), axis=1).set_index(
+        df_parsed.columns.to_list()
+    )
 
 
 def select_parameters(df_trial):
@@ -79,7 +85,12 @@ def main():
 
     for file_path in file_paths:
 
-        df_trial = pd.read_excel(file_path).pipe(extract_measurements).pipe(parse_walking_info).pipe(select_parameters)
+        df_trial = (
+            pd.read_excel(file_path)
+            .pipe(extract_measurements)
+            .pipe(parse_walking_info)
+            .pipe(select_parameters)
+        )
 
         trial_name = splitext(basename(file_path))[0]
         dict_trials[trial_name] = df_trial

@@ -83,7 +83,9 @@ def adj_matrix_to_list(adj_matrix: array_like) -> adj_list:
     return graph
 
 
-def dag_shortest_paths(graph: adj_list, order: array_like, source_nodes: set) -> Tuple[dict, dict]:
+def dag_shortest_paths(
+    graph: adj_list, order: array_like, source_nodes: set
+) -> Tuple[dict, dict]:
     """
     Compute shortest path to each node on a directed acyclic graph.
 
@@ -181,7 +183,9 @@ def trace_path(prev: Mapping, target_node: Any) -> list:
     return path[::-1]
 
 
-def labelled_nodes_to_graph(node_labels: Mapping[int, int], label_adj_list: adj_list) -> adj_list:
+def labelled_nodes_to_graph(
+    node_labels: Mapping[int, int], label_adj_list: adj_list
+) -> adj_list:
     """
     Create an adjacency list from a set of labelled nodes.
 
@@ -232,7 +236,12 @@ def labelled_nodes_to_graph(node_labels: Mapping[int, int], label_adj_list: adj_
     return graph
 
 
-def points_to_graph(dist_matrix: ndarray, labels: ndarray, label_adj_list: adj_list, weight_func: func_ab) -> adj_list:
+def points_to_graph(
+    dist_matrix: ndarray,
+    labels: ndarray,
+    label_adj_list: adj_list,
+    weight_func: func_ab,
+) -> adj_list:
     """
     Construct a weighted graph from a set of labelled points in space.
 

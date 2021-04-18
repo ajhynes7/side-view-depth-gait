@@ -15,7 +15,9 @@ from modules.phase_detection import Stance
 from modules.typing import array_like
 
 
-def spatial_parameters(point_a_i: array_like, point_b: array_like, point_a_f: array_like) -> Dict[str, np.float64]:
+def spatial_parameters(
+    point_a_i: array_like, point_b: array_like, point_a_f: array_like
+) -> Dict[str, np.float64]:
     """
     Calculate spatial gait parameters for a stride.
 
@@ -81,7 +83,9 @@ def spatial_parameters(point_a_i: array_like, point_b: array_like, point_a_f: ar
     }
 
 
-def stride_parameters(foot_a_i: Stance, foot_b: Stance, foot_a_f: Stance, *, fps: float = 30) -> Dict[str, np.float64]:
+def stride_parameters(
+    foot_a_i: Stance, foot_b: Stance, foot_a_f: Stance, *, fps: float = 30
+) -> Dict[str, np.float64]:
     """
     Calculate gait parameters from a single stride.
 
@@ -150,9 +154,13 @@ def stride_parameters(foot_a_i: Stance, foot_b: Stance, foot_a_f: Stance, *, fps
 
 @require(
     "The stance DataFrame must include the required columns.",
-    lambda args: set(args.df_stance.columns) == {'num_stride', 'position', 'frame_i', 'frame_f', 'side'},
+    lambda args: set(args.df_stance.columns)
+    == {'num_stride', 'position', 'frame_i', 'frame_f', 'side'},
 )
-@require("The stances must be sorted by initial frame.", lambda args: args.df_stance.frame_i.is_monotonic)
+@require(
+    "The stances must be sorted by initial frame.",
+    lambda args: args.df_stance.frame_i.is_monotonic,
+)
 def stances_to_gait(df_stance: pd.DataFrame) -> pd.DataFrame:
     """
     Calculate gait parameters from all instances of feet contacting the floor.
@@ -199,7 +207,8 @@ def stances_to_gait(df_stance: pd.DataFrame) -> pd.DataFrame:
 
 @require(
     "The layers must include head and two feet.",
-    lambda args: set(args.points_stacked.layers.values) == {'points_a', 'points_b', 'points_head'},
+    lambda args: set(args.points_stacked.layers.values)
+    == {'points_a', 'points_b', 'points_head'},
 )
 @ensure(
     "The output must contain gait params.",
@@ -207,7 +216,9 @@ def stances_to_gait(df_stance: pd.DataFrame) -> pd.DataFrame:
 )
 @ensure(
     "The output must have the required index.",
-    lambda _, result: result.index.names == ['side', 'num_stride'] if not result.empty else True,
+    lambda _, result: result.index.names == ['side', 'num_stride']
+    if not result.empty
+    else True,
 )
 def walking_pass_parameters(points_stacked: xr.DataArray) -> pd.DataFrame:
     """
@@ -229,6 +240,8 @@ def walking_pass_parameters(points_stacked: xr.DataArray) -> pd.DataFrame:
     basis, points_grouped_inlier = sa.compute_basis(points_stacked)
 
     labels_grouped_l, labels_grouped_r = pde.label_stances(points_grouped_inlier, basis)
-    df_stance = pde.get_stance_dataframe(points_grouped_inlier, labels_grouped_l, labels_grouped_r)
+    df_stance = pde.get_stance_dataframe(
+        points_grouped_inlier, labels_grouped_l, labels_grouped_r
+    )
 
     return df_stance.pipe(stances_to_gait)

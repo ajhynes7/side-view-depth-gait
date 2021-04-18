@@ -81,10 +81,14 @@ def main():
                 nonzero_row_col = np.argwhere(part_binary)
                 depths = depth_image[part_binary]
 
-                image_points = np.column_stack((nonzero_row_col[:, 1], nonzero_row_col[:, 0], depths))
+                image_points = np.column_stack(
+                    (nonzero_row_col[:, 1], nonzero_row_col[:, 0], depths)
+                )
 
                 median_image = np.median(image_points, axis=0)
-                median_real = im.image_to_real(median_image, im.X_RES, im.Y_RES, im.F_XZ, im.F_YZ)
+                median_real = im.image_to_real(
+                    median_image, im.X_RES, im.Y_RES, im.F_XZ, im.F_YZ
+                )
 
                 df_trial.loc[image_num, part_name] = median_real
 

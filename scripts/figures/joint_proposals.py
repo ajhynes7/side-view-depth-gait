@@ -38,7 +38,9 @@ def scatter_parts(points, labels, name_cmap: str = 'Set1', **kwargs):
 
     cmap = get_cmap(name_cmap)
 
-    cycler_ = cycler(color=cmap.colors[:6]) + cycler(marker=['o', '^', 's', '*', 'P', 'X'])
+    cycler_ = cycler(color=cmap.colors[:6]) + cycler(
+        marker=['o', '^', 's', '*', 'P', 'X']
+    )
 
     for label, dict_format in zip(labels_unique, cycler_):
 
@@ -74,13 +76,17 @@ def main():
     image_number = int(match_object.group(1))
 
     # Load dictionary to convert image numbers to frames
-    with open(join(kinect_dir, 'alignment', "{}.pkl".format(trial_name)), 'rb') as handle:
+    with open(
+        join(kinect_dir, 'alignment', "{}.pkl".format(trial_name)), 'rb'
+    ) as handle:
         image_to_frame = pickle.load(handle)
 
     frame = image_to_frame[image_number]
     population, labels = df_hypo.loc[trial_name].loc[frame]
 
-    points_image = np.apply_along_axis(im.real_to_image, 1, population, im.X_RES, im.Y_RES, im.F_XZ, im.F_YZ)
+    points_image = np.apply_along_axis(
+        im.real_to_image, 1, population, im.X_RES, im.Y_RES, im.F_XZ, im.F_YZ
+    )
 
     # %% Plot joint proposals on depth image
 
@@ -117,7 +123,9 @@ def main():
 
     # Run shortest path algorithm on the body graph
     dist_matrix = cdist(population, population)
-    prev, dist = pe.pop_shortest_paths(dist_matrix, labels, label_adj_list_types, pe.cost_func)
+    prev, dist = pe.pop_shortest_paths(
+        dist_matrix, labels, label_adj_list_types, pe.cost_func
+    )
 
     # Get shortest path to each foot
     paths, _ = pe.paths_to_foot(prev, dist, labels)
@@ -142,7 +150,9 @@ def main():
     label_adj_list_parts = pe.lengths_to_adj_list(PART_CONNECTIONS, lengths)
 
     dist_matrix_reduced = cdist(pop_reduced, pop_reduced)
-    score_matrix = pe.get_scores(dist_matrix_reduced, paths_reduced, label_adj_list_parts, pe.score_func)
+    score_matrix = pe.get_scores(
+        dist_matrix_reduced, paths_reduced, label_adj_list_parts, pe.score_func
+    )
 
     n_figs = len(pairs)
 

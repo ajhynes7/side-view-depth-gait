@@ -35,13 +35,17 @@ def main():
     depth_image = cv2.imread(depth_path, cv2.IMREAD_ANYDEPTH)
 
     # Load dictionary to convert image numbers to frames
-    with open(join(kinect_dir, 'alignment', '{}.pkl'.format(trial_name)), 'rb') as handle:
+    with open(
+        join(kinect_dir, 'alignment', '{}.pkl'.format(trial_name)), 'rb'
+    ) as handle:
         image_to_frame = pickle.load(handle)
 
     frame = image_to_frame[image_number]
 
     points_real = np.stack(df_truth.loc[trial_name, frame])
-    points_image = np.apply_along_axis(im.real_to_image, 1, points_real, im.X_RES, im.Y_RES, im.F_XZ, im.F_YZ)
+    points_image = np.apply_along_axis(
+        im.real_to_image, 1, points_real, im.X_RES, im.Y_RES, im.F_XZ, im.F_YZ
+    )
 
     # %%  Label image
 

@@ -32,7 +32,9 @@ def main():
     # %% Create modified truth
 
     # All foot proposals on each frame
-    proposals_foot = df_hypo.apply(lambda row: row.population[row.labels == row.labels.max()], axis=1)
+    proposals_foot = df_hypo.apply(
+        lambda row: row.population[row.labels == row.labels.max()], axis=1
+    )
 
     truth_mod_l = pp.closest_proposals(proposals_foot, truth_l)
     truth_mod_r = pp.closest_proposals(proposals_foot, truth_r)
@@ -51,7 +53,10 @@ def main():
         # Match selected positions with truth
         matched_l, matched_r = pp.match_pairs(selected_l, selected_r, truth_l, truth_r)
 
-        truth_mod_accs.append(pp.double_position_accuracy(matched_l, matched_r, truth_mod_l, truth_mod_r) * 100)
+        truth_mod_accs.append(
+            pp.double_position_accuracy(matched_l, matched_r, truth_mod_l, truth_mod_r)
+            * 100
+        )
 
     # %% Create plot of accuracy vs radii
 

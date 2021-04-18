@@ -40,7 +40,9 @@ def main():
             population, labels = tuple_frame.population, tuple_frame.labels
 
             # Select the best two shortest paths
-            pos_1, pos_2 = pe.process_frame(population, labels, lengths, radii, pe.cost_func, pe.score_func)
+            pos_1, pos_2 = pe.process_frame(
+                population, labels, lengths, radii, pe.cost_func, pe.score_func
+            )
 
             # Positions of the best head and two feet
             array_selected[index_row, 0] = pos_1[0, :]
@@ -52,7 +54,9 @@ def main():
     # DataFrame of selected head and foot positions.
     # The left and right foot labels are just assumptions at this point.
     # They are later given correct L/R labels.
-    df_selected = pd.DataFrame(array_selected, index=df_hypo.index, columns=['HEAD', 'L_FOOT', 'R_FOOT'])
+    df_selected = pd.DataFrame(
+        array_selected, index=df_hypo.index, columns=['HEAD', 'L_FOOT', 'R_FOOT']
+    )
 
     df_selected.to_pickle(join('data', 'kinect', 'df_selected.pkl'))
 

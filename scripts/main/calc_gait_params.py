@@ -11,7 +11,9 @@ import modules.gait_parameters as gp
 
 def main():
 
-    df_selected_passes = pd.read_pickle(join('data', 'kinect', 'df_selected_passes.pkl'))
+    df_selected_passes = pd.read_pickle(
+        join('data', 'kinect', 'df_selected_passes.pkl')
+    )
 
     tuples_trial_pass = df_selected_passes.index.droplevel('frame').values
     dict_gait = dict.fromkeys(tuples_trial_pass)
@@ -28,7 +30,11 @@ def main():
 
         points_stacked = xr.DataArray(
             np.dstack((points_a, points_b, points_head)),
-            coords={'frames': frames, 'cols': range(3), 'layers': ['points_a', 'points_b', 'points_head']},
+            coords={
+                'frames': frames,
+                'cols': range(3),
+                'layers': ['points_a', 'points_b', 'points_head'],
+            },
             dims=('frames', 'cols', 'layers'),
         )
 

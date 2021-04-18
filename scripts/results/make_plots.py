@@ -6,7 +6,12 @@ from os.path import join
 import matplotlib
 from matplotlib import rc
 
-from scripts.results import plot_accuracy_radii, plot_bland, plot_stride_width, plot_frame_rate
+from scripts.results import (
+    plot_accuracy_radii,
+    plot_bland,
+    plot_stride_width,
+    plot_frame_rate,
+)
 
 
 def main():

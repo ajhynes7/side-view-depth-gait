@@ -91,7 +91,13 @@ def main():
                 # The hypothetical positions now need to be converted from
                 # real to image then back to real using new parameters.
                 points_part_type = im.recalibrate_positions(
-                    points_part_type, im.X_RES_ORIG, im.Y_RES_ORIG, im.X_RES, im.Y_RES, im.F_XZ, im.F_YZ
+                    points_part_type,
+                    im.X_RES_ORIG,
+                    im.Y_RES_ORIG,
+                    im.X_RES,
+                    im.Y_RES,
+                    im.F_XZ,
+                    im.F_YZ,
                 )
 
                 df_hypo_types.loc[frame, part_type] = points_part_type
@@ -105,9 +111,13 @@ def main():
     # 'population' and 'labels'.
 
     part_labels = range(len(PART_TYPES))
-    df_pop_labels = df_concat.apply(lambda row: pe.get_population(row, part_labels), axis=1)
+    df_pop_labels = df_concat.apply(
+        lambda row: pe.get_population(row, part_labels), axis=1
+    )
 
-    df_hypo_final = pd.DataFrame(index=df_pop_labels.index, columns=['population', 'labels'])
+    df_hypo_final = pd.DataFrame(
+        index=df_pop_labels.index, columns=['population', 'labels']
+    )
 
     df_hypo_final['population'] = df_pop_labels.apply(lambda row: row[0])
     df_hypo_final['labels'] = df_pop_labels.apply(lambda row: row[1])
