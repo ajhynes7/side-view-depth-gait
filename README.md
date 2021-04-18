@@ -8,7 +8,7 @@ This repository contains the code for the journal article *Spatiotemporal Gait M
 
 ## Requirements
 
-Python version 3.7 or higher is required. 
+Python version 3.7 or higher is required.
 
 Some scripts for the results and figures make use of LaTeX for formatting. You can either install LaTeX or edit the code so it is not needed.
 
