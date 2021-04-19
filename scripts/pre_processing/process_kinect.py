@@ -34,7 +34,7 @@ def main():
             file_path,
             skiprows=range(22),
             header=None,
-            names=[i for i in range(-2, n_coord_cols)],
+            names=range(-2, n_coord_cols),
             sep='\t',
             skipfooter=1,  # The last night says "Quit button pressed"
             engine='python',

@@ -25,7 +25,7 @@ def main():
 
     for r_max in radii_max:
 
-        radii = [i for i in range(r_max + 1)]
+        radii = range(r_max + 1)
 
         # Pre-allocate array to hold best head and foot positions
         # on each frame

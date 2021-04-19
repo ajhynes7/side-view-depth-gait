@@ -163,7 +163,7 @@ def assign_pair(pair_points: array_like, pair_targets: array_like) -> ndarray:
 
 @require(
     "The arrays must have the same shape",
-    lambda args: len(set(x.shape for x in args)) == 1,
+    lambda args: len({x.shape for x in args}) == 1,
 )
 def match_pairs(
     points_1: ndarray, points_2: ndarray, targets_1: ndarray, targets_2: ndarray
@@ -258,10 +258,10 @@ def position_accuracy(points: ndarray, targets: ndarray, max_dist: float = 10) -
 @require(
     "The arrays must have the same shape",
     lambda args: len(
-        set(
+        {
             x.shape
             for x in [args.points_1, args.points_2, args.targets_1, args.targets_2]
-        )
+        }
     )
     == 1,
 )

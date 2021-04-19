@@ -443,7 +443,7 @@ def get_path_vectors(paths: ndarray, n_pop: int) -> ndarray:
     n_paths = paths.shape[0]
     path_vectors = np.full((n_paths, n_pop), False)
 
-    all_nums = [i for i in range(n_pop)]
+    all_nums = range(n_pop)
     for i, path in enumerate(paths):
         path_vectors[i, :] = np.in1d(all_nums, path)
 

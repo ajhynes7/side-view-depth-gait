@@ -11,7 +11,7 @@ import modules.pose_estimation as pe
 
 def main():
 
-    radii = [i for i in range(6)]
+    radii = range(6)
 
     # DataFrame with position hypotheses (joint proposals) for all trials
     df_hypo = pd.read_pickle(join('data', 'kinect', 'df_hypo.pkl'))
