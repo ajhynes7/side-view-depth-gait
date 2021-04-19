@@ -41,7 +41,7 @@ def main():
 
     truth_mod_accs = []
 
-    for radius, df_radius in df_radii.groupby(level=0):
+    for _radius, df_radius in df_radii.groupby(level=0):
 
         # Drop the first level to have same MultiIndex as df_truth
         df_radius.index = df_radius.index.droplevel(0)

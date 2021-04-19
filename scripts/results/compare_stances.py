@@ -69,7 +69,7 @@ def main():
 
         list_passes_l, list_passes_r = [], []
 
-        for num_pass, df_pass in df_selected_trial.groupby(level=0):
+        for _num_pass, df_pass in df_selected_trial.groupby(level=0):
 
             frames = df_pass.reset_index().frame.values
 
