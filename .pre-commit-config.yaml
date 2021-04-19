@@ -26,6 +26,8 @@ repos:
           - flake8-comprehensions==3.3.0
           - flake8-import-order==0.18.1
           - flake8-rst-docstrings==0.0.14
+          - flake8-unused-arguments==0.0.6
+        exclude: stubs
   - repo: https://github.com/PyCQA/pydocstyle
     rev: 6.0.0
     hooks:

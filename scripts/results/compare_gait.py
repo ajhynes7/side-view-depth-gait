@@ -13,7 +13,6 @@ def calc_trial_results(
     df_matched_k: pd.DataFrame,
     df_matched_z: pd.DataFrame,
     vector_filter: Optional[array_like] = None,
-    relative: bool = False,
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """Calculate ICC and Bland-Altman results."""
 
