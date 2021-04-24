@@ -45,23 +45,33 @@ def stance_props(points_foot: xr.DataArray, labels_stance: ndarray) -> pd.DataFr
     return pd.DataFrame(yield_props())
 
 
-def label_stances(points_foot_grouped: xr.DataArray, basis: sa.Basis) -> Tuple[ndarray, ndarray]:
+def label_stances(
+    points_foot_grouped: xr.DataArray, basis: sa.Basis
+) -> Tuple[ndarray, ndarray]:
     """Label all stance phases in a walking pass."""
 
     frames_grouped = points_foot_grouped.coords['frames'].values
 
     array_points = points_foot_grouped.values
     signal_grouped = transform_coordinates(array_points, basis.origin, [basis.forward])
-    values_side_grouped = transform_coordinates(array_points, basis.origin, [basis.perp])
+    values_side_grouped = transform_coordinates(
+        array_points, basis.origin, [basis.perp]
+    )
 
-    labels_grouped = cl.dbscan_st(signal_grouped, times=frames_grouped, eps_spatial=5, eps_temporal=10, min_pts=7)
-    labels_grouped_l, labels_grouped_r = sa.assign_sides_grouped(frames_grouped, values_side_grouped, labels_grouped)
+    labels_grouped = cl.dbscan_st(
+        signal_grouped, times=frames_grouped, eps_spatial=5, eps_temporal=10, min_pts=7
+    )
+    labels_grouped_l, labels_grouped_r = sa.assign_sides_grouped(
+        frames_grouped, values_side_grouped, labels_grouped
+    )
 
     return labels_grouped_l, labels_grouped_r
 
 
 def get_stance_dataframe(
-    points_foot_grouped: xr.DataArray, labels_grouped_l: ndarray, labels_grouped_r: ndarray
+    points_foot_grouped: xr.DataArray,
+    labels_grouped_l: ndarray,
+    labels_grouped_r: ndarray,
 ) -> pd.DataFrame:
     """Return DataFrame where each row is a stance phase."""
 
@@ -69,5 +79,8 @@ def get_stance_dataframe(
     df_stance_r = stance_props(points_foot_grouped, labels_grouped_r).assign(side='R')
 
     return (
-        pd.concat((df_stance_l, df_stance_r), sort=False).rename_axis('num_stride').sort_values('frame_i').reset_index()
+        pd.concat((df_stance_l, df_stance_r), sort=False)
+        .rename_axis('num_stride')
+        .sort_values('frame_i')
+        .reset_index()
     )

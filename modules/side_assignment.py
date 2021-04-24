@@ -41,7 +41,10 @@ def fit_ransac(points: ndarray) -> Tuple[LineModelND, ndarray]:
 
     """
     model, is_inlier = ransac(
-        points, LineModelND, min_samples=int(0.5 * len(points)), residual_threshold=2.5 * mad(points[:, 2], c=1)
+        points,
+        LineModelND,
+        min_samples=int(0.5 * len(points)),
+        residual_threshold=2.5 * mad(points[:, 2], c=1),
     )
 
     return model, is_inlier
@@ -49,13 +52,17 @@ def fit_ransac(points: ndarray) -> Tuple[LineModelND, ndarray]:
 
 @require(
     "The layers must include head and two feet.",
-    lambda args: set(args.points_stacked.layers.values) == {'points_a', 'points_b', 'points_head'},
+    lambda args: set(args.points_stacked.layers.values)
+    == {'points_a', 'points_b', 'points_head'},
 )
 @ensure(
     # This contract assumes an orientation where x = length along walkway, z = depth.
     # It can be removed if new data does not have this orientation.
     "The perpendicular vector must be to the right of the forward vector.",
-    lambda _, result: Vector(result[0].forward[[0, 2]]).side_vector(result[0].perp[[0, 2]]) == 1,
+    lambda _, result: Vector(result[0].forward[[0, 2]]).side_vector(
+        result[0].perp[[0, 2]]
+    )
+    == 1,
 )
 def compute_basis(points_stacked: xr.DataArray) -> Tuple[Basis, xr.DataArray]:
     """
@@ -99,7 +106,9 @@ def compute_basis(points_stacked: xr.DataArray) -> Tuple[Basis, xr.DataArray]:
     points_grouped_inlier = points_grouped[is_inlier]
 
     points_grouped_inlier = xr.DataArray(
-        points_grouped_inlier, coords={'frames': frames_grouped_inlier, 'cols': range(3)}, dims=('frames', 'cols')
+        points_grouped_inlier,
+        coords={'frames': frames_grouped_inlier, 'cols': range(3)},
+        dims=('frames', 'cols'),
     )
 
     basis = Basis(point_origin, vector_forward, vector_up, vector_perp)

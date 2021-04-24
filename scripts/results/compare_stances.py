@@ -13,7 +13,10 @@ import modules.side_assignment as sa
 import modules.xarray_funcs as xrf
 
 
-@ensure("The arrays must have the same shape", lambda _, result: result[0].shape == result[1].shape)
+@ensure(
+    "The arrays must have the same shape",
+    lambda _, result: result[0].shape == result[1].shape,
+)
 def match_frames(list_passes_x, df_truth_trial_x):
 
     points_trial_x = xr.concat(list_passes_x, dim='frames')
@@ -66,7 +69,7 @@ def main():
 
         list_passes_l, list_passes_r = [], []
 
-        for num_pass, df_pass in df_selected_trial.groupby(level=0):
+        for _num_pass, df_pass in df_selected_trial.groupby(level=0):
 
             frames = df_pass.reset_index().frame.values
 
@@ -76,35 +79,55 @@ def main():
 
             points_stacked = xr.DataArray(
                 np.dstack((points_a, points_b, points_head)),
-                coords={'frames': frames, 'cols': range(3), 'layers': ['points_a', 'points_b', 'points_head']},
+                coords={
+                    'frames': frames,
+                    'cols': range(3),
+                    'layers': ['points_a', 'points_b', 'points_head'],
+                },
                 dims=['frames', 'cols', 'layers'],
             )
 
             basis, points_grouped_inlier = sa.compute_basis(points_stacked)
 
-            labels_grouped_l, labels_grouped_r = pde.label_stances(points_grouped_inlier, basis)
+            labels_grouped_l, labels_grouped_r = pde.label_stances(
+                points_grouped_inlier, basis
+            )
 
             points_pass_l = points_grouped_inlier[labels_grouped_l != -1]
             points_pass_r = points_grouped_inlier[labels_grouped_r != -1]
 
             # Ensure all frames are unique by taking mean of points on the same frame.
-            points_pass_l = xrf.unique_frames(points_pass_l, lambda rows: np.mean(rows, axis=0))
-            points_pass_r = xrf.unique_frames(points_pass_r, lambda rows: np.mean(rows, axis=0))
+            points_pass_l = xrf.unique_frames(
+                points_pass_l, lambda rows: np.mean(rows, axis=0)
+            )
+            points_pass_r = xrf.unique_frames(
+                points_pass_r, lambda rows: np.mean(rows, axis=0)
+            )
 
             list_passes_l.append(points_pass_l)
             list_passes_r.append(points_pass_r)
 
         # Combine stance points from all walking passes in the trial, and take frames common to
         # trial points and the truth.
-        points_trial_l, truth_trial_l = match_frames(list_passes_l, df_truth_trial.L_FOOT.dropna())
-        points_trial_r, truth_trial_r = match_frames(list_passes_r, df_truth_trial.R_FOOT.dropna())
+        points_trial_l, truth_trial_l = match_frames(
+            list_passes_l, df_truth_trial.L_FOOT.dropna()
+        )
+        points_trial_r, truth_trial_r = match_frames(
+            list_passes_r, df_truth_trial.R_FOOT.dropna()
+        )
 
-        proposals_foot_trial = df_hypo_trial.apply(lambda row: row.population[row.labels == row.labels.max()], axis=1)
+        proposals_foot_trial = df_hypo_trial.apply(
+            lambda row: row.population[row.labels == row.labels.max()], axis=1
+        )
         array_proposals_l = np.array(proposals_foot_trial.reindex(truth_trial_l.frames))
         array_proposals_r = np.array(proposals_foot_trial.reindex(truth_trial_r.frames))
 
-        truth_mod_trial_l = pp.closest_proposals(array_proposals_l, truth_trial_l.values)
-        truth_mod_trial_r = pp.closest_proposals(array_proposals_r, truth_trial_r.values)
+        truth_mod_trial_l = pp.closest_proposals(
+            array_proposals_l, truth_trial_l.values
+        )
+        truth_mod_trial_r = pp.closest_proposals(
+            array_proposals_r, truth_trial_r.values
+        )
 
         list_points_l.append(points_trial_l)
         list_points_r.append(points_trial_r)

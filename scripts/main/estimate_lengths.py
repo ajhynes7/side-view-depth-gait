@@ -19,7 +19,7 @@ def main():
 
     list_lengths = []
 
-    for i, (trial_name, df_hypo_trial) in enumerate(df_hypo.groupby(level=0)):
+    for trial_name, df_hypo_trial in df_hypo.groupby(level=0):
 
         print(trial_name)
 

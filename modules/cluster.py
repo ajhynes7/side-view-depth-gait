@@ -11,7 +11,11 @@ from modules.typing import array_like
 
 
 def dbscan_st(
-    points: array_like, times: array_like = None, eps_spatial: float = 0.5, eps_temporal: float = 0.5, min_pts: int = 5
+    points: array_like,
+    times: array_like = None,
+    eps_spatial: float = 0.5,
+    eps_temporal: float = 0.5,
+    min_pts: int = 5,
 ) -> ndarray:
     """
     Cluster points with spatiotemporal DBSCAN algorithm.
@@ -65,7 +69,9 @@ def dbscan_st(
             # Only unlabelled points can be considered as seed points.
             continue
 
-        set_neighbours = region_query_st(D_spatial, D_temporal, eps_spatial, eps_temporal, idx_pt)
+        set_neighbours = region_query_st(
+            D_spatial, D_temporal, eps_spatial, eps_temporal, idx_pt
+        )
 
         if len(set_neighbours) < min_pts:
             # The neighbourhood of the point is smaller than the minimum.
@@ -79,7 +85,14 @@ def dbscan_st(
             labels[idx_pt] = label_cluster
 
             grow_cluster_st(
-                D_spatial, D_temporal, labels, set_neighbours, label_cluster, eps_spatial, eps_temporal, min_pts
+                D_spatial,
+                D_temporal,
+                labels,
+                set_neighbours,
+                label_cluster,
+                eps_spatial,
+                eps_temporal,
+                min_pts,
             )
 
     # Subtract 1 from non-noise labels so they begin at zero (this is consistent with scikit-learn).
@@ -166,7 +179,9 @@ def grow_cluster_st(
             # Add the next point to the cluster.
             labels[idx_next] = label_cluster
 
-            set_neighbours_next = region_query_st(D_spatial, D_temporal, eps_spatial, eps_temporal, idx_next)
+            set_neighbours_next = region_query_st(
+                D_spatial, D_temporal, eps_spatial, eps_temporal, idx_next
+            )
 
             if len(set_neighbours_next) >= min_pts:
                 # The next point is a core point.
@@ -212,7 +227,11 @@ def region_query(dist_matrix: ndarray, eps: float, idx_pt: int) -> set:
 
 
 def region_query_st(
-    D_spatial: ndarray, D_temporal: ndarray, eps_spatial: float, eps_temporal: float, idx_pt: int
+    D_spatial: ndarray,
+    D_temporal: ndarray,
+    eps_spatial: float,
+    eps_temporal: float,
+    idx_pt: int,
 ) -> set:
     """
     Perform spatiotemporal region query for DBSCAN.

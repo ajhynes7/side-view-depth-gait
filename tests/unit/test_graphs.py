@@ -19,7 +19,7 @@ def directed_acyclic_graph():
         5: {},
     }
 
-    order = [node for node in graph]
+    order = list(graph)
 
     nodes_source = {0, 1}
 

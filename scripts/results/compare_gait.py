@@ -13,7 +13,6 @@ def calc_trial_results(
     df_matched_k: pd.DataFrame,
     df_matched_z: pd.DataFrame,
     vector_filter: Optional[array_like] = None,
-    relative: bool = False,
 ) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """Calculate ICC and Bland-Altman results."""
 
@@ -60,7 +59,9 @@ def calc_trial_results(
 def concat_tables(df_bland, df_bland_relative, df_icc):
 
     return pd.concat(
-        [df_bland, df_bland_relative * 100, df_icc], axis=1, keys=["Bland Altman", "Bland Altman Relative [%]", "ICC"]
+        [df_bland, df_bland_relative * 100, df_icc],
+        axis=1,
+        keys=["Bland Altman", "Bland Altman Relative [%]", "ICC"],
     ).round(2)
 
 
@@ -71,8 +72,12 @@ def main():
     df_matched_z = pd.read_pickle(join('data', 'zeno', 'df_matched.pkl'))
 
     df_trial_types = pd.read_csv(join('data', 'matching', 'trial_types.csv'))
-    df_matched_types = df_trial_types.set_index("trial_name").loc[df_matched_k.reset_index().trial_name.unique()]
-    trials_kinect_normal_walking = df_matched_types.loc[df_matched_types.type == "A"].index.values
+    df_matched_types = df_trial_types.set_index("trial_name").loc[
+        df_matched_k.reset_index().trial_name.unique()
+    ]
+    trials_kinect_normal_walking = df_matched_types.loc[
+        df_matched_types.type == "A"
+    ].index.values
 
     trials_kinect = df_matched_k.reset_index().trial_name.unique()
     is_normal_walking = np.in1d(trials_kinect, trials_kinect_normal_walking)
@@ -88,11 +93,16 @@ def main():
     )
 
     df_concat = concat_tables(df_bland, df_bland_relative, df_icc)
-    df_concat_normal = concat_tables(df_bland_normal, df_bland_rel_normal, df_icc_normal)
-    df_concat_dual_task = concat_tables(df_bland_dual_task, df_bland_rel_dual_task, df_icc_dual_task)
+    df_concat_normal = concat_tables(
+        df_bland_normal, df_bland_rel_normal, df_icc_normal
+    )
+    df_concat_dual_task = concat_tables(
+        df_bland_dual_task, df_bland_rel_dual_task, df_icc_dual_task
+    )
 
     df_total = pd.concat(
-        [df_concat, df_concat_normal, df_concat_dual_task], keys=["Grouped", "Normal pace", "Dual task"]
+        [df_concat, df_concat_normal, df_concat_dual_task],
+        keys=["Grouped", "Normal pace", "Dual task"],
     )
 
     with open(join('results', 'tables', 'bland_icc.csv'), 'w') as file:

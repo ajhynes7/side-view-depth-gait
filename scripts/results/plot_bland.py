@@ -105,7 +105,10 @@ def main():
 
         ax_2.scatter(measures_z, measures_k, c='k', s=20)
 
-        lims = [np.min([ax_2.get_xlim(), ax_2.get_ylim()]), np.max([ax_2.get_xlim(), ax_2.get_ylim()])]
+        lims = [
+            np.min([ax_2.get_xlim(), ax_2.get_ylim()]),
+            np.max([ax_2.get_xlim(), ax_2.get_ylim()]),
+        ]
 
         # Plot equality line
         ax_2.plot(lims, lims, 'k-')

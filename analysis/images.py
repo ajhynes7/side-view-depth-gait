@@ -6,7 +6,9 @@ from numpy import ndarray
 from modules.typing import array_like
 
 
-def image_to_real(point_image: array_like, x_res: int, y_res: int, f_xz: float, f_yz: float) -> ndarray:
+def image_to_real(
+    point_image: array_like, x_res: int, y_res: int, f_xz: float, f_yz: float
+) -> ndarray:
     """
     Convert image coordinates to real world coordinates.
 
@@ -50,7 +52,9 @@ def image_to_real(point_image: array_like, x_res: int, y_res: int, f_xz: float, 
     return point_real
 
 
-def real_to_image(point_real: array_like, x_res: int, y_res: float, f_xz: float, f_yz: float) -> ndarray:
+def real_to_image(
+    point_real: array_like, x_res: int, y_res: float, f_xz: float, f_yz: float
+) -> ndarray:
     """
     Convert real world coordinates to image coordinates.
 
@@ -123,7 +127,13 @@ def rgb_to_label(image_rgb: ndarray, rgb_vectors: array_like) -> ndarray:
 
 
 def recalibrate_positions(
-    positions_real_orig: ndarray, x_res_orig: int, y_res_orig: int, x_res: int, y_res: int, f_xz: float, f_yz: float
+    positions_real_orig: ndarray,
+    x_res_orig: int,
+    y_res_orig: int,
+    x_res: int,
+    y_res: int,
+    f_xz: float,
+    f_yz: float,
 ) -> ndarray:
     """
     Change real world coordinates using new camera calibration parameters.

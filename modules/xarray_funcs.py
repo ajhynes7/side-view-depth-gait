@@ -55,5 +55,7 @@ def unique_frames(array_xr: DataArray, func: Callable) -> DataArray:
     array_xr_unique = np.stack([*yield_rows()])
 
     return xr.DataArray(
-        array_xr_unique, coords={'frames': frames_unique, 'cols': array_xr.coords['cols']}, dims=('frames', 'cols')
+        array_xr_unique,
+        coords={'frames': frames_unique, 'cols': array_xr.coords['cols']},
+        dims=('frames', 'cols'),
     )

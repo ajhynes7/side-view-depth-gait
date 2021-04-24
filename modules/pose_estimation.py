@@ -29,7 +29,9 @@ def score_func(a: float, b: float) -> float:
     return -((x - 1) ** 2) + 1
 
 
-def measure_min_path(population: ndarray, labels: ndarray, label_adj_list: adj_list) -> ndarray:
+def measure_min_path(
+    population: ndarray, labels: ndarray, label_adj_list: adj_list
+) -> ndarray:
     """
     Measure lengths along the minimum shortest path.
 
@@ -103,7 +105,9 @@ def estimate_lengths(df_hypo_trial: pd.DataFrame, **kwargs) -> ndarray:
 
             population, labels = tuple_frame.population, tuple_frame.labels
 
-            lengths_measured = measure_min_path(population, labels, label_adj_list_types)
+            lengths_measured = measure_min_path(
+                population, labels, label_adj_list_types
+            )
 
             matrix_lengths_measured[i] = lengths_measured
             matrix_lengths_so_far = matrix_lengths_measured[: i + 1]
@@ -122,7 +126,9 @@ def estimate_lengths(df_hypo_trial: pd.DataFrame, **kwargs) -> ndarray:
     return lengths_estimated
 
 
-def get_population(list_frame_points: Sequence, part_labels: array_like) -> Tuple[ndarray, ndarray]:
+def get_population(
+    list_frame_points: Sequence, part_labels: array_like
+) -> Tuple[ndarray, ndarray]:
     """
     Return the population of part hypotheses from one image frame.
 
@@ -221,7 +227,10 @@ def lengths_to_adj_list(label_connections: ndarray, lengths: array_like) -> adj_
 
 
 def pop_shortest_paths(
-    dist_matrix: ndarray, labels: ndarray, label_adj_list: adj_list, weight_func: func_ab
+    dist_matrix: ndarray,
+    labels: ndarray,
+    label_adj_list: adj_list,
+    weight_func: func_ab,
 ) -> Tuple[Mapping[int, int], Mapping[int, float]]:
     """
     Calculate shortest paths on the population of body parts.
@@ -262,7 +271,9 @@ def pop_shortest_paths(
     return prev, dist
 
 
-def paths_to_foot(prev: Mapping[int, int], dist: Mapping[int, float], labels: ndarray) -> Tuple[ndarray, ndarray]:
+def paths_to_foot(
+    prev: Mapping[int, int], dist: Mapping[int, float], labels: ndarray
+) -> Tuple[ndarray, ndarray]:
     """
     Retrieve the shortest path to each foot position.
 
@@ -318,7 +329,9 @@ def paths_to_foot(prev: Mapping[int, int], dist: Mapping[int, float], labels: nd
     return paths.astype(int), path_dist
 
 
-def get_scores(dist_matrix: ndarray, paths: ndarray, label_adj_list: adj_list, score_func: func_ab) -> ndarray:
+def get_scores(
+    dist_matrix: ndarray, paths: ndarray, label_adj_list: adj_list, score_func: func_ab
+) -> ndarray:
     """
     Compute a score matrix from a set of body part positions.
 
@@ -430,7 +443,7 @@ def get_path_vectors(paths: ndarray, n_pop: int) -> ndarray:
     n_paths = paths.shape[0]
     path_vectors = np.full((n_paths, n_pop), False)
 
-    all_nums = [i for i in range(n_pop)]
+    all_nums = range(n_pop)
     for i, path in enumerate(paths):
         path_vectors[i, :] = np.in1d(all_nums, path)
 
@@ -465,7 +478,10 @@ def in_spheres(within_radius: ndarray, has_sphere: ndarray) -> ndarray:
 
 
 def select_best_feet(
-    dist_matrix: ndarray, score_matrix: ndarray, path_vectors: ndarray, radii: array_like
+    dist_matrix: ndarray,
+    score_matrix: ndarray,
+    path_vectors: ndarray,
+    radii: array_like,
 ) -> Tuple[int, int]:
     """
     Select the best two feet from multiple hypotheses.
@@ -535,7 +551,11 @@ def select_best_feet(
 
 
 def foot_to_pop(
-    population: ndarray, paths: ndarray, path_dist: ndarray, foot_num_1: int, foot_num_2: int
+    population: ndarray,
+    paths: ndarray,
+    path_dist: ndarray,
+    foot_num_1: int,
+    foot_num_2: int,
 ) -> Tuple[ndarray, ndarray]:
     """
     Return the positions on the shortest paths to the two selected feet.
@@ -579,7 +599,12 @@ def foot_to_pop(
 
 
 def process_frame(
-    population: ndarray, labels: ndarray, lengths: ndarray, radii: array_like, cost_func: func_ab, score_func: func_ab
+    population: ndarray,
+    labels: ndarray,
+    lengths: ndarray,
+    radii: array_like,
+    cost_func: func_ab,
+    score_func: func_ab,
 ) -> Tuple[ndarray, ndarray]:
     """
     Return chosen body part positions from an input set of position hypotheses.
@@ -616,7 +641,9 @@ def process_frame(
     label_adj_list_parts = lengths_to_adj_list(PART_CONNECTIONS, lengths)
 
     # Run shortest path algorithm on the body graph
-    prev, dist = pop_shortest_paths(dist_matrix, labels, label_adj_list_types, cost_func)
+    prev, dist = pop_shortest_paths(
+        dist_matrix, labels, label_adj_list_types, cost_func
+    )
 
     # Get shortest path to each foot
     paths, path_dist = paths_to_foot(prev, dist, labels)
@@ -624,11 +651,15 @@ def process_frame(
     pop_reduced, paths_reduced = reduce_population(population, paths)
 
     dist_matrix_reduced = cdist(pop_reduced, pop_reduced)
-    score_matrix = get_scores(dist_matrix_reduced, paths_reduced, label_adj_list_parts, score_func)
+    score_matrix = get_scores(
+        dist_matrix_reduced, paths_reduced, label_adj_list_parts, score_func
+    )
 
     path_vectors = get_path_vectors(paths_reduced, pop_reduced.shape[0])
 
-    foot_1, foot_2 = select_best_feet(dist_matrix_reduced, score_matrix, path_vectors, radii)
+    foot_1, foot_2 = select_best_feet(
+        dist_matrix_reduced, score_matrix, path_vectors, radii
+    )
 
     pop_1, pop_2 = foot_to_pop(population, paths, path_dist, foot_1, foot_2)
 

@@ -19,7 +19,9 @@ def main():
     df_trial_names_k = df_matched_k.groupby(['trial_name']).median()
 
     pattern_participant = r'P(?P<participant>\d{3})'
-    df_regex = df_trial_names_k.index.get_level_values('trial_name').str.extract(pattern_participant)
+    df_regex = df_trial_names_k.index.get_level_values('trial_name').str.extract(
+        pattern_participant
+    )
 
     df_diff_rel = (
         ((df_trials_k - df_trials_z) / (0.5 * (df_trials_k + df_trials_z)))
@@ -35,8 +37,15 @@ def main():
         }
     )
 
-    df_sw.participant = pd.Categorical(df_sw.participant, ordered=True).rename_categories(
-        {'004': 'Participant 1', '005': 'Participant 2', '006': 'Participant 3', '007': 'Participant 4'}
+    df_sw.participant = pd.Categorical(
+        df_sw.participant, ordered=True
+    ).rename_categories(
+        {
+            '004': 'Participant 1',
+            '005': 'Participant 2',
+            '006': 'Participant 3',
+            '007': 'Participant 4',
+        }
     )
 
     participants_unique = df_sw.participant.unique().sort_values()

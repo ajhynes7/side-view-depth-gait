@@ -11,7 +11,9 @@ def main():
     df_gait_k = pd.read_pickle(join('data', 'kinect', 'df_gait.pkl'))
     df_gait_z = pd.read_pickle(join('data', 'zeno', 'df_gait.pkl'))
 
-    df_match = pd.read_csv(join('data', 'matching', 'match_kinect_zeno.csv'), index_col=0)
+    df_match = pd.read_csv(
+        join('data', 'matching', 'match_kinect_zeno.csv'), index_col=0
+    )
 
     dict_k, dict_z = {}, {}
 
@@ -29,8 +31,12 @@ def main():
     df_matched_k = pd.concat(dict_k)
     df_matched_z = pd.concat(dict_z)
 
-    df_matched_k.index = df_matched_k.index.rename(['trial_id', 'trial_name'], level=[0, 1])
-    df_matched_z.index = df_matched_z.index.rename(['trial_id', 'trial_name'], level=[0, 1])
+    df_matched_k.index = df_matched_k.index.rename(
+        ['trial_id', 'trial_name'], level=[0, 1]
+    )
+    df_matched_z.index = df_matched_z.index.rename(
+        ['trial_id', 'trial_name'], level=[0, 1]
+    )
 
     # Ensure Kinect and Zeno DataFrames have the same MultiIndex.
     assert df_matched_k.index.names == df_matched_z.index.names

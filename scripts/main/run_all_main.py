@@ -1,6 +1,11 @@
 """Run all main scripts."""
 
-from scripts.main import calc_gait_params, estimate_lengths, label_passes, select_proposals
+from scripts.main import (
+    calc_gait_params,
+    estimate_lengths,
+    label_passes,
+    select_proposals,
+)
 
 
 def main():
