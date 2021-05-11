@@ -27,7 +27,7 @@ def main():
     part_types = ['Head', 'Hip', 'Thigh', 'Knee', 'Calf', 'Foot']
     gray = '0.8'
 
-    fig = plt.figure()
+    fig, ax = plt.subplots()
 
     point_sets = [*generate_points(points_per_set)]
 
@@ -35,8 +35,8 @@ def main():
 
         points = np.vstack([points_a, points_b])
 
-        pl.scatter2(points, c=gray, s=50)
-        pl.connect_two_sets(points_a, points_b, c=gray)
+        pl.scatter2(ax, points, c=gray, s=50)
+        pl.connect_two_sets(ax, points_a, points_b, c=gray)
 
     # Emphasize shortest path
 
@@ -46,10 +46,10 @@ def main():
 
         path_point = row_points[np.random.randint(row_points.shape[0])]
 
-        pl.scatter2(path_point, c='k', s=100, zorder=3)
+        pl.scatter2(ax, path_point, c='k', s=100, zorder=3)
 
         if prev_path_point.size > 0:
-            pl.connect_points(prev_path_point, path_point, c='k', zorder=3)
+            pl.connect_points(ax, prev_path_point, path_point, c='k', zorder=3)
 
         prev_path_point = path_point
 

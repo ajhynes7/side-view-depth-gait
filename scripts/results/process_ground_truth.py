@@ -53,7 +53,15 @@ def main():
         depth_paths = sorted(glob.glob(join(depth_dir, '*.png')))
 
         depth_filenames = [basename(x) for x in depth_paths]
-        image_nums = [int(re.search(pattern, x).group(1)) for x in depth_filenames]
+
+        image_nums = []
+
+        for depth_filename in depth_filenames:
+
+            match = re.search(pattern, depth_filename)
+            assert match is not None
+
+            image_nums.append(int(match.group(1)))
 
         df_trial = pd.DataFrame(index=image_nums, columns=part_names)
 

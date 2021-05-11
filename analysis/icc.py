@@ -11,14 +11,14 @@ from modules.typing import array_like
 class AnovaSquares:
     """Dataclass for Sum of Squares and Mean Squares from ANOVA."""
 
-    BS: float  # Between subjects
-    BM: float  # Between measurements
+    BS: np.float64  # Between subjects
+    BM: np.float64  # Between measurements
 
-    WS: float  # Within subjects
-    WM: float  # Withing measurements
+    WS: np.float64  # Within subjects
+    WM: np.float64  # Withing measurements
 
-    T: float  # Total
-    E: float  # Error
+    T: np.float64  # Total
+    E: np.float64  # Error
 
     def __iter__(self):
         """Implement iteration for easier unit testing."""

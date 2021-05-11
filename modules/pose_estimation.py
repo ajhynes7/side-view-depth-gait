@@ -473,8 +473,7 @@ def in_spheres(within_radius: ndarray, has_sphere: ndarray) -> ndarray:
     n = len(has_sphere)
     tiled = np.tile(has_sphere, (n, 1))
 
-    # Cast to np.ndarray to satisfy mypy.
-    return cast(np.ndarray, np.any(tiled * within_radius, 1))
+    return np.any(tiled * within_radius, 1)
 
 
 def select_best_feet(
@@ -590,8 +589,7 @@ def foot_to_pop(
     foot_distances = path_dist[[foot_num_1, foot_num_2]]
     head_points = (pop_1[0, :], pop_2[0, :])
 
-    # Wrap in int() to satisfy mypy.
-    head_selected = head_points[int(np.argmin(foot_distances))]
+    head_selected = head_points[np.argmin(foot_distances)]
 
     pop_1[0, :], pop_2[0, :] = head_selected, head_selected
 

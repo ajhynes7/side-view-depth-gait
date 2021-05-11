@@ -19,12 +19,14 @@ import modules.pose_estimation as pe
 from modules.constants import TYPE_CONNECTIONS, PART_CONNECTIONS
 
 
-def scatter_parts(points, labels, name_cmap: str = 'Set1', **kwargs):
+def scatter_parts(ax, points, labels, name_cmap: str = 'Set1', **kwargs):
     """
     Plot scatter points of body parts with different colours and shape depending on the label.
 
     Parameters
     ----------
+    ax: Axes
+        Matplotlib Axes object.
     points : (N, 2) ndarray
         Array of N points with dimension 2.
     labels : (N,) ndarray
@@ -46,7 +48,7 @@ def scatter_parts(points, labels, name_cmap: str = 'Set1', **kwargs):
 
         points_label = points[labels == label]
 
-        plt.scatter(points_label[:, 0], points_label[:, 1], **dict_format, **kwargs)
+        ax.scatter(points_label[:, 0], points_label[:, 1], **dict_format, **kwargs)
 
 
 def main():
@@ -72,8 +74,9 @@ def main():
 
     df_hypo = pd.read_pickle(join(kinect_dir, 'df_hypo.pkl'))
 
-    match_object = re.search(r'(\d+).png', depth_path)
-    image_number = int(match_object.group(1))
+    match = re.search(r'(\d+).png', depth_path)
+    assert match is not None
+    image_number = int(match.group(1))
 
     # Load dictionary to convert image numbers to frames
     with open(
@@ -95,8 +98,8 @@ def main():
     fig, ax = plt.subplots()
 
     ax.imshow(depth_image, cmap='gray')
-    scatter_parts(points_image[:, :2], labels, edgecolors='k', s=100)
-    plt.legend(part_types, framealpha=1, loc='upper left', fontsize=12)
+    scatter_parts(ax, points_image[:, :2], labels, edgecolors='k', s=100)
+    ax.legend(part_types, framealpha=1, loc='upper left', fontsize=12)
 
     ax.set_yticks([])
     ax.set_xticks([])
@@ -107,11 +110,11 @@ def main():
 
     legend_location = [0.2, 0.6]
 
-    fig = plt.figure()
-    scatter_parts(population, labels, edgecolor='k', s=100)
-    plt.axis('equal')
-    plt.axis('off')
-    plt.legend(part_types, loc=legend_location, edgecolor='k')
+    fig, ax = plt.subplots()
+    scatter_parts(ax, population, labels, edgecolor='k', s=100)
+    ax.set_axis('equal')
+    ax.set_axisaxis('off')
+    ax.legend(part_types, loc=legend_location, edgecolor='k')
     fig.savefig(join('figures', 'joint_proposals.pdf'), dpi=1200)
 
     # %% Plot reduced joint proposals
@@ -133,10 +136,10 @@ def main():
     pop_reduced, paths_reduced = pe.reduce_population(population, paths)
     labels_reduced = labels[np.unique(paths)]
 
-    fig = plt.figure()
-    scatter_parts(pop_reduced, labels_reduced, edgecolor='k', s=100)
-    plt.axis('equal')
-    plt.axis('off')
+    ax, fig = plt.subplots()
+    scatter_parts(ax, pop_reduced, labels_reduced, edgecolor='k', s=100)
+    ax.set_axis('equal')
+    ax.set_axis('off')
     fig.savefig(join('figures', 'joint_proposals_reduced.pdf'), dpi=1200)
 
     # %% Plot spheres
@@ -159,23 +162,23 @@ def main():
     for i in range(n_figs):
         fig, ax = plt.subplots()
 
-        scatter_parts(pop_reduced, labels_reduced, s=100, edgecolor='k', zorder=5)
+        scatter_parts(ax, pop_reduced, labels_reduced, s=100, edgecolor='k', zorder=5)
 
         if i == 0:
             # Add legend to first figures
-            plt.legend(part_types, loc=legend_location, edgecolor='k')
+            ax.legend(part_types, loc=legend_location, edgecolor='k')
 
         has_sphere = np.any(path_vectors[pairs[i]], 0)
         within_radius = dist_matrix_reduced < r
 
         inside_spheres = pe.in_spheres(within_radius, has_sphere)
-        pl.plot_links(pop_reduced, score_matrix, inside_spheres)
+        pl.plot_links(ax, pop_reduced, score_matrix, inside_spheres)
 
         has_sphere = np.any(path_vectors[pairs[i]], 0)
-        pl.plot_spheres(pop_reduced[has_sphere], r, ax)
+        pl.plot_spheres(ax, pop_reduced[has_sphere], r)
 
-        plt.axis('equal')
-        plt.axis('off')
+        ax.set_axis('equal')
+        ax.set_axis('off')
 
         save_path = join('figures', 'spheres_{}.pdf')
         fig.savefig(save_path.format(i), dpi=1200)

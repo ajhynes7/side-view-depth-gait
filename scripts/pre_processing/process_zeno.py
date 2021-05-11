@@ -39,7 +39,9 @@ def parse_walking_info(df_trial):
                 num_pass = int(first_char) - 1
 
             # Match 'Right' or 'Left' and take first character ('R' or 'L')
-            side = re.search(r'(\w+)\s', string).group(1)[0]
+            match = re.search(r'(\w+)\s', string)
+            assert match is not None
+            side = match.group(1)[0]
 
             # Subtract 1 from the stride number so it is zero-based like Kinect.
             num_stride = int(string[-1]) - 1
