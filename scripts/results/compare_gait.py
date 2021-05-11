@@ -13,7 +13,7 @@ def calc_trial_results(
     df_matched_k: pd.DataFrame,
     df_matched_z: pd.DataFrame,
     vector_filter: Optional[array_like] = None,
-) -> Tuple[pd.DataFrame, pd.DataFrame]:
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Calculate ICC and Bland-Altman results."""
 
     df_trials_k = df_matched_k.groupby('trial_id').median()
@@ -21,6 +21,9 @@ def calc_trial_results(
 
     if vector_filter is None:
         vector_filter = np.full(df_trials_k.shape[0], True)
+
+    # Needed to satisy pytype.
+    assert isinstance(vector_filter, np.ndarray)
 
     assert vector_filter.ndim == 1
     assert df_trials_k.shape[0] == df_trials_z.shape[0] == vector_filter.size

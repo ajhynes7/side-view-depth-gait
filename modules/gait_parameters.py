@@ -142,11 +142,10 @@ def stride_parameters(
 
     stance_percentage = (stance_time / stride_time) * 100
 
-    # Convert floats to np.float64 to satisfy mypy.
     dict_temporal = {
-        'stride_time': np.float64(stride_time),
+        'stride_time': stride_time,
         'stride_velocity': stride_velocity,
-        'stance_percentage': np.float64(stance_percentage),
+        'stance_percentage': stance_percentage,
     }
 
     return {**dict_spatial, **dict_temporal}

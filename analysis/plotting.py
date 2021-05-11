@@ -1,19 +1,28 @@
 """Functions for plotting points and visualizing results."""
+from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from matplotlib import cm
+from matplotlib.axes import Axes
+
+from modules.typing import array_like
 
 
-def scatter_signal(signal, labels=None, **kwargs):
+def scatter_signal(
+    ax: Axes, signal: array_like, labels: Optional[np.ndarray] = None, **kwargs
+):
     """
     Produce a scatter plot of a signal.
 
     Parameters
     ----------
+    ax: Axes
+        Matplotlib Axes object.
     signal : (N,) array_like
         Input 1D signal.
-    labels : (N,) array_like, optional
+    labels : (N,) ndarray, optional
         Array of labels.
     kwargs : dict, optional
         Additional keywords passed to `scatter`.
@@ -25,15 +34,17 @@ def scatter_signal(signal, labels=None, **kwargs):
     X = np.arange(len(signal))
     points = np.column_stack((X, signal))
 
-    scatter_labels(points, labels, **kwargs)
+    scatter_labels(ax, points, labels, **kwargs)
 
 
-def scatter_labels(points, labels, **kwargs):
+def scatter_labels(ax: Axes, points: np.ndarray, labels: np.ndarray, **kwargs):
     """
     Scatter points that are coloured by label.
 
     Parameters
     ----------
+    ax: Axes
+        Matplotlib Axes object.
     points : (N, 2) ndarray
         Array of N points with dimension 2.
     labels : (N,) ndarray
@@ -46,15 +57,17 @@ def scatter_labels(points, labels, **kwargs):
 
         points_label = points[labels == label]
 
-        plt.scatter(points_label[:, 0], points_label[:, 1], **kwargs)
+        ax.scatter(points_label[:, 0], points_label[:, 1], **kwargs)
 
 
-def scatter2(points, **kwargs):
+def scatter2(ax: Axes, points: np.ndarray, **kwargs):
     """
     Produce a 2D scatter plot.
 
     Parameters
     ----------
+    ax: Axes
+        Matplotlib Axes object.
     points : (N, 2) ndarray
         Array of N points in with dimension 2.
     kwargs : dict, optional
@@ -65,10 +78,10 @@ def scatter2(points, **kwargs):
         # Convert to 2d array
         points = points.reshape(1, -1)
 
-    plt.scatter(points[:, 0], points[:, 1], **kwargs)
+    ax.scatter(points[:, 0], points[:, 1], **kwargs)
 
 
-def scatter_series(series, **kwargs):
+def scatter_series(ax: Axes, series: pd.Series, **kwargs):
     """
     Produce a scatter plot from a pandas Series.
 
@@ -76,21 +89,25 @@ def scatter_series(series, **kwargs):
 
     Parameters
     ----------
+    ax: Axes
+        Matplotlib Axes object.
     series : Series
         Input pandas Series.
     kwargs : dict, optional
         Additional keywords passed to `scatter`.
 
     """
-    plt.scatter(series.index, series, **kwargs)
+    ax.scatter(series.index, series, **kwargs)
 
 
-def connect_points(point_1, point_2, **kwargs):
+def connect_points(ax: Axes, point_1: array_like, point_2: array_like, **kwargs):
     """
     Plot a line between two 2D points.
 
     Parameters
     ----------
+    ax: Axes
+        Matplotlib Axes object.
     point_1, point_2 : array_like
         Input 2D point.
     kwargs : dict, optional
@@ -100,15 +117,17 @@ def connect_points(point_1, point_2, **kwargs):
     x = [point_1[0], point_2[0]]
     y = [point_1[1], point_2[1]]
 
-    plt.plot(x, y, **kwargs)
+    ax.plot(x, y, **kwargs)
 
 
-def connect_two_sets(points_1, points_2, **kwargs):
+def connect_two_sets(ax: Axes, points_1: array_like, points_2: array_like, **kwargs):
     """
     Plot a line between all pairs of points in two sets.
 
     Parameters
     ----------
+    ax: Axes
+        Matplotlib Axes object.
     points_1, points_2 : (N, 2) array_like
         Input 2D points.
     kwargs : dict, optional
@@ -117,21 +136,21 @@ def connect_two_sets(points_1, points_2, **kwargs):
     """
     for point_1 in points_1:
         for point_2 in points_2:
-            connect_points(point_1, point_2, **kwargs)
+            connect_points(ax, point_1, point_2, **kwargs)
 
 
-def plot_spheres(points, r, ax):
+def plot_spheres(ax: Axes, points: array_like, r: float):
     """
     Plot two-dimensional view of spheres centered on points.
 
     Parameters
     ----------
+    ax: Axes
+        Matplotlib Axes object.
     points : array_like
         Points in space.
     r : float
         Radius of spheres.
-    ax : Axes
-        Axes for plotting.
 
     """
     for point in points:
@@ -139,12 +158,16 @@ def plot_spheres(points, r, ax):
         ax.add_patch(circle)
 
 
-def plot_links(points, score_matrix, inside_spheres):
+def plot_links(
+    ax: Axes, points: array_like, score_matrix: np.ndarray, inside_spheres: np.ndarray
+):
     """
     Plot scored links between points.
 
     Parameters
     ----------
+    ax: Axes
+        Matplotlib Axes object.
     points : (N, D) array_like
         Input points.
     score_matrix : (N, N) ndarray
@@ -163,5 +186,10 @@ def plot_links(points, score_matrix, inside_spheres):
                 if score != 0:
                     # Plot line coloured by score
                     connect_points(
-                        point_i, point_j, c=cm.bwr(score), linestyle='-', linewidth=0.75
+                        ax,
+                        point_i,
+                        point_j,
+                        c=cm.bwr(score),
+                        linestyle='-',
+                        linewidth=0.75,
                     )
