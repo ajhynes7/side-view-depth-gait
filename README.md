@@ -20,16 +20,15 @@ Some scripts for the results and figures make use of LaTeX for formatting. You c
 Create a virtual environment and activate it.
 
 ```bash
-$ mkdir virtualenvs/
-$ python -m venv virtualenvs/depth_gait_env
+$ mkdir ~/.virtualenvs/
+$ python -m venv ~/.virtualenvs/depth_gait_env
 
-$ source virtualenvs/depth_gait_env/bin/activate
+$ source ~/.virtualenvs/depth_gait_env/bin/activate
 ```
 
 Finally, install the required Python packages into the environment.
 
 ```bash
-$ cd depth-gait-analysis/
 $ pip install -r requirements/base.txt
 ```
 
