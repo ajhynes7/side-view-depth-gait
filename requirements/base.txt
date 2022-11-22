@@ -3,7 +3,7 @@ matplotlib==3.4.1
 numpy==1.20.2
 opencv-python==4.5.1.48
 pandas==1.2.4
-Pillow==8.2.0
+Pillow==9.3.0
 scikit-image==0.18.1
 scikit-learn==0.24.1
 scikit-spatial==4.0.1
